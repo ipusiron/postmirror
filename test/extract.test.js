@@ -111,3 +111,25 @@ test('Extract contract: NFKC, punctuation, floor suffix, and no padding or trunc
     ['F2', 'F2'], ['コーポー3', '3'], ['1234567890123456', '1234567890123456']
   ]) assert.equal(extractAddressNumber(text).result, expected, text);
 });
+
+test('Review 33: unsupported numeral units share one warning', () => {
+  const result = extractAddressNumber('百番千号3');
+  assert.equal(result.result, '3');
+  assert.deepStrictEqual(result.warnings, [{ code: 'kanji-numeral-unsupported' }]);
+});
+
+test('Review 34: uppercase converts ASCII a-z only', () => {
+  const result = extractAddressNumber('3ı4');
+  assert.equal(result.steps[1].text, '3ı4');
+  assert.equal(result.result, '3-4');
+  assert.equal(extractAddressNumber('3ǰ4').result, '3-4');
+});
+
+for (const dash of ['‐', '‑', '‒', '–', '—', '―', '−']) {
+  test(`Review 36: normalize and retain trailing dash U+${dash.codePointAt(0).toString(16)}`, () => {
+    assert.deepStrictEqual(extractAddressNumber(`1${dash}2`).steps[0], { id: 'normalize', text: '1-2' });
+    const result = extractAddressNumber(`3丁目5${dash}`);
+    assert.deepStrictEqual(result.steps[0], { id: 'normalize', text: '3丁目5-' });
+    assert.equal(result.result, '3-5-');
+  });
+}

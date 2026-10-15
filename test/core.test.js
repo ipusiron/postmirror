@@ -583,3 +583,164 @@ test('Contract: pure calls preserve input arrays and reject sparse or unknown en
   assert.throws(() => core.checkDigitFor(Array(20)), RangeError);
   assert.throws(() => core.maskChars(bars, [-1]), RangeError);
 });
+
+test('Review 25: restored mirror inputs warn in both directions without alternatives', () => {
+  const bars = core.maskChars(core.encodeAddress('1234567', '1-2-3-1111118').bars, [20]);
+  for (const input of [bars, core.transformBars(bars, 'reverse')]) {
+    const result = core.decodeBars(input);
+    check(result, 'recovered', ['mirror-ambiguous']);
+    assert.deepStrictEqual(result.alternatives, []);
+  }
+  assert.equal(core.decodeBars(core.transformBars(bars, 'reverse')).postalCode.display, '029-9999');
+  assert.deepStrictEqual(core.decodeBars(Array(67).fill(null)).issues, [
+    { code: 'start-stop-unknown', severity: 'warning' }
+  ]);
+});
+
+test('Review 26 and 36: partial means at least one hidden bar in every character state', () => {
+  const partial = original.slice();
+  partial[2] = null;
+  const read = core.decodeBars(partial).chars[0];
+  assert.deepStrictEqual([read.status, read.partial, read.symbol], ['read', true, '1']);
+  const inputs = [
+    original, partial, core.maskChars(original, [0]), core.maskChars(original, [0, 1]), Array(67).fill(null),
+    replaceChar(original, 0, [4, 3, null]), replaceChar(original, 9, [null, null, 1])
+  ];
+  const states = new Set();
+  for (const input of inputs) {
+    for (const char of core.decodeBars(input).chars) {
+      assert.equal(char.partial, char.bars.includes(null));
+      states.add(char.status);
+    }
+  }
+  for (const state of ['read', 'recovered', 'hidden', 'no-candidate', 'contradiction']) assert.ok(states.has(state));
+});
+
+function reviewAddress(ids) {
+  return core.encodeChars([...'1000013', ...ids, ...Array(13 - ids.length).fill('CC4')]).bars;
+}
+
+for (const [ids, text, charIndexes] of [
+  [['CC1', '-', '1'], '[CC1]', [7]], [['CC3', '7'], '[CC3+7]', [7, 8]], [['CC5'], '[CC5]', [7]]
+]) {
+  test(`Review 27: ${text} is a reserved token`, () => {
+    assert.deepStrictEqual(core.decodeBars(reviewAddress(ids)).addressNumber.tokens[0], { type: 'reserved', text, charIndexes });
+  });
+}
+
+test('Review 27 and 36: letter candidates use ranges, commas, and only defined letters', () => {
+  const cases = [];
+  const range = core.maskChars(core.encodeAddress('1000013', 'A1').bars, [8, 20]);
+  cases.push([range, '[A-J]', [7, 8]]);
+  const pair = core.maskChars(core.encodeAddress('1000013', 'A1').bars, [20]);
+  pair[27] = null;
+  cases.push([pair, '[A,B]', [7, 8]]);
+  const mixed = core.maskChars(reviewAddress(['CC1', '1']), [20]);
+  mixed[27] = mixed[28] = null;
+  cases.push([mixed, '[A-C,E,F]', [7, 8]]);
+  const upper = core.maskChars(core.encodeAddress('1000013', 'U1').bars, [8, 20]);
+  cases.push([upper, '[U-Z]', [7, 8]]);
+  const onlyZ = replaceChar(core.maskChars(reviewAddress(['CC3', '5']), [20]), 8, [null, null, 1]);
+  cases.push([onlyZ, '[Z]', [7, 8]]);
+  const noDigit = reviewAddress(['CC1', '-', '1']);
+  noDigit[3] = noDigit[26] = noDigit[27] = null;
+  cases.push([noDigit, '[CC1+?]', [7, 8]]);
+  assert.deepStrictEqual(core.decodeBars(noDigit).chars[8].possible, ['-', 'CC1']);
+  const noLetter = core.maskChars(reviewAddress(['CC3', '8']), [20]);
+  noLetter[27] = noLetter[28] = null;
+  cases.push([noLetter, '[CC3+?]', [7, 8]]);
+  assert.deepStrictEqual(core.decodeBars(noLetter).chars[8].possible, ['7', '8', 'CC3']);
+  for (const [bars, text, charIndexes] of cases) {
+    const result = core.decodeBars(bars);
+    assert.equal(result.status, 'undetermined');
+    assert.deepStrictEqual(result.addressNumber.tokens[0], { type: 'letter-range', text, charIndexes });
+  }
+});
+
+test('Review 28: only completed defined letters trigger adjacent hyphen warnings', () => {
+  for (const ids of [
+    ['1', '-', 'CC3', '7'], [...'12345678901-', 'CC1'], ['CC1', '-', '1']
+  ]) assert.equal(codes(core.decodeBars(reviewAddress(ids))).has('hyphen-next-to-letter'), false);
+  const range = core.maskChars(reviewAddress(['1', '-', 'CC1', '0']), [10, 20]);
+  assert.equal(codes(core.decodeBars(range)).has('hyphen-next-to-letter'), false);
+});
+
+test('Review 29: each middle CC4 warns even across an undecided character', () => {
+  const first = core.decodeBars(reviewAddress(['1', 'CC4', 'CC4', '2']));
+  assert.deepStrictEqual(first.issues, [
+    { code: 'cc4-middle', severity: 'warning', charIndex: 8 },
+    { code: 'cc4-middle', severity: 'warning', charIndex: 9 }
+  ]);
+  const second = core.decodeBars(core.maskChars(reviewAddress(['1', 'CC4', '2', '5']), [9, 20]));
+  assert.equal(second.status, 'undetermined');
+  assert.deepStrictEqual(second.issues, [{ code: 'cc4-middle', severity: 'warning', charIndex: 8 }]);
+});
+
+test('Review 30: hyphen warnings identify each pair or single adjacent hyphen', () => {
+  assert.deepStrictEqual(core.decodeBars(reviewAddress(['1', '-', '-', '-', '2'])).issues, [
+    { code: 'double-hyphen', severity: 'warning', charIndex: 9 },
+    { code: 'double-hyphen', severity: 'warning', charIndex: 10 }
+  ]);
+  assert.deepStrictEqual(core.decodeBars(reviewAddress(['CC1', '0', '-', 'CC2', '9'])).issues, [
+    { code: 'hyphen-next-to-letter', severity: 'warning', charIndex: 9 }
+  ]);
+});
+
+test('Review 31 and 32: non-digit postal display and explicit whitespace boundaries', () => {
+  const chars = kasumigaseki.expanded20.slice();
+  chars[0] = 'CC4';
+  const result = core.decodeBars(core.encodeChars(chars).bars);
+  assert.deepStrictEqual(result.postalCode, { digits: '?000013', display: '?00-0013', complete: false });
+  assert.deepStrictEqual(result.issues, [{ code: 'postal-not-digit', severity: 'error', charIndex: 0 }]);
+  assert.deepStrictEqual(core.parseBarText('1\uFEFF3'), { bars: [1, 3], errors: [] });
+  assert.deepStrictEqual(core.parseBarText('1\u200B3'), {
+    bars: null, errors: [{ code: 'invalid-char', index: 1, char: '\u200B' }]
+  });
+});
+
+test('Review 36: errors suppress information and issue sorting is exact', () => {
+  const bad = core.decodeBars(replaceChar(referenceBars(vectors[14]), 0, [1, 1, 4]));
+  assert.deepStrictEqual(bad.issues, [{ code: 'checksum-mismatch', severity: 'error' }]);
+  assert.deepStrictEqual(core.decodeBars(core.transformBars(original, 'rotate180')).issues, [
+    { code: 'checksum-mismatch', severity: 'error' }, { code: 'orientation', severity: 'error' },
+    ...[1, 2, 3, 4, 6].map(charIndex => ({ code: 'postal-not-digit', severity: 'error', charIndex }))
+  ]);
+  assert.equal(bad.checksum.status, 'mismatch');
+  for (const vector of vectors) assert.equal(core.decodeBars(referenceBars(vector)).barCount, 67);
+});
+
+test('Review 36: a partially read CD is still independent evidence', () => {
+  const bars = referenceBars(vectors[6]);
+  bars[62] = null;
+  const decoded = core.decodeBars(bars);
+  assert.equal(decoded.chars[20].status, 'read');
+  assert.equal(decoded.chars[20].partial, true);
+  const { read, expected, match } = core.explainChecksum(decoded);
+  assert.deepStrictEqual({ read, expected, match }, { read: 0, expected: 0, match: true });
+});
+
+test('Review 36: special-number branches require complete relevant data', () => {
+  for (const [postal, address, expected] of [
+    ['1238695', '215', ['po-box-bulk']], ['1238785', '001', ['business-reply-bulk']], ['1000013', '1', []]
+  ]) assert.deepStrictEqual(codes(core.decodeBars(core.encodeAddress(postal, address).bars), 'info'), new Set(expected));
+  const hidden = core.decodeBars(core.maskChars(referenceBars(vectors[18]), [10, 20]));
+  assert.equal(hidden.status, 'undetermined');
+  assert.deepStrictEqual(codes(hidden, 'info'), new Set());
+});
+
+test('Review 36: assignments stop after exactly twenty solutions', () => {
+  const twenty = core.maskChars(referenceBars(vectors[5]), [0, 20]);
+  twenty[6] = null;
+  const twentyOne = core.maskChars(referenceBars(vectors[5]), [0, 1]);
+  twentyOne[13] = twentyOne[62] = null;
+  for (const [bars, count, size] of [[twenty, 20n, 20], [twentyOne, 21n, null], [core.maskChars(original, [0, 1, 6]), 30n, null]]) {
+    const result = core.decodeBars(bars);
+    assert.equal(result.status, 'undetermined');
+    assert.equal(result.checksum.combinations, count);
+    assert.equal(result.checksum.assignments?.length ?? null, size);
+  }
+});
+
+test('Review 36: text length uses UTF-16 code units', () => {
+  assert.deepStrictEqual(core.parseBarText('😀'.repeat(501)), { bars: null, errors: [{ code: 'too-long' }] });
+});

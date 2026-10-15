@@ -49,7 +49,7 @@
     };
     // 日本郵便のマニュアルp19。規定のない正規化は1文字ずつ適用する。
     step('normalize', value => Array.from(value, char => char.normalize('NFKC')).join('').replace(/[\u2010-\u2015\u2212]/g, '-'));
-    step('uppercase', value => value.toUpperCase());
+    step('uppercase', value => value.replace(/[a-z]/g, char => char.toUpperCase()));
     step('remove-symbols', value => value.replace(/[&/・.]/g, ''));
     step('kanji-numerals', value => value.replace(
       /([一二三四五六七八九十〇百千万壱弐参拾]+)(丁目|番地|地割|丁|番|号|線|の|ノ)/g,

@@ -417,8 +417,11 @@
           const alternative = decodeInternal(transformBars(bars, transform), false);
           if (alternative.status !== 'invalid') result.alternatives.push({ transform, status: alternative.status });
         }
-      } else if (result.status === 'ok' && decodeInternal(transformBars(bars, 'reverse'), false).status === 'ok') {
-        result.issues.push({ code: 'mirror-ambiguous', severity: 'warning' });
+      } else {
+        const reversed = decodeInternal(transformBars(bars, 'reverse'), false);
+        if (reversed.status !== 'invalid' && /[0-9]/.test(reversed.postalCode.digits)) {
+          result.issues.push({ code: 'mirror-ambiguous', severity: 'warning' });
+        }
       }
     }
     const severity = { error: 0, warning: 1, info: 2 };

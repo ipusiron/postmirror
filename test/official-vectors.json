@@ -1,7 +1,7 @@
 {
   "version": "2026-10-15",
   "source": "日本郵便「郵便番号・バーコードマニュアル」p06・p17・p21・p22・p25（https://www.post.japanpost.jp/service/search/zipcode/zipmanual/）",
-  "note": "渚が仕様書の表から生成し、独立の計算でS・CD・67本の並び（9件）を検算した。テストはこのファイルを正とし、コアやsamples.jsから期待値を作らない。infoは集合として比べる",
+  "note": "日本郵便のマニュアルの例から作成し、独立の計算でS・CD・67本の並び（9件）を検算した。テストはこのファイルを正とし、コアやsamples.jsから期待値を作らない。infoは集合として比べる",
   "vectors": [
     {
       "id": 1,
