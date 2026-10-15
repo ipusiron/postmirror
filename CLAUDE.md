@@ -2,12 +2,11 @@
 
 PostMirror（ポストミラー）は、日本郵便のカスタマバーコードを手入力で解読し、郵便物の写真から読める情報を確かめる防犯のための自己点検ツールです。
 自分宛ての郵便物で試すことを勧め、作者は悪用を勧めない旨を画面とREADMEに記載します。
-現在は第1弾の段階4.1を実装しています。日英の切り替え、座学、ダーク表示に対応し、操作後のフォーカスと通知を調整しています。
+第1弾は手入力による解読・点検、日英の座学13節と確認問題7問、ダーク表示に対応しています。
 
 ## 構成
 
-第1弾の完成形は次のとおりです。
-「段階⑤で追加」と記したファイルは、現在のリポジトリーにはありません。
+第1弾の構成は次のとおりです。
 
 ```text
 postmirror/                         # ツールのルート
@@ -27,20 +26,20 @@ postmirror/                         # ツールのルート
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
 ├── app.js                          # 画面、入力と描画、言語とタブの切り替え
-├── assets/                         # READMEの日本語画面例（段階⑤で追加）
-│   ├── screenshot.png              # 解読タブ（段階⑤で追加）
-│   ├── screenshot2.png             # 座学タブ（段階⑤で追加）
-│   ├── screenshot3.png             # 隠したバーの点検（段階⑤で追加）
-│   ├── screenshot4.png             # 解読タブのダーク表示（段階⑤で追加）
-│   └── en/                         # READMEの英語画面例（段階⑤で追加）
-│       ├── screenshot.png          # 英語表示の解読タブ（段階⑤で追加）
-│       ├── screenshot2.png         # 英語表示の座学タブ（段階⑤で追加）
-│       └── screenshot3.png         # 英語表示の隠したバーの点検（段階⑤で追加）
+├── assets/                         # READMEの日本語画面例
+│   ├── screenshot.png              # 解読タブ
+│   ├── screenshot2.png             # 座学タブ
+│   ├── screenshot3.png             # 隠したバーの点検
+│   ├── screenshot4.png             # 解読タブのダーク表示
+│   └── en/                         # READMEの英語画面例
+│       ├── screenshot.png          # 英語表示の解読タブ
+│       ├── screenshot2.png         # 英語表示の座学タブ
+│       └── screenshot3.png         # 英語表示の隠したバーの点検
 └── test/                           # node:testのテスト
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
-    ├── readme.test.js              # 日英READMEの数値、構成と表記（段階⑤で追加）
+    ├── readme.test.js              # 日英READMEの数値、構成と表記
     ├── html.test.js                # HTML、CSP、保存先、座学の静的検査
     ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
     ├── format.test.js              # 最長行と行数の下限
