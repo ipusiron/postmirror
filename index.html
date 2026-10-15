@@ -33,11 +33,22 @@
     </div>
     <div id="panel-decode" role="tabpanel" aria-labelledby="tab-decode">
     <p data-i18n="intro.prompt"></p>
+    <section aria-labelledby="intro-title">
+      <h2 id="intro-title" data-i18n="intro.title"></h2>
+      <ol>
+        <li><button id="intro-sample" type="button" data-i18n="intro.sample"></button></li>
+        <li><button id="intro-mask" type="button" data-i18n="intro.mask"></button></li>
+        <li><button id="intro-inspection" type="button" data-i18n="actions.inspection" disabled></button></li>
+      </ol>
+    </section>
     <p class="privacy" data-i18n="privacy"></p>
     <section aria-labelledby="sample-label">
       <label id="sample-label" for="sample-select" data-i18n="sample.label"></label>
-      <select id="sample-select"></select>
-      <h2 data-i18n="mask.title"></h2>
+      <div class="actions">
+        <select id="sample-select"></select>
+        <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
+      </div>
+      <h2 id="mask-title" tabindex="-1" data-i18n="mask.title"></h2>
       <p data-i18n="mask.help"></p>
       <div id="mask-presets" class="actions">
         <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
@@ -45,6 +56,7 @@
         <button type="button" data-preset="latter" data-i18n="mask.latter" disabled></button>
         <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
       </div>
+      <div id="mask-summary" class="context-summary" hidden></div>
       <p id="mask-reason" data-i18n="mask.needsSample"></p>
     </section>
     <section aria-labelledby="overview-title">
@@ -60,8 +72,12 @@
       <div class="actions">
         <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
         <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
+        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
       </div>
-      <p id="input-progress" aria-live="polite"></p>
+      <div class="actions">
+        <p id="input-progress" aria-live="polite"></p>
+        <button id="goto-result" type="button" data-i18n="actions.result" hidden></button>
+      </div>
       <p id="selected-bar"></p>
       <div id="bar-grid" role="group" aria-describedby="input-help"></div>
       <div class="palette-dock">
@@ -74,6 +90,7 @@
         <label><span data-i18n="range.end"></span><input id="range-end" type="text" inputmode="numeric" autocomplete="off" value="67"></label>
       </div>
       <button id="range-apply" type="button" data-i18n="range.apply" aria-describedby="range-reason"></button>
+      <div id="range-summary" class="context-summary" hidden></div>
       <p id="range-reason" aria-live="polite"></p>
     </section>
     <section aria-labelledby="text-label">
@@ -84,7 +101,9 @@
     </section>
     <section id="result" aria-labelledby="result-title" hidden>
       <h2 id="result-title" tabindex="-1" data-i18n="result.title"></h2>
+      <p id="draft-note" class="privacy" data-i18n="text.pending" hidden></p>
       <p id="judgment" class="judgment" aria-live="polite"></p>
+      <p id="judgment-draft-note" data-i18n="judgment.pending" hidden></p>
       <div id="alternatives" class="actions"></div>
       <h3 data-i18n="result.readable"></h3>
       <dl class="readable">
@@ -96,7 +115,7 @@
       <h3 data-i18n="result.notes"></h3>
       <ul id="issues"></ul>
       <section aria-labelledby="inspection-title">
-        <h3 id="inspection-title" data-i18n="inspection.title"></h3>
+        <h3 id="inspection-title" tabindex="-1" data-i18n="inspection.title"></h3>
         <div id="inspection"></div>
       </section>
       <section aria-labelledby="checksum-title">

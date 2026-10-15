@@ -132,6 +132,10 @@ textarea {
   align-items: start;
 }
 
+#panel-decode {
+  overflow-anchor: none;
+}
+
 .bar-card {
   width: 138px;
   border: 1px solid var(--border);
@@ -168,7 +172,7 @@ textarea {
   border-radius: 0;
   padding: 2px;
   box-shadow: inset 0 0 0 1px var(--border);
-  scroll-margin-bottom: 140px;
+  scroll-margin-bottom: var(--palette-space, 8px);
 }
 
 .bar-button[aria-pressed="true"] {
