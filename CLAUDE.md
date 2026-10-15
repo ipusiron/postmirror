@@ -2,7 +2,7 @@
 
 PostMirror（ポストミラー）は、日本郵便のカスタマバーコードを手入力で解読し、郵便物の写真から読める情報を確かめる防犯のための自己点検ツールです。
 自分宛ての郵便物で試すことを勧め、作者は悪用を勧めない旨を画面とREADMEに記載します。
-現在は第1弾の段階①まで実装しています。
+現在は第1弾の段階②まで実装しています。画面は日本語固定で、言語の切り替えは段階④で追加します。
 
 ## 構成
 
@@ -20,13 +20,13 @@ postmirror/                         # ツールのルート
 ├── README.md                       # YAMLメタデータ付きの日本語版
 ├── README.en.md                    # 英語版
 ├── package.json                    # 依存なし、scripts.testはnode --test
-├── index.html                      # 解読タブ、座学タブ、meta CSP（段階②以降に追加）
-├── style.css                       # モバイル優先、ライトとダークの配色（段階②以降に追加）
+├── index.html                      # バーの入力画面（座学とCSPは段階④で追加）
+├── style.css                       # モバイル優先の配色と配置（ダークは段階④で追加）
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
 ├── extract-core.js                 # 住所表示番号の抜き出し規則
-├── samples.js                      # 版付きの公式例と抜き出しの例（段階②以降に追加）
-├── messages.js                     # 日英の文言辞書（段階②以降に追加）
-├── app.js                          # 画面、入力、描画と言語切り替え（段階②以降に追加）
+├── samples.js                      # 版付きの公式例と抜き出しの例
+├── messages.js                     # 日英の文言辞書
+├── app.js                          # 画面、入力と描画（言語の切り替えは段階④で追加）
 ├── assets/                         # READMEの日本語画面例（段階②以降に追加）
 │   ├── screenshot.png              # 解読タブ（段階②以降に追加）
 │   ├── screenshot2.png             # 座学タブ（段階②以降に追加）
@@ -41,8 +41,8 @@ postmirror/                         # ツールのルート
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
     ├── readme.test.js              # 日英READMEの数値、構成と表記（段階②以降に追加）
-    ├── html.test.js                # HTML、CSP、保存先の静的検査（段階②以降に追加）
-    ├── i18n.test.js                # 日英辞書と日本語リテラルの検査（段階②以降に追加）
+    ├── html.test.js                # HTMLと保存先の静的検査（CSPは段階④で追加）
+    ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
     ├── format.test.js              # 最長行と行数の下限
     └── contrast.test.js            # ライトとダークのコントラスト（段階②以降に追加）
 ```
@@ -51,8 +51,8 @@ postmirror/                         # ツールのルート
 |---|---|---|
 | barcode-core.js | PostMirrorCore | 解読、符号化、向きの変換、文字の遮蔽、検算式の部品 |
 | extract-core.js | PostMirrorExtract | 住所Bから住所表示番号を抜き出し、8段階の中間結果を返す |
-| samples.js | PostMirrorSamples | 公開例のデータ（段階②以降に追加） |
-| messages.js | PostMirrorMessages | 日英の文言（段階②以降に追加） |
+| samples.js | PostMirrorSamples | 公開例のデータ |
+| messages.js | PostMirrorMessages | 日英の文言 |
 
 コアはUMD形式の通常スクリプトです。
 `globalThis`へ公開し、CommonJSでは`module.exports`から同じAPIを返します。
@@ -69,10 +69,13 @@ Node.js 22以上で、リポジトリーのルートから実行します。
 npm test
 node --check barcode-core.js
 node --check extract-core.js
+node --check samples.js
+node --check messages.js
+node --check app.js
 ```
 
-`file://`で開くには、`index.html`ができてから（段階②以降）、そのファイルをブラウザーで開きます。
-ローカルHTTPも`index.html`ができてから（段階②以降）、次を実行して`http://localhost:8000/`へアクセスします。
+`file://`で開くには、`index.html`をブラウザーで開きます。
+ローカルHTTPは次を実行して`http://localhost:8000/`へアクセスします。
 
 ```sh
 python -m http.server

@@ -744,3 +744,20 @@ test('Review 36: assignments stop after exactly twenty solutions', () => {
 test('Review 36: text length uses UTF-16 code units', () => {
   assert.deepStrictEqual(core.parseBarText('😀'.repeat(501)), { bars: null, errors: [{ code: 'too-long' }] });
 });
+
+test('Samples: eight published inputs agree with six independent reference fields', () => {
+  const samples = require('../samples.js');
+  assert.equal(samples.barcodes.length, 8);
+  const referenceIds = [17, 20, 18, 19, 14, 16, 6, 2];
+  samples.barcodes.forEach((sample, index) => {
+    const vector = vectors.find(item => item.id === referenceIds[index]);
+    const encoded = core.encodeAddress(sample.postalCode, sample.addressNumber);
+    assert.deepStrictEqual([
+      sample.postalCode, sample.addressNumber, encoded.checkDigit, encoded.bars, encoded.truncated, encoded.droppedCount
+    ], [
+      vector.postalCode, vector.addressNumber, vector.checkDigit, referenceBars(vector), vector.truncated, vector.droppedCount
+    ]);
+    assert.equal(sample.version, '2026-10-15');
+    assert.ok(sample.sourcePages.length > 0);
+  });
+});

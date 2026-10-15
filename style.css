@@ -1,0 +1,278 @@
+:root {
+  --bg: #ffffff;
+  --surface: #f4f6f8;
+  --fg: #1b1f24;
+  --muted: #58616b;
+  --link: #0a58a8;
+  --accent: #0a58a8;
+  --border: #848d97;
+  --bar: #1b1f24;
+  --warn-fg: #7a3b00;
+  --warn-bg: #fff3e0;
+  --ok-fg: #0f5132;
+  --ok-bg: #e6f4ec;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  text-align: center;
+  letter-spacing: 0.03em;
+  margin: 0.5rem 0;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+section {
+  margin-block: 1.5rem;
+}
+
+.page-header, footer {
+  border-block-end: 1px solid var(--border);
+  padding-block: 0.5rem;
+}
+
+footer {
+  border-block-start: 1px solid var(--border);
+  border-block-end: 0;
+  margin-block-start: 2rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.privacy {
+  background: var(--surface);
+  padding: 0.75rem;
+  border-inline-start: 3px solid var(--accent);
+}
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+button {
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+}
+
+button:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+}
+
+#sample-select, textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem;
+}
+
+textarea {
+  resize: vertical;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.muted, .legend {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+#bar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  gap: 8px;
+  align-items: start;
+}
+
+.bar-card {
+  width: 138px;
+  border: 1px solid var(--border);
+  padding: 2px;
+  background: var(--surface);
+  border-radius: 4px;
+}
+
+.bar-card.marker-card {
+  width: 94px;
+}
+
+.card-heading, .card-range, .card-symbol {
+  margin: 0;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.card-range {
+  color: var(--muted);
+}
+
+.card-bars {
+  display: flex;
+  gap: 0;
+}
+
+.bar-button {
+  width: 44px;
+  min-width: 44px;
+  height: 64px;
+  flex: 0 0 44px;
+  border: 0;
+  border-radius: 0;
+  padding: 2px;
+  box-shadow: inset 0 0 0 1px var(--border);
+  scroll-margin-bottom: 140px;
+}
+
+.bar-button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+.bar-button:focus-visible {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.bar-button svg {
+  display: block;
+  width: 36px;
+  height: 54px;
+}
+
+.palette-dock {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-block: 1px solid var(--border);
+  padding-block: 6px;
+  margin-block-start: 12px;
+  z-index: 2;
+}
+
+#bar-palette {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.palette-button {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.palette-button svg {
+  width: 22px;
+  height: 34px;
+}
+
+.palette-dock p {
+  margin: 4px 0 0;
+  text-align: center;
+}
+
+svg {
+  color: var(--bar);
+  font-family: Meiryo, "Yu Gothic", sans-serif;
+}
+
+.bar-shape {
+  fill: currentColor;
+}
+
+.empty-bar, .unknown-bar {
+  fill: var(--bg);
+  stroke: currentColor;
+  stroke-width: 0.5;
+}
+
+.empty-bar {
+  stroke-dasharray: 1 1;
+}
+
+.hatch {
+  stroke: currentColor;
+  stroke-width: 0.4;
+}
+
+.unknown-mark {
+  font-size: 6px;
+  fill: currentColor;
+  text-anchor: middle;
+}
+
+.overview-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.band {
+  fill: var(--surface);
+  stroke: var(--border);
+}
+
+.band-postal {
+  fill: var(--bg);
+  stroke-dasharray: 5 3;
+}
+
+.band-label {
+  font-size: 18px;
+  text-anchor: middle;
+  fill: var(--fg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
