@@ -102,17 +102,21 @@ test('HTML: both symbol-table renderers include a textual bar pattern in each ro
 
 test('HTML: external links use the approved URLs and isolated new tabs', () => {
   const pages = ['06', '10', '11', '12', '13', '17', '18', '19', '20', '21', '22', '23', '25'];
-  const allowed = new Set([
+  const allowed = new Map([
     ...pages.map(page => `https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p${page}.html`),
     'https://www.post.japanpost.jp/service/discount/barcode.html',
     ...['image-exif-checker', 'image-diff-sec', 'qr-risk-radar'].map(slug => `https://ipusiron.github.io/${slug}/`)
-  ]);
+  ].map(url => [url, 2]));
+  allowed.set('https://github.com/ipusiron/postmirror', 1);
   const links = [...html.matchAll(/<a\b([^>]+)>/g)];
-  assert.equal(links.length, allowed.size * 2);
+  assert.equal(links.length, [...allowed.values()].reduce((sum, count) => sum + count, 0));
+  const actual = new Map();
   for (const [, attributes] of links) {
     const href = /href="([^"]+)"/.exec(attributes)?.[1];
     assert.ok(allowed.has(href), href);
+    actual.set(href, (actual.get(href) || 0) + 1);
     assert.match(attributes, /target="_blank"/);
     assert.match(attributes, /rel="noopener noreferrer"/);
   }
+  assert.deepStrictEqual(actual, allowed);
 });
