@@ -156,7 +156,7 @@
       </section>
       <section id="learn-ja-4" aria-labelledby="learn-ja-heading-4">
         <h2 id="learn-ja-heading-4" tabindex="-1">4. 67本の構成</h2>
-        <p>スタート2本＋郵便番号21本＋住所表示番号39本＋チェックデジット（CD）3本＋ストップ2本＝67本です。郵便番号内のハイフンと、郵便番号と住所表示番号の間の区切りは符号に入れません。住所表示番号の中のハイフンは残します。</p>
+        <p>スタート2本＋郵便番号21本＋住所表示番号39本＋チェックデジット（CD）3本＋ストップ2本＝67本です。郵便番号内のハイフンと、郵便番号と住所表示番号の間の区切りは符号に入れません。住所表示番号の中のハイフンは、符号の「-」（チェック用数字10）として入ります。</p>
         <div class="learn-figure" data-figure="structure"></div>
       </section>
       <section id="learn-ja-5" aria-labelledby="learn-ja-heading-5">
@@ -192,13 +192,14 @@
         <h2 id="learn-ja-heading-7" tabindex="-1">7. チェックデジット</h2>
         <p>チェック用数字は0〜9が0〜9、ハイフンが10、CC1〜CC8が11〜18です。21文字の合計が19の倍数になるようにCDを決めます。20文字の合計をSとすると、CD＝(19−(S mod 19)) mod 19です。</p>
         <div class="learn-figure" data-figure="checksum"></div>
-        <p>霞が関の例は合計105からCD 9、個別番号の例は合計209からCD 0になります。19種が0〜18に1対1で対応するため、読めない1文字は計算で戻ります。ほかの文字が正しく読めていることが前提です。</p>
-        <p>ほかの文字がすべて読めていれば、1本の読み誤りは必ず検出できますが、訂正はできません。Day102で扱う誤り訂正との違いです。読めない文字があると、ほかの文字の読み誤りを検出できないことがあります。</p>
+        <p>霞が関の例（100-0013／1-3-2-503）は合計105からCD 9、個別番号の例（100-8792）は合計209からCD 0になります。19種が0〜18に1対1で対応するため、読めない1文字は計算で戻ります。ほかの文字が正しく読めていることが前提です。</p>
+        <p>ほかの文字がすべて読めていれば、1本の読み誤りは必ず検出できますが、訂正はできません。Day102 QRCrashTestで扱うQRコードの誤り訂正との違いです。読めない文字があると、ほかの文字の読み誤りを検出できないことがあります。</p>
         <button type="button" data-learn-try="cd" data-i18n="learn.try"></button>
       </section>
       <section id="learn-ja-8" aria-labelledby="learn-ja-heading-8">
         <h2 id="learn-ja-heading-8" tabindex="-1">8. 住所表示番号の抜き出し規則</h2>
         <p>郵便番号に対応する住所Aを除いた住所Bから、住所表示番号を抜き出します（p18・p19）。基本ルール6つと補足ルール5つを、次の順に適用します。正規化は本ツールの処理で、公式の規定ではありません。</p>
+        <p>正規化には副作用があります。丸数字の①は1に、ローマ数字のⅡはIIになります。IIは英字2文字なので抜き出しません。</p>
         <table class="learn-table">
           <thead><tr>
             <th scope="col">規則</th>
@@ -215,7 +216,7 @@
             </tr>
             <tr>
               <td>基本2</td>
-              <td>&amp;・/・「・」・.を取り除いて詰める</td>
+              <td>「&amp;」「/」「・」「.」を取り除いて詰める</td>
             </tr>
             <tr>
               <td>補足1</td>
@@ -309,7 +310,8 @@
             </tr>
           </tbody>
         </table>
-        <p>ほかの番号を使う地域もあります。2026年9月30日版の郵便番号データを数えた値では、階ごとの番号を持つビルが86棟・3,437行、複数の町域を持つ番号が1,339件、代表番号が1,870件あります。</p>
+        <p>ほかの番号を使う地域もあります。</p>
+        <p>2026年9月30日版の郵便番号データを数えた値では、階ごとの番号を持つビルが86棟・3,437行、複数の町域を持つ番号が1,339件、代表番号（p18）が1,870件あります。</p>
       </section>
       <section id="learn-ja-10" aria-labelledby="learn-ja-heading-10">
         <h2 id="learn-ja-heading-10" tabindex="-1">10. 隠し方の作法</h2>
@@ -334,7 +336,7 @@
             </tr>
             <tr>
               <td>全体を不透明な単色で塗る</td>
-              <td>画像上のバーの形を隠す。別ファイルへ書き出して確認が必要</td>
+              <td>画像上にバーの形は残らない。書き出した別ファイルで確かめる</td>
             </tr>
             <tr>
               <td>トリミングして上書き</td>
@@ -368,9 +370,12 @@
             </tr>
           </tbody>
         </table>
-        <p><a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 画像Exifチェッカー — 画像のEXIFを確認</a></p>
-        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec — 画像の差分を確認</a></p>
-        <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar — QRコードのリスクを確認</a></p>
+        <p>郵便物の写真や別の符号を確かめるには、次の関連ツールも使えます。</p>
+        <p>
+          <a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 画像Exifチェッカー</a>：写真に埋め込まれた位置情報などを確かめて消す。PostMirrorは写っているバーコードという別の経路を扱う
+        </p>
+        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec</a>：塗りつぶす前と後の画像を比べ、塗り残しを見つける</p>
+        <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar</a>：郵便物に印刷された別の符号（QRコード）の中身を読む前に危険を判定する</p>
       </section>
       <section id="learn-ja-12" aria-labelledby="learn-ja-heading-12">
         <h2 id="learn-ja-heading-12" tabindex="-1">12. 確認問題</h2>
@@ -462,7 +467,10 @@
       <div id="learn-en" lang="en" hidden>
       <section id="learn-en-1" aria-labelledby="learn-en-heading-1">
         <h2 id="learn-en-heading-1" tabindex="-1">1. Why cover the barcode?</h2>
-        <p>Even with the name covered, the nearby customer barcode can reveal the postal code and address number. For horizontal writing, it is normally printed directly below the recipient’s name (p13).</p>
+        <p>
+          Even with the name and address covered, the nearby customer barcode can reveal the postal code and address number.
+          On mail with a horizontally written address, it is normally printed directly below the recipient’s name (p13).
+        </p>
         <div class="envelope" role="img" data-i18n-label="figure.envelope">
           <p data-i18n="figure.fictional"></p>
           <p><span class="covered-name" data-i18n="figure.name"></span></p>
@@ -472,7 +480,7 @@
       </section>
       <section id="learn-en-2" aria-labelledby="learn-en-heading-2">
         <h2 id="learn-en-heading-2" tabindex="-1">2. Which mail carries a barcode?</h2>
-        <p>A barcode is not a general requirement for sending mail. Distinguish mail that often carries one from services that require one.</p>
+        <p>A barcode is not a general requirement for sending mail. Some mail often carries one, while certain services require one.</p>
         <table class="learn-table">
           <thead><tr>
             <th scope="col">Mail</th>
@@ -504,7 +512,11 @@
       </section>
       <section id="learn-en-4" aria-labelledby="learn-en-heading-4">
         <h2 id="learn-en-heading-4" tabindex="-1">4. The 67-bar structure</h2>
-        <p>Start 2 + postal code 21 + address number 39 + check digit (CD) 3 + stop 2 = 67 bars. The hyphen within the postal code and the separator between the postal code and address number are omitted. Hyphens inside the address number remain.</p>
+        <p>
+          Start 2 + postal code 21 + address number 39 + check digit (CD) 3 + stop 2 = 67 bars.
+          The hyphen within the postal code and the separator between the postal code and address number are omitted.
+          Hyphens inside the address number are encoded as the symbol “-” with check value 10.
+        </p>
         <div class="learn-figure" data-figure="structure"></div>
       </section>
       <section id="learn-en-5" aria-labelledby="learn-en-heading-5">
@@ -515,7 +527,8 @@
       <section id="learn-en-6" aria-labelledby="learn-en-heading-6">
         <h2 id="learn-en-heading-6" tabindex="-1">6. CC4, 13 characters and 20 characters</h2>
         <p>
-          After expanding letters, the address number is made 13 characters long by padding with CC4. Anything beyond 20 characters including the postal code is truncated. If the twentieth character is a letter control, that control remains alone.
+          After expanding letters, the address number is padded to 13 characters with CC4. Characters beyond the combined 20-character postal code and address number are truncated.
+          If character 20 is a letter’s control code, that code is kept even though the digit that follows it is dropped.
         </p>
         <table class="learn-table">
           <thead><tr>
@@ -533,7 +546,7 @@
             </tr>
             <tr>
               <td>910-0067</td>
-              <td>3-80-25J1-2 followed by CC1; the last letter is an undetermined A–J</td>
+              <td>3-80-25J1-2 followed by CC1; the last letter could be any of A–J</td>
             </tr>
           </tbody>
         </table>
@@ -543,10 +556,13 @@
         <p>The check values are 0–9 for digits 0–9, 10 for the hyphen, and 11–18 for CC1–CC8. The CD makes the sum of all 21 characters a multiple of 19. For a 20-character sum S, CD = (19 − (S mod 19)) mod 19.</p>
         <div class="learn-figure" data-figure="checksum"></div>
         <p>
-          The Kasumigaseki example has a sum of 105 and CD 9; the individual postal-code example has a sum of 209 and CD 0. Because the 19 symbols map one-to-one to 0–18, one unreadable character can be restored, assuming all other characters
-          are read correctly.
+          The Kasumigaseki example (100-0013 / 1-3-2-503) has a sum of 105 and CD 9; the individual postal code example (100-8792) has a sum of 209 and CD 0.
+          Because the 19 symbols map one-to-one to 0–18, one unreadable character can be restored, assuming all other characters are read correctly.
         </p>
-        <p>If all other characters are readable, a single misread bar is always detected, but cannot be corrected. This differs from the error correction covered in Day102. With unreadable characters, a misread elsewhere may go undetected.</p>
+        <p>
+          If all other characters are readable, a single misread bar is always detected, but cannot be corrected.
+          This differs from the QR-code error correction covered in Day102 QRCrashTest. With unreadable characters, a misread elsewhere may go undetected.
+        </p>
         <button type="button" data-learn-try="cd" data-i18n="learn.try"></button>
       </section>
       <section id="learn-en-8" aria-labelledby="learn-en-heading-8">
@@ -555,6 +571,7 @@
           The address number is extracted from address B, after removing address A covered by the postal code (p18–p19). The six basic rules and five supplementary rules are applied in the following order. Normalization is this tool’s own
           processing, not an official rule.
         </p>
+        <p>Normalization has side effects: circled digit one becomes 1, and Roman numeral two becomes II. II is a two-letter sequence, so it is not extracted.</p>
         <table class="learn-table">
           <thead><tr>
             <th scope="col">Rule</th>
@@ -571,7 +588,7 @@
             </tr>
             <tr>
               <td>Basic 2</td>
-              <td>Remove &amp;, /, the Japanese middle dot, and . without leaving gaps</td>
+              <td>Remove “&amp;”, “/”, the Japanese middle dot, and the period (“.”), closing any gaps</td>
             </tr>
             <tr>
               <td>Supplement 1</td>
@@ -635,7 +652,7 @@
           </tr></thead>
           <tbody>
             <tr>
-              <td>Postal code: a town area, a high-rise building floor, or one business or PO box with an individual code</td>
+              <td>Postal code: a town area, a high-rise building floor, or one business or PO box with an individual postal code</td>
               <td>Names of people and buildings</td>
             </tr>
             <tr>
@@ -644,7 +661,7 @@
             </tr>
           </tbody>
         </table>
-        <p>Anyone can look up the town area using Japan Post’s postal-code search and similar services. Identifying it takes little effort even though this tool does not display place names.</p>
+        <p>Anyone can use Japan Post’s postal code search or similar services to find the town area for a postal code. Identifying the area therefore takes little effort even though this tool does not display place names.</p>
         <table class="learn-table">
           <thead><tr>
             <th scope="col">Special codes</th>
@@ -652,24 +669,25 @@
           </tr></thead>
           <tbody>
             <tr>
-              <td>Individual codes for large businesses and PO boxes</td>
+              <td>Individual postal codes for large businesses and PO boxes</td>
               <td>The address-number field is padded with CC4</td>
             </tr>
             <tr>
-              <td>Shared PO-box codes</td>
+              <td>Bulk postal codes for PO boxes</td>
               <td>***-8691 or ***-**91 plus the PO-box number</td>
             </tr>
             <tr>
-              <td>Shared business-reply codes</td>
-              <td>***-8790 or ***-**90 plus an administrative number. They identify the recipient, not the person sending the reply</td>
+              <td>Bulk postal codes for business-reply mail</td>
+              <td>***-8790 or ***-**90 plus a reference number. They identify the recipient, not the person sending the reply</td>
             </tr>
           </tbody>
         </table>
-        <p>Some regions use other numbers. Counts from the September 30, 2026 postal-code data are 86 buildings and 3,437 rows with floor-specific codes, 1,339 codes covering multiple town areas, and 1,870 representative codes.</p>
+        <p>Some regions use other numbers.</p>
+        <p>Counts from the September 30, 2026 postal-code data are 86 buildings and 3,437 rows with floor-specific codes, 1,339 codes covering multiple town areas, and 1,870 representative codes (p18).</p>
       </section>
       <section id="learn-en-10" aria-labelledby="learn-en-heading-10">
         <h2 id="learn-en-heading-10" tabindex="-1">10. How to cover a barcode</h2>
-        <p>Cover the entire barcode, from start to stop, with an opaque solid color. Export it to a separate file, then reopen that file yourself to check it. Use Day007 to check location information in EXIF.</p>
+        <p>Cover the entire barcode, from start to stop, with an opaque solid color. Save the edited image as a separate file, then reopen that file yourself to check it. Use Day007 to check location information in EXIF.</p>
         <table class="learn-table">
           <thead><tr>
             <th scope="col">Method</th>
@@ -690,7 +708,7 @@
             </tr>
             <tr>
               <td>Opaque solid color over the entire barcode</td>
-              <td>Hides bar shapes in the image; export to a separate file and verify</td>
+              <td>No bar shapes remain in the image. Check the separately saved file</td>
             </tr>
             <tr>
               <td>Cropping and overwriting</td>
@@ -715,7 +733,7 @@
           <tbody>
             <tr>
               <td>Internal sorting barcodes and ID barcodes</td>
-              <td>Printed by sorting machines in transparent ink. This tool cannot decode them. Their visibility in photos and coding specifications are unverified</td>
+              <td>Printed by sorting machines in transparent ink. This tool cannot decode them. Whether they appear in photos and how they are encoded have not been verified</td>
             </tr>
             <tr>
               <td>Parcel-label codes and tracking numbers</td>
@@ -727,14 +745,21 @@
             </tr>
           </tbody>
         </table>
-        <p><a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 Image Exif Checker — Inspect image EXIF</a></p>
-        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec — Inspect image differences</a></p>
-        <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar — Inspect QR-code risks</a></p>
+        <p>These related tools can also help you check photos of mail and other codes.</p>
+        <p>
+          <a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 Image Exif Checker</a>:
+          check and remove location data embedded in a photo; PostMirror covers the barcode visible in the photo
+        </p>
+        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec</a>: compare images before and after masking to find what was left</p>
+        <p>
+          <a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar</a>:
+          assess a different code printed on mail (QR codes) before following the link it contains
+        </p>
       </section>
       <section id="learn-en-12" aria-labelledby="learn-en-heading-12">
         <h2 id="learn-en-heading-12" tabindex="-1">12. Check your understanding</h2>
         <fieldset data-quiz="0">
-          <legend>Q1. The name is blacked out but the barcode remains. Which item cannot be read from the barcode?</legend>
+          <legend>Q1. The name and address are blacked out but the barcode remains. Which item cannot be read from the barcode?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-1" value="0">Postal code</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-1" value="1">Street-address digits</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-1" value="2">Room number</label>
@@ -813,7 +838,7 @@
         <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20 — Truncation at 20 characters</a></p>
         <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21 — Check-digit calculations and a printed example</a></p>
         <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22 — Codes for large businesses, PO boxes and business replies</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — Shared business-reply codes, administrative numbers and samples</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — Bulk postal codes for business-reply mail, reference numbers and samples</a></p>
         <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25 — Validation example checklist</a></p>
         <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes — Discount conditions</a></p>
       </section>

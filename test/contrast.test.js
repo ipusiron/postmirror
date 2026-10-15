@@ -5,7 +5,23 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
-const roots = [...css.matchAll(/:root\s*\{([^}]+)\}/g)];
+const darkStart = /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{/.exec(css);
+assert.ok(darkStart, 'Dark colors must be inside the dark media query');
+let darkEnd = darkStart.index + darkStart[0].length;
+let depth = 1;
+while (depth > 0 && darkEnd < css.length) {
+  if (css[darkEnd] === '{') depth += 1;
+  if (css[darkEnd] === '}') depth -= 1;
+  darkEnd += 1;
+}
+assert.equal(depth, 0);
+const darkBlock = css.slice(darkStart.index + darkStart[0].length, darkEnd - 1);
+const lightBlock = css.slice(0, darkStart.index) + css.slice(darkEnd);
+const roots = [lightBlock, darkBlock].map(block => {
+  const matches = [...block.matchAll(/:root\s*\{([^}]+)\}/g)];
+  assert.equal(matches.length, 1);
+  return matches[0];
+});
 const palettes = roots.map(([, body]) => Object.fromEntries([...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6});/g)]
   .map(([, name, color]) => [name, color])));
 const pairs = [
@@ -15,7 +31,8 @@ const pairs = [
   ['warn-fg', 'warn-bg', 4.5, 7.81, 10.82], ['ok-fg', 'ok-bg', 4.5, 8.25, 10.79],
   ['bg', 'accent', 4.5, 7.06, 8.86], ['bar', 'surface', 3, 15.29, 13.74],
   ['border', 'bg', 3, 3.37, 4.00], ['border', 'surface', 3, 3.11, 3.51],
-  ['accent', 'surface', 3, 6.52, 7.77]
+  ['accent', 'surface', 3, 6.52, 7.77],
+  ['cover-fg', 'cover-bg', 4.5, 16.56, 8.13], ['cover-bg', 'surface', 3, 15.29, 7.13]
 ];
 
 function luminance(color) {
@@ -41,6 +58,8 @@ test('Contrast: bar focus stays inside; the card gap exceeds the outer focus ext
   const bar = /\.bar-button:focus-visible\s*\{([^}]+)\}/.exec(css)[1];
   const offset = Number(/outline-offset:\s*(-?[\d.]+)px/.exec(bar)[1]);
   assert.ok(offset < 0);
+  assert.match(bar, /outline:\s*2px dashed var\(--accent\)/);
+  assert.ok(offset + 2 <= -4, 'The focus outline must not overlap the four-pixel selection border');
   const focus = /(?:^|\n):focus-visible\s*\{([^}]+)\}/.exec(css)[1];
   const width = Number(/outline:\s*([\d.]+)px/.exec(focus)[1]);
   const outside = Number(/outline-offset:\s*([\d.]+)px/.exec(focus)[1]);
@@ -49,4 +68,11 @@ test('Contrast: bar focus stays inside; the card gap exceeds the outer focus ext
   assert.ok(width >= 2);
   assert.equal(gap, 8);
   assert.ok(gap > width + outside);
+});
+
+test('Contrast: the envelope cover uses tested colors and a visible border', () => {
+  const cover = /\.covered-name\s*\{([^}]+)\}/.exec(css)[1];
+  assert.match(cover, /background:\s*var\(--cover-bg\)/);
+  assert.match(cover, /color:\s*var\(--cover-fg\)/);
+  assert.match(cover, /border:\s*1px solid var\(--border\)/);
 });

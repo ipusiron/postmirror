@@ -186,7 +186,7 @@
         const pattern = svgNode('path', { d: `M${x + 2} 67h${length * 10 - 4}m0 8h-${length * 10 - 4}`, class: 'hatch' });
         svg.append(pattern);
         const symbol = svgNode('text', { x: x + length * 5, y: 85, class: 'band-symbol' });
-        symbol.textContent = { start: 'S', cd: 'C', stop: 'E' }[section];
+        symbol.textContent = translate(`overview.symbol.${section}`);
         svg.append(symbol);
       }
       summaries.push(message(plural('overview.summary', state.bars.slice(start, start + length).filter(x => x !== undefined).length, {
@@ -514,6 +514,7 @@
         item.append(maskCharacterButton(issue.charIndex, 'issueMaskChar'));
       }
     });
+    if (state.result.issues.length === 0) appendMessage(element('issues'), record('issue.none'), 'li');
     renderInspection();
     renderChecksum();
     renderBreakdown();
@@ -629,7 +630,7 @@
       state.bars = core.maskChars(state.bars, [index]);
       state.announcement = record('character.masked', { position: index + 1 });
       changed();
-      element('judgment').scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      element('result-title').focus();
     });
     return button;
   }
@@ -692,18 +693,20 @@
           const bands = node('div', undefined, 'structure-bands');
           for (const [section] of sections) {
             const text = ['postal', 'address'].includes(section) ? translate(`section.${section}`)
-              : { start: 'S', cd: 'C', stop: 'E' }[section];
+              : translate(`overview.symbol.${section}`);
             const band = node('span', text, `structure-band structure-${section}`);
             band.setAttribute('aria-label', translate(`section.${section}`));
             bands.append(band);
           }
-          container.append(bands);
+          container.append(bands, node('p', translate('overview.legend'), 'legend'));
         }
       } else if (kind === 'shapes') {
         const list = node('ul', undefined, 'shape-legend');
         for (const value of [1, 2, 3, 4]) {
           const item = node('li');
-          item.append(lessonSvg([value], `shape.${value}`), node('span', `${value}: ${translate(`shape.${value}`)}`));
+          item.append(lessonSvg([value], `shape.${value}`), node('span', translate('figure.shapeLabel', {
+            value, name: translate(`shape.${value}`)
+          })));
           list.append(item);
         }
         container.append(list);
@@ -724,7 +727,7 @@
           for (const symbol of core.SYMBOLS) {
             const row = node('tr');
             const bars = node('td');
-            bars.append(lessonSvg(symbol.bars, 'figure.symbols'));
+            bars.append(lessonSvg(symbol.bars, 'figure.symbols'), node('bdi', symbol.bars.join(' ')));
             row.append(node('td', symbol.id), bars, node('td', String(symbol.value)));
             body.append(row);
           }
@@ -736,7 +739,7 @@
               const row = node('tr');
               const bars = node('td');
               const pattern = [control, String(digit)].flatMap(id => core.SYMBOLS.find(symbol => symbol.id === id).bars);
-              bars.append(lessonSvg(pattern, 'figure.letters'));
+              bars.append(lessonSvg(pattern, 'figure.letters'), node('bdi', pattern.join(' ')));
               row.append(node('td', letter), node('td', `${control} ${digit}`), bars);
               body.append(row);
             }
@@ -781,14 +784,16 @@
         position, name: translate(`step.${step.id}`)
       });
       container.querySelector('[data-extract-text]').textContent = step.text;
+      container.querySelector('[data-i18n="learn.jaSample"]').hidden = state.language !== 'en' || position !== 0;
       container.querySelector('[data-extract-move="-1"]').disabled = position === 0;
       container.querySelector('[data-extract-move="1"]').disabled = position === extraction[index].length - 1;
     });
   }
 
-  function renderQuizzes() {
+  function renderQuizzes(onlyIndex = null) {
     document.querySelectorAll('[data-quiz]').forEach(container => {
       const index = Number(container.dataset.quiz);
+      if (onlyIndex !== null && (index !== onlyIndex || container.closest('[lang]').lang !== state.language)) return;
       const quiz = lesson.quizzes[index];
       container.querySelectorAll('input').forEach(input => { input.checked = Number(input.value) === quiz.selected; });
       container.querySelector('[data-quiz-check]').disabled = quiz.selected === null;
@@ -810,6 +815,10 @@
       const index = Number(button.closest('[data-extract]').dataset.extract);
       lesson.steps[index] = Math.max(0, Math.min(extraction[index].length - 1, lesson.steps[index] + Number(button.dataset.extractMove)));
       renderExtraction();
+      if (button.disabled) {
+        const opposite = -Number(button.dataset.extractMove);
+        button.closest('[data-extract]').querySelector(`[data-extract-move="${opposite}"]`).focus();
+      }
     });
   });
   document.querySelectorAll('[data-quiz]').forEach(container => {
@@ -819,12 +828,12 @@
       if (!event.target.matches('input[type="radio"]')) return;
       quiz.selected = Number(event.target.value);
       quiz.checked = false;
-      renderQuizzes();
+      renderQuizzes(index);
     });
     container.querySelector('[data-quiz-check]').addEventListener('click', () => {
       if (quiz.selected === null) return;
       quiz.checked = true;
-      renderQuizzes();
+      renderQuizzes(index);
     });
     container.querySelector('[data-quiz-section]').addEventListener('click', () => {
       element(`learn-${state.language}-heading-${quiz.section}`).focus();
@@ -856,11 +865,20 @@
       showTab(next, true);
     });
   }
+  let languageRender = 0;
   element('lang-toggle').addEventListener('click', () => {
+    const version = ++languageRender;
+    const live = [...document.querySelectorAll('[aria-live]')].filter(item => item.id !== 'language-announcement');
+    live.forEach(item => { item.setAttribute('aria-live', 'off'); });
     state.language = state.language === 'ja' ? 'en' : 'ja';
+    state.announcement = null;
     try { localStorage.setItem('postmirror.lang', state.language); } catch (_) { /* Keep the current view usable. */ }
     renderLanguage();
     element('language-announcement').textContent = translate('language.changed');
+    // Keep translated content silent through rendering, then resume normal operation announcements.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (version === languageRender) live.forEach(item => { item.setAttribute('aria-live', 'polite'); });
+    }));
   });
   element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();

@@ -57,6 +57,43 @@ test('I18n: the official barcode spelling is used throughout the screen sources'
   for (const file of ['messages.js', 'index.html']) {
     assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), /カスタマーバーコード/);
   }
+  for (const language of ['ja', 'en']) {
+    for (const [key, value] of Object.entries(messages[language])) {
+      assert.doesNotMatch(value, /カスタマーバーコード/, `${language}.${key}`);
+    }
+  }
+});
+
+test('I18n: bar names use the translated official terminology', () => {
+  assert.deepStrictEqual([1, 2, 3, 4].map(value => messages.en[`shape.${value}`]), [
+    'Long bar', 'Semi-long bar (upper)', 'Semi-long bar (lower)', 'Timing bar'
+  ]);
+  for (const value of Object.values(messages.en)) assert.doesNotMatch(value, /Full bar|Ascender|Descender|Tracker/);
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /Full bar|Ascender|Descender|Tracker/);
+});
+
+test('I18n: overview symbols and shape separators come from the dictionary', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+  assert.doesNotMatch(app, /(['"`])[SCE]\1/);
+  for (const language of ['ja', 'en']) {
+    for (const [section, symbol] of [['start', 'S'], ['cd', 'C'], ['stop', 'E']]) {
+      assert.equal(messages[language][`overview.symbol.${section}`], symbol);
+    }
+    assert.match(messages[language]['figure.shapeLabel'], /\{value\}.*\{name\}/);
+  }
+  assert.match(app, /translate\('figure\.shapeLabel'/);
+});
+
+test('I18n: English text has no Japanese outside the explicit sample spans', () => {
+  const japanese = /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/u;
+  for (const [key, value] of Object.entries(messages.en)) {
+    if (key !== 'language.target') assert.doesNotMatch(value, japanese, key);
+  }
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const english = html.slice(html.indexOf('<div id="learn-en"'), html.indexOf('id="language-announcement"'))
+    .replace(/<span\b[^>]*\bdata-ja-sample[^>]*>[^<]*<\/span>/g, '');
+  assert.doesNotMatch(english, japanese);
 });
 
 test('I18n: both lessons have matching 13 sections and seven separate quiz groups', () => {

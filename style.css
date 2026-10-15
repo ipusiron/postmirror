@@ -11,6 +11,8 @@
   --warn-bg: #fff3e0;
   --ok-fg: #0f5132;
   --ok-bg: #e6f4ec;
+  --cover-fg: #ffffff;
+  --cover-bg: #1b1f24;
 }
 
 *, *::before, *::after {
@@ -160,7 +162,7 @@ textarea {
 
 .bar-button:focus-visible {
   outline: 2px dashed var(--accent);
-  outline-offset: -2px;
+  outline-offset: -6px;
 }
 
 .bar-button svg {
@@ -465,6 +467,8 @@ svg {
     --warn-bg: #3a2400;
     --ok-fg: #b5ecc9;
     --ok-bg: #10301f;
+    --cover-fg: #0f1419;
+    --cover-bg: #a3adb8;
   }
 }
 
@@ -580,8 +584,9 @@ a {
 }
 
 .covered-name {
-  background: #1b1f24;
-  color: #ffffff;
+  background: var(--cover-bg);
+  color: var(--cover-fg);
+  border: 1px solid var(--border);
   padding: 0.2rem 2rem;
 }
 
@@ -608,10 +613,12 @@ legend {
 }
 
 input[type="radio"] {
-  width: 44px;
-  height: 44px;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
   margin: 0;
-  flex: 0 0 44px;
+  flex: 0 0 auto;
   accent-color: var(--accent);
 }
 

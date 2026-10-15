@@ -41,6 +41,8 @@ test('HTML: input IDs are unique and text entry does not opt into form persisten
 test('HTML: no result persistence, URL writes, clipboard API, or script networking', () => {
   assert.doesNotMatch(app, /sessionStorage|indexedDB|document\.cookie|history\.(?:pushState|replaceState)/);
   assert.doesNotMatch(app, /location\.hash\s*=|navigator\.clipboard|\bfetch\s*\(|XMLHttpRequest|WebSocket|\bWorker\s*\(/);
+  assert.doesNotMatch(app, /\blocation(?:\.\w+)?\s*=(?!=)|\blocation(?:\.\w+)?\.(?:assign|replace)\s*\(/);
+  assert.doesNotMatch(app, /\bsendBeacon\b|\bEventSource\b/);
   const storageCalls = [...app.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)];
   for (const call of storageCalls) assert.equal(call[1], 'postmirror.lang');
   const references = [...app.matchAll(/localStorage/g)];
@@ -81,6 +83,7 @@ test('HTML: Japanese sample annotations match the public examples and Q2 choices
   const allowed = new Set([...samples.extraction.map(sample => sample.addressB), samples.question2.addressB, ...samples.question2.choices]);
   const elements = [...html.matchAll(/<span\b([^>]*\bdata-ja-sample[^>]*)>([^<]*)<\/span>/g)];
   assert.ok(elements.length >= 10);
+  assert.equal(elements.length, [...html.matchAll(/\bdata-ja-sample\b/g)].length);
   for (const [, attributes, value] of elements) {
     assert.match(attributes, /lang="ja"/);
     if (attributes.includes('data-extract-text')) {
@@ -89,6 +92,12 @@ test('HTML: Japanese sample annotations match the public examples and Q2 choices
     }
     assert.ok(allowed.has(value.replace(/&amp;/g, '&')), value);
   }
+});
+
+test('HTML: both symbol-table renderers include a textual bar pattern in each row', () => {
+  assert.match(app, /bars\.append\(lessonSvg\(symbol\.bars, 'figure\.symbols'\), node\('bdi', symbol\.bars\.join\(' '\)\)\)/);
+  assert.match(app, /bars\.append\(lessonSvg\(pattern, 'figure\.letters'\), node\('bdi', pattern\.join\(' '\)\)\)/);
+  assert.match(app, /container\.append\(bands, node\('p', translate\('overview\.legend'\), 'legend'\)\)/);
 });
 
 test('HTML: external links use the approved URLs and isolated new tabs', () => {
