@@ -63,11 +63,11 @@ test('HTML: exact restrictive CSP, referrer, bilingual noscript and empty favico
 });
 
 test('HTML: accessible tabs and the breakdown within details', () => {
-  for (const id of ['tab-decode', 'tab-learn', 'panel-decode', 'panel-learn', 'lang-toggle']) {
+  for (const id of ['tab-decode', 'tab-learn', 'tab-quiz', 'panel-decode', 'panel-learn', 'panel-quiz', 'lang-toggle']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   assert.match(html, /role="tablist"/);
-  for (const name of ['decode', 'learn']) {
+  for (const name of ['decode', 'learn', 'quiz']) {
     assert.match(html, new RegExp(`id="tab-${name}"[^>]+role="tab"[^>]+aria-controls="panel-${name}"`));
     assert.match(html, new RegExp(`id="panel-${name}"[^>]+role="tabpanel"[^>]+aria-labelledby="tab-${name}"`));
   }

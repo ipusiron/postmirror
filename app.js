@@ -51,6 +51,7 @@
   ]);
   const lesson = {
     steps: [0, 0, 0],
+    returnQuestion: null,
     quizzes: [3, 1, 1, 0, 2, 1, 1].map((answer, index) => ({
       answer, section: [9, 8, 5, 7, 10, 6, 9][index], selected: null, checked: false
     }))
@@ -637,7 +638,7 @@
 
   function showTab(name, focus = false) {
     state.tab = name;
-    for (const tab of ['decode', 'learn']) {
+    for (const tab of ['decode', 'learn', 'quiz']) {
       const selected = tab === name;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
@@ -675,7 +676,9 @@
     [...element('sample-select').options].forEach((option, index) => {
       option.textContent = translate(index === 0 ? 'sample.choose' : samples.barcodes[index - 1].labelKey);
     });
-    for (const language of ['ja', 'en']) element(`learn-${language}`).hidden = language !== state.language;
+    for (const language of ['ja', 'en']) {
+      for (const panel of ['learn', 'quiz']) element(`${panel}-${language}`).hidden = language !== state.language;
+    }
     renderInput();
     renderErrors();
     renderControls();
@@ -762,6 +765,15 @@
     });
     renderExtraction();
     renderQuizzes();
+    renderQuizReturn();
+  }
+
+  function renderQuizReturn() {
+    document.querySelectorAll('[data-quiz-return]').forEach(button => {
+      const index = lesson.returnQuestion;
+      button.hidden = index === null || Number(button.dataset.quizReturn) !== lesson.quizzes[index].section;
+      button.textContent = index === null ? '' : translate('quiz.return', { number: index + 1 });
+    });
   }
 
   function lessonSvg(bars, labelKey, height = 40) {
@@ -836,7 +848,36 @@
       renderQuizzes(index);
     });
     container.querySelector('[data-quiz-section]').addEventListener('click', () => {
+      lesson.returnQuestion = index;
+      renderQuizReturn();
+      showTab('learn');
       element(`learn-${state.language}-heading-${quiz.section}`).focus();
+    });
+  });
+  document.querySelectorAll('[data-learn-section]').forEach(button => {
+    button.addEventListener('click', () => {
+      element(`learn-${state.language}-heading-${button.dataset.learnSection}`).focus();
+    });
+  });
+  for (const language of ['ja', 'en']) {
+    for (let section = 1; section <= 12; section += 1) {
+      const button = node('button');
+      button.type = 'button';
+      button.dataset.quizReturn = section;
+      button.hidden = true;
+      button.addEventListener('click', () => {
+        showTab('quiz');
+        element(`quiz-${state.language}-${lesson.returnQuestion + 1}`).focus();
+      });
+      element(`learn-${language}-heading-${section}`).after(button);
+    }
+  }
+  document.querySelectorAll('[data-lesson-table]').forEach(details => {
+    details.open = matchMedia('(min-width: 48rem)').matches;
+    details.addEventListener('toggle', () => {
+      document.querySelectorAll(`[data-lesson-table="${details.dataset.lessonTable}"]`).forEach(other => {
+        if (other.open !== details.open) other.open = details.open;
+      });
     });
   });
   document.querySelectorAll('[data-learn-try]').forEach(button => {
@@ -855,13 +896,16 @@
     });
   });
 
-  for (const name of ['decode', 'learn']) {
+  const tabNames = ['decode', 'learn', 'quiz'];
+  for (const name of tabNames) {
     const tab = element(`tab-${name}`);
     tab.addEventListener('click', () => showTab(name));
     tab.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
-      const next = event.key === 'Home' ? 'decode' : event.key === 'End' ? 'learn' : name === 'decode' ? 'learn' : 'decode';
+      const offset = event.key === 'ArrowLeft' ? -1 : 1;
+      const next = event.key === 'Home' ? tabNames[0] : event.key === 'End' ? tabNames.at(-1)
+        : tabNames[(tabNames.indexOf(name) + offset + tabNames.length) % tabNames.length];
       showTab(next, true);
     });
   }
