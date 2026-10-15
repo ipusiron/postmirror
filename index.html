@@ -29,14 +29,26 @@
     <div class="tabs" role="tablist" data-i18n-label="tabs.label">
       <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
       <button id="tab-learn" type="button" role="tab" aria-selected="false" aria-controls="panel-learn" tabindex="-1" data-i18n="tab.learn"></button>
+      <button id="tab-quiz" type="button" role="tab" aria-selected="false" aria-controls="panel-quiz" tabindex="-1" data-i18n="tab.quiz"></button>
     </div>
     <div id="panel-decode" role="tabpanel" aria-labelledby="tab-decode">
     <p data-i18n="intro.prompt"></p>
+    <section aria-labelledby="intro-title">
+      <h2 id="intro-title" data-i18n="intro.title"></h2>
+      <ol>
+        <li><button id="intro-sample" type="button" data-i18n="intro.sample"></button></li>
+        <li><button id="intro-mask" type="button" data-i18n="intro.mask"></button></li>
+        <li><button id="intro-inspection" type="button" data-i18n="actions.inspection" disabled></button></li>
+      </ol>
+    </section>
     <p class="privacy" data-i18n="privacy"></p>
     <section aria-labelledby="sample-label">
       <label id="sample-label" for="sample-select" data-i18n="sample.label"></label>
-      <select id="sample-select"></select>
-      <h2 data-i18n="mask.title"></h2>
+      <div class="actions">
+        <select id="sample-select"></select>
+        <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
+      </div>
+      <h2 id="mask-title" tabindex="-1" data-i18n="mask.title"></h2>
       <p data-i18n="mask.help"></p>
       <div id="mask-presets" class="actions">
         <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
@@ -44,6 +56,8 @@
         <button type="button" data-preset="latter" data-i18n="mask.latter" disabled></button>
         <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
       </div>
+      <p class="muted" data-i18n="mask.latterRange"></p>
+      <div id="mask-summary" class="context-summary" hidden></div>
       <p id="mask-reason" data-i18n="mask.needsSample"></p>
     </section>
     <section aria-labelledby="overview-title">
@@ -59,8 +73,12 @@
       <div class="actions">
         <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
         <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
+        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
       </div>
-      <p id="input-progress" aria-live="polite"></p>
+      <div class="actions">
+        <p id="input-progress" aria-live="polite"></p>
+        <button id="goto-result" type="button" data-i18n="actions.result" hidden></button>
+      </div>
       <p id="selected-bar"></p>
       <div id="bar-grid" role="group" aria-describedby="input-help"></div>
       <div class="palette-dock">
@@ -73,6 +91,7 @@
         <label><span data-i18n="range.end"></span><input id="range-end" type="text" inputmode="numeric" autocomplete="off" value="67"></label>
       </div>
       <button id="range-apply" type="button" data-i18n="range.apply" aria-describedby="range-reason"></button>
+      <div id="range-summary" class="context-summary" hidden></div>
       <p id="range-reason" aria-live="polite"></p>
     </section>
     <section aria-labelledby="text-label">
@@ -83,7 +102,9 @@
     </section>
     <section id="result" aria-labelledby="result-title" hidden>
       <h2 id="result-title" tabindex="-1" data-i18n="result.title"></h2>
+      <p id="draft-note" class="privacy" data-i18n="text.pending" hidden></p>
       <p id="judgment" class="judgment" aria-live="polite"></p>
+      <p id="judgment-draft-note" data-i18n="judgment.pending" hidden></p>
       <div id="alternatives" class="actions"></div>
       <h3 data-i18n="result.readable"></h3>
       <dl class="readable">
@@ -95,7 +116,7 @@
       <h3 data-i18n="result.notes"></h3>
       <ul id="issues"></ul>
       <section aria-labelledby="inspection-title">
-        <h3 id="inspection-title" data-i18n="inspection.title"></h3>
+        <h3 id="inspection-title" tabindex="-1" data-i18n="inspection.title"></h3>
         <div id="inspection"></div>
       </section>
       <section aria-labelledby="checksum-title">
@@ -114,6 +135,25 @@
       <p data-i18n="learn.intro"></p>
       <p class="muted" data-i18n="learn.name"></p>
       <div id="learn-ja" lang="ja">
+        <ul class="learn-takeaways">
+          <li>宛名を隠しても、バーコードから郵便番号と住所表示番号が読めます。</li>
+          <li>1文字だけ隠しても、チェックデジットで戻ります。</li>
+          <li>隠すなら、バーコード全体を不透明に塗ります。</li>
+        </ul>
+        <nav class="lesson-toc" aria-label="座学の目次">
+          <button type="button" data-learn-section="1">1. なぜ消すのか</button>
+          <button type="button" data-learn-section="2">2. どの郵便物に付いているか</button>
+          <button type="button" data-learn-section="3">3. 4つの形と3本で1文字</button>
+          <button type="button" data-learn-section="4">4. 67本の構成</button>
+          <button type="button" data-learn-section="5">5. 英字は2文字分</button>
+          <button type="button" data-learn-section="6">6. CC4と13けた・20けた</button>
+          <button type="button" data-learn-section="7">7. チェックデジット</button>
+          <button type="button" data-learn-section="8">8. 住所表示番号の抜き出し規則</button>
+          <button type="button" data-learn-section="9">9. 何が読めて何が読めないか</button>
+          <button type="button" data-learn-section="10">10. 隠し方の作法</button>
+          <button type="button" data-learn-section="11">11. このツールで読めないもの</button>
+          <button type="button" data-learn-section="12">12. 参照資料</button>
+        </nav>
       <section id="learn-ja-1" aria-labelledby="learn-ja-heading-1">
         <h2 id="learn-ja-heading-1" tabindex="-1">1. なぜ消すのか</h2>
         <p>宛名を隠しても、近くのカスタマバーコードから郵便番号と住所表示番号が読めます。横書きでは原則として宛先の氏名の直下に印字します（p13）。</p>
@@ -152,7 +192,10 @@
         <h2 id="learn-ja-heading-3" tabindex="-1">3. 4つの形と3本で1文字</h2>
         <p>バーの太さや間隔ではなく、縦の延び方で読みます。1文字は3本で、4³＝64通りのうち19通りを使います。図は模式図です。セミロングバーの長さの比4は推測値で、解読には使いません。</p>
         <div class="learn-figure" data-figure="shapes"></div>
-        <div class="learn-figure" data-figure="symbols"></div>
+        <details data-lesson-table="symbols">
+          <summary data-i18n="figure.symbols"></summary>
+          <div class="learn-figure" data-figure="symbols"></div>
+        </details>
       </section>
       <section id="learn-ja-4" aria-labelledby="learn-ja-heading-4">
         <h2 id="learn-ja-heading-4" tabindex="-1">4. 67本の構成</h2>
@@ -162,7 +205,10 @@
       <section id="learn-ja-5" aria-labelledby="learn-ja-heading-5">
         <h2 id="learn-ja-heading-5" tabindex="-1">5. 英字は2文字分</h2>
         <p>A〜JはCC1、K〜TはCC2、U〜ZはCC3に、英字の序数を10で割った余りの数字を続けます。Aを0とするので、B604はCC1 1 6 0 4となり、英字Bだけで2文字分を使います。</p>
-        <div class="learn-figure" data-figure="letters"></div>
+        <details data-lesson-table="letters">
+          <summary data-i18n="figure.letters"></summary>
+          <div class="learn-figure" data-figure="letters"></div>
+        </details>
       </section>
       <section id="learn-ja-6" aria-labelledby="learn-ja-heading-6">
         <h2 id="learn-ja-heading-6" tabindex="-1">6. CC4と13けた・20けた</h2>
@@ -378,93 +424,43 @@
         <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar</a>：郵便物に印刷された別の符号（QRコード）の中身を読む前に危険を判定する</p>
       </section>
       <section id="learn-ja-12" aria-labelledby="learn-ja-heading-12">
-        <h2 id="learn-ja-heading-12" tabindex="-1">12. 確認問題</h2>
-        <fieldset data-quiz="0">
-          <legend>Q1. 宛名を黒く塗り、バーコードは残しました。バーコードから読めないものはどれですか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="0">郵便番号</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="1">番地の数字</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="2">部屋番号</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="3">氏名</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="1">
-          <legend>Q2. 次の住所B（p17の公式例）の住所表示番号はどれですか。</legend>
-          <p><span lang="ja" data-ja-sample>1丁目3番2号　郵便プラザ503室</span></p>
-          <p data-i18n="learn.jaSample" hidden></p>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="0"><span lang="ja" data-ja-sample>1-3-2</span></label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="1"><span lang="ja" data-ja-sample>1-3-2-503</span></label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="2"><span lang="ja" data-ja-sample>132503</span></label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="3"><span lang="ja" data-ja-sample>1-3-2-503室</span></label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="2">
-          <legend>Q3. 英字Bはバーコードの何文字分ですか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="0">1</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="1">2</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="2">3</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="3">
-          <legend>Q4. 右端の1文字だけ塗り、ほかは読めます。隠した文字は戻りますか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="0">戻る</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="1">戻らない</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="4">
-          <legend>Q5. 最も安全な隠し方はどれですか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="0">モザイク</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="1">ぼかし</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="2">バーコード全体を不透明に塗りつぶす</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="3">1文字おきに塗る</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="5">
-          <legend>Q6. 住所表示番号が13文字に満たないとき、どの制御コードで埋めますか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="0">CC1</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="1">CC4</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="2">CC8</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
-        <fieldset data-quiz="6">
-          <legend>Q7. 料金受取人払の返信封筒のバーコードからわかるのはどちらですか。</legend>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="0">差出人の住所</label>
-          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="1">受取人の番号</label>
-          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
-          <div data-quiz-feedback aria-live="polite"></div>
-          <button type="button" data-quiz-section hidden></button>
-        </fieldset>
+        <h2 id="learn-ja-heading-12" tabindex="-1">12. 参照資料</h2>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06：区分機と透明インク、印字例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10：局内・ID・カスタマバーコードの定義</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11：4形状とキャラクター表</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12：寸法、構成、けた数、チェック用数字</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13：印字位置、範囲、条件</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17：抜き出しの概要と霞が関の例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18：住所A・Bの分割と代表番号</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19：基本ルール、補足ルール、中間結果</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20：20けたでの切り捨て</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21：チェックデジットの計算と印字例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22：大口事業所・私書箱・料金受取人払の番号</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23：料金受取人払の包括番号、整理番号、見本</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25：検証例のチェックシート</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">バーコード付郵便物：割引の条件</a></p>
       </section>
-      <section id="learn-ja-13" aria-labelledby="learn-ja-heading-13">
-        <h2 id="learn-ja-heading-13" tabindex="-1">13. 参照資料</h2>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06 — 区分機と透明インク、印字例</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10 — 局内・ID・カスタマバーコードの定義</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11 — 4形状とキャラクター表</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12 — 寸法、構成、けた数、チェック用数字</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13 — 印字位置、範囲、条件</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17 — 抜き出しの概要と霞が関の例</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18 — 住所A・Bの分割と代表番号</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19 — 基本ルール、補足ルール、中間結果</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20 — 20けたでの切り捨て</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21 — チェックデジットの計算と印字例</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22 — 大口事業所・私書箱・料金受取人払の番号</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — 料金受取人払の包括番号、整理番号、見本</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25 — 検証例のチェックシート</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">バーコード付郵便物 — 割引の条件</a></p>
-      </section>
-      </div>
+      </div><!-- /learn-ja -->
       <div id="learn-en" lang="en" hidden>
+        <ul class="learn-takeaways">
+          <li>The barcode can reveal the postal code and address number even when the address label is covered.</li>
+          <li>Covering just one character still allows it to be recovered from the check digit.</li>
+          <li>Cover the entire barcode with an opaque fill.</li>
+        </ul>
+        <nav class="lesson-toc" aria-label="Lesson contents">
+          <button type="button" data-learn-section="1">1. Why cover the barcode?</button>
+          <button type="button" data-learn-section="2">2. Which mail carries a barcode?</button>
+          <button type="button" data-learn-section="3">3. Four shapes, three bars per character</button>
+          <button type="button" data-learn-section="4">4. The 67-bar structure</button>
+          <button type="button" data-learn-section="5">5. A letter takes two characters</button>
+          <button type="button" data-learn-section="6">6. CC4, 13 characters and 20 characters</button>
+          <button type="button" data-learn-section="7">7. The check digit</button>
+          <button type="button" data-learn-section="8">8. Extracting the address number</button>
+          <button type="button" data-learn-section="9">9. What can and cannot be read</button>
+          <button type="button" data-learn-section="10">10. How to cover a barcode</button>
+          <button type="button" data-learn-section="11">11. What this tool cannot decode</button>
+          <button type="button" data-learn-section="12">12. References</button>
+        </nav>
       <section id="learn-en-1" aria-labelledby="learn-en-heading-1">
         <h2 id="learn-en-heading-1" tabindex="-1">1. Why cover the barcode?</h2>
         <p>
@@ -508,7 +504,10 @@
           Read the vertical extent of each bar, rather than its width or spacing. Three bars form one character; 19 of the 4³ = 64 patterns are used. The diagrams are schematic. The semi-long bar ratio of 4 is inferred and is not used for decoding.
         </p>
         <div class="learn-figure" data-figure="shapes"></div>
-        <div class="learn-figure" data-figure="symbols"></div>
+        <details data-lesson-table="symbols">
+          <summary data-i18n="figure.symbols"></summary>
+          <div class="learn-figure" data-figure="symbols"></div>
+        </details>
       </section>
       <section id="learn-en-4" aria-labelledby="learn-en-heading-4">
         <h2 id="learn-en-heading-4" tabindex="-1">4. The 67-bar structure</h2>
@@ -522,7 +521,10 @@
       <section id="learn-en-5" aria-labelledby="learn-en-heading-5">
         <h2 id="learn-en-heading-5" tabindex="-1">5. A letter takes two characters</h2>
         <p>A–J use CC1, K–T use CC2, and U–Z use CC3, followed by the remainder of the letter’s ordinal divided by 10. With A numbered 0, B604 becomes CC1 1 6 0 4; B alone takes two characters.</p>
-        <div class="learn-figure" data-figure="letters"></div>
+        <details data-lesson-table="letters">
+          <summary data-i18n="figure.letters"></summary>
+          <div class="learn-figure" data-figure="letters"></div>
+        </details>
       </section>
       <section id="learn-en-6" aria-labelledby="learn-en-heading-6">
         <h2 id="learn-en-heading-6" tabindex="-1">6. CC4, 13 characters and 20 characters</h2>
@@ -757,8 +759,97 @@
         </p>
       </section>
       <section id="learn-en-12" aria-labelledby="learn-en-heading-12">
-        <h2 id="learn-en-heading-12" tabindex="-1">12. Check your understanding</h2>
-        <fieldset data-quiz="0">
+        <h2 id="learn-en-heading-12" tabindex="-1">12. References</h2>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06: Sorting machines, transparent ink and printed examples</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10: Definitions of internal, ID and customer barcodes</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11: Four bar shapes and the character table</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12: Dimensions, structure, character counts and check values</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13: Print positions, areas and conditions</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17: Extraction overview and the Kasumigaseki example</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18: Address A/B division and representative codes</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19: Basic and supplementary rules and intermediate results</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20: Truncation at 20 characters</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21: Check-digit calculations and a printed example</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22: Codes for large businesses, PO boxes and business replies</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23: Bulk postal codes for business-reply mail, reference numbers and samples</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25: Validation example checklist</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes: Discount conditions</a></p>
+      </section>
+      </div><!-- /learn-en -->
+    </div>
+    <div id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+      <div id="quiz-ja" lang="ja">
+        <h2 id="quiz-ja-title" tabindex="-1">確認問題</h2>
+        <fieldset data-quiz="0" id="quiz-ja-1" tabindex="-1">
+          <legend>Q1. 宛名を黒く塗り、バーコードは残しました。バーコードから読めないものはどれですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="0">郵便番号</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="1">番地の数字</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="2">部屋番号</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="3">氏名</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="1" id="quiz-ja-2" tabindex="-1">
+          <legend>Q2. 次の住所B（p17の公式例）の住所表示番号はどれですか。</legend>
+          <p><span lang="ja" data-ja-sample>1丁目3番2号　郵便プラザ503室</span></p>
+          <p data-i18n="learn.jaSample" hidden></p>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="0"><span lang="ja" data-ja-sample>1-3-2</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="1"><span lang="ja" data-ja-sample>1-3-2-503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="2"><span lang="ja" data-ja-sample>132503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="3"><span lang="ja" data-ja-sample>1-3-2-503室</span></label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="2" id="quiz-ja-3" tabindex="-1">
+          <legend>Q3. 英字Bはバーコードの何文字分ですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="0">1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="1">2</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="2">3</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="3" id="quiz-ja-4" tabindex="-1">
+          <legend>Q4. 右端の1文字だけ塗り、ほかは読めます。隠した文字は戻りますか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="0">戻る</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="1">戻らない</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="4" id="quiz-ja-5" tabindex="-1">
+          <legend>Q5. 最も安全な隠し方はどれですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="0">モザイク</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="1">ぼかし</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="2">バーコード全体を不透明に塗りつぶす</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="3">1文字おきに塗る</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="5" id="quiz-ja-6" tabindex="-1">
+          <legend>Q6. 住所表示番号が13文字に満たないとき、どの制御コードで埋めますか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="0">CC1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="1">CC4</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="2">CC8</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="6" id="quiz-ja-7" tabindex="-1">
+          <legend>Q7. 料金受取人払の返信封筒のバーコードからわかるのはどちらですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="0">差出人の住所</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="1">受取人の番号</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+      </div><!-- /quiz-ja -->
+      <div id="quiz-en" lang="en" hidden>
+        <h2 id="quiz-en-title" tabindex="-1">Check your understanding</h2>
+        <fieldset data-quiz="0" id="quiz-en-1" tabindex="-1">
           <legend>Q1. The name and address are blacked out but the barcode remains. Which item cannot be read from the barcode?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-1" value="0">Postal code</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-1" value="1">Street-address digits</label>
@@ -768,7 +859,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="1">
+        <fieldset data-quiz="1" id="quiz-en-2" tabindex="-1">
           <legend>Q2. What is the address number for this address B (official p17 example)?</legend>
           <p><span lang="ja" data-ja-sample>1丁目3番2号　郵便プラザ503室</span></p>
           <p data-i18n="learn.jaSample"></p>
@@ -780,7 +871,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="2">
+        <fieldset data-quiz="2" id="quiz-en-3" tabindex="-1">
           <legend>Q3. How many barcode characters does the letter B take?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-3" value="0">1</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-3" value="1">2</label>
@@ -789,7 +880,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="3">
+        <fieldset data-quiz="3" id="quiz-en-4" tabindex="-1">
           <legend>Q4. Only the rightmost character is covered; the rest are readable. Can the hidden character be restored?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-4" value="0">Yes</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-4" value="1">No</label>
@@ -797,7 +888,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="4">
+        <fieldset data-quiz="4" id="quiz-en-5" tabindex="-1">
           <legend>Q5. Which is the safest way to cover the barcode?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-5" value="0">Mosaic</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-5" value="1">Blur</label>
@@ -807,7 +898,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="5">
+        <fieldset data-quiz="5" id="quiz-en-6" tabindex="-1">
           <legend>Q6. Which control pads an address number shorter than 13 characters?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-6" value="0">CC1</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-6" value="1">CC4</label>
@@ -816,7 +907,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-        <fieldset data-quiz="6">
+        <fieldset data-quiz="6" id="quiz-en-7" tabindex="-1">
           <legend>Q7. What does the barcode on a business-reply envelope identify?</legend>
           <label class="quiz-option"><input type="radio" name="quiz-en-7" value="0">The sender’s address</label>
           <label class="quiz-option"><input type="radio" name="quiz-en-7" value="1">The recipient’s number</label>
@@ -824,25 +915,7 @@
           <div data-quiz-feedback aria-live="polite"></div>
           <button type="button" data-quiz-section hidden></button>
         </fieldset>
-      </section>
-      <section id="learn-en-13" aria-labelledby="learn-en-heading-13">
-        <h2 id="learn-en-heading-13" tabindex="-1">13. References</h2>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06 — Sorting machines, transparent ink and printed examples</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10 — Definitions of internal, ID and customer barcodes</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11 — Four bar shapes and the character table</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12 — Dimensions, structure, character counts and check values</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13 — Print positions, areas and conditions</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17 — Extraction overview and the Kasumigaseki example</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18 — Address A/B division and representative codes</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19 — Basic and supplementary rules and intermediate results</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20 — Truncation at 20 characters</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21 — Check-digit calculations and a printed example</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22 — Codes for large businesses, PO boxes and business replies</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — Bulk postal codes for business-reply mail, reference numbers and samples</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25 — Validation example checklist</a></p>
-        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes — Discount conditions</a></p>
-      </section>
-      </div>
+      </div><!-- /quiz-en -->
     </div>
     <p id="language-announcement" class="sr-only" aria-live="polite"></p>
   </main>

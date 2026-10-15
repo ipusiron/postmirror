@@ -5,7 +5,7 @@
   const samples = globalThis.PostMirrorSamples;
   const messages = globalThis.PostMirrorMessages;
   const state = {
-    bars: Array(67).fill(undefined), selected: 0, result: null,
+    bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
     language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
@@ -51,6 +51,7 @@
   ]);
   const lesson = {
     steps: [0, 0, 0],
+    returnQuestion: null,
     quizzes: [3, 1, 1, 0, 2, 1, 1].map((answer, index) => ({
       answer, section: [9, 8, 5, 7, 10, 6, 9][index], selected: null, checked: false
     }))
@@ -148,7 +149,26 @@
     state.selected = Math.max(0, Math.min(66, index));
     renderSelection();
     if (focus) buttons[state.selected].focus({ preventScroll: true });
-    if (focus) buttons[state.selected].scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    if (focus) followSelectedBar();
+  }
+
+  const paletteDock = document.querySelector('.palette-dock');
+
+  function updatePaletteSpace() {
+    const height = paletteDock.getBoundingClientRect().height;
+    if (height > 0) document.documentElement.style.setProperty('--palette-space', `${height + 8}px`);
+  }
+
+  function followSelectedBar() {
+    const button = buttons[state.selected];
+    if (!button.getClientRects().length) return;
+    updatePaletteSpace();
+    button.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    const bottom = button.getBoundingClientRect().bottom;
+    const limit = Math.min(innerHeight, paletteDock.getBoundingClientRect().top) - 8;
+    if (bottom > limit) window.scrollBy({ top: Math.ceil(bottom - limit), behavior: 'auto' });
+    const top = button.getBoundingClientRect().top;
+    if (top < 0) window.scrollBy({ top: Math.floor(top), behavior: 'auto' });
   }
 
   function renderOverview() {
@@ -206,9 +226,9 @@
     cards.forEach(({ group, symbol }) => {
       const char = state.result?.chars[group.index];
       symbol.textContent = group.length === 2 ? translate('symbol.marker')
-        : char ? char.symbol ?? translate('symbol.unknown') : translate('symbol.pending');
+        : char ? char.symbol ?? translate('symbol.unknown') : localSymbol(group);
       if (char && inspectable()) {
-        symbol.append(node('br'), inspectionBadge(char));
+        symbol.append(node('br'), inspectionBadge(char, true));
       }
     });
     const count = state.bars.filter(value => value !== undefined).length;
@@ -216,6 +236,14 @@
     renderSelection();
     renderOverview();
     element('input-announcement').textContent = state.announcement ? message(state.announcement) : '';
+  }
+
+  function localSymbol(group) {
+    const bars = state.bars.slice(group.start, group.start + group.length);
+    if (bars.includes(undefined)) return translate('symbol.pending');
+    if (bars.includes(null)) return translate('symbol.includesUnknown');
+    const symbol = core.SYMBOLS.find(item => item.bars.every((value, index) => value === bars[index]));
+    return symbol ? symbol.id : translate('symbol.notListed');
   }
 
   function visibleChar(char) {
@@ -239,7 +267,9 @@
     element('bar-text').setAttribute('aria-invalid', String(state.errors.some(item => item.key !== 'text.accepted')));
   }
 
-  function changed(fromText = false) {
+  function changed(fromText = false, summaryTarget = null) {
+    state.pendingText = false;
+    state.summaryTarget = summaryTarget;
     state.result = complete() ? core.decodeBars(state.bars) : null;
     state.checksum = state.result ? core.explainChecksum(state.result) : null;
     if (!fromText) {
@@ -259,6 +289,7 @@
     if (advance) state.selected = Math.min(66, state.selected + 1);
     changed();
     selectBar(state.selected, focus);
+    if (!focus) followSelectedBar();
   }
 
   function remember() {
@@ -275,6 +306,10 @@
 
   function renderControls() {
     element('undo').disabled = state.undo === null;
+    element('sample-reload').disabled = state.lastSample === null;
+    element('intro-inspection').disabled = state.result === null;
+    element('goto-result').hidden = state.result === null;
+    element('fill-unknown').disabled = complete() || state.bars.every(value => value === undefined);
     element('clear').disabled = state.bars.every(value => value === undefined) && element('bar-text').value === '';
     element('range-apply').disabled = rangeValues() === null;
     element('range-reason').textContent = rangeValues() === null ? translate('range.invalid') : '';
@@ -307,9 +342,18 @@
     return record('inspection.unavailable');
   }
 
-  function inspectionBadge(char) {
+  function inspectionBadge(char, compact = false) {
     const color = char.status === 'read' || char.status === 'recovered' ? 'warn' : 'ok';
     const badge = node('span', message(inspectionLabel(char)), `inspection-label ${color}`);
+    if (compact && ['candidates', 'hidden'].includes(char.status) && char.possible.length >= 2) {
+      badge.setAttribute('role', 'img');
+      badge.setAttribute('aria-label', message(inspectionLabel(char)));
+      const status = node('span', translate('inspection.cardUndetermined'), 'inspection-state');
+      const count = node('span', message(plural('inspection.cardCandidates', char.possible.length)), 'candidate-count');
+      status.setAttribute('aria-hidden', 'true');
+      count.setAttribute('aria-hidden', 'true');
+      badge.replaceChildren(status, count);
+    }
     badge.dataset.inspection = char.status;
     badge.dataset.charIndex = char.index;
     return badge;
@@ -359,18 +403,43 @@
     return description;
   }
 
+  function inspectionSummaries() {
+    const leaked = chars => chars.filter(char => char.status === 'read' || char.status === 'recovered').length;
+    return [plural('inspection.postalSummary', leaked(state.result.chars.slice(0, 7))),
+      plural('inspection.summary', leaked(state.result.chars.slice(7, 20)), {
+        section: translate('inspection.sectionAddress'), total: 13
+      })];
+  }
+
+  function renderPending() {
+    const pending = state.pendingText && state.result !== null;
+    element('draft-note').hidden = !pending;
+    element('judgment-draft-note').hidden = !pending;
+    for (const id of ['mask-summary', 'range-summary']) {
+      const container = element(id);
+      container.replaceChildren();
+      container.hidden = state.summaryTarget !== id || state.result === null;
+      if (container.hidden) continue;
+      if (pending) appendMessage(container, record('text.pending'));
+      if (inspectable()) inspectionSummaries().forEach(item => appendMessage(container, item));
+      else appendMessage(container, record(`inspection.${state.result.checksum.status}`));
+      const button = node('button', translate('actions.inspection'));
+      button.type = 'button';
+      button.addEventListener('click', () => element('inspection-title').focus());
+      container.append(button);
+    }
+  }
+
   function renderInspection() {
     const container = element('inspection');
     const result = state.result;
     if (!inspectable()) {
       appendMessage(container, record(`inspection.${result.checksum.status}`));
+      appendMessage(container, record('inspection.cover'));
       return;
     }
-    const leaked = chars => chars.filter(char => char.status === 'read' || char.status === 'recovered').length;
-    appendMessage(container, plural('inspection.postalSummary', leaked(result.chars.slice(0, 7))));
-    appendMessage(container, plural('inspection.summary', leaked(result.chars.slice(7, 20)), {
-      section: translate('section.address'), total: 13
-    }));
+    inspectionSummaries().forEach(item => appendMessage(container, item));
+    appendMessage(container, record('inspection.cover'));
     if (!state.bars.includes(null)) appendMessage(container, record('inspection.hint'));
     const list = node('ul', undefined, 'inspection-list');
     for (const char of result.chars) {
@@ -389,9 +458,7 @@
     if (result.chars.some(char => char.status === 'recovered')) appendMessage(container, record('inspection.assumption'));
     if ([0, 1, 65, 66].some(index => state.bars[index] === null)) appendMessage(container, record('inspection.markers'));
     if (state.bars.slice(50, 62).includes(null)) appendMessage(container, record('inspection.padding'));
-    if (!result.chars.some(char => ['hidden', 'candidates'].includes(char.status))) {
-      appendMessage(container, record('inspection.cover'));
-    }
+
   }
 
   function checkValue(value) {
@@ -485,6 +552,7 @@
     const ids = ['judgment', 'alternatives', 'postal-result', 'address-result', 'postal-notes', 'issues', 'inspection', 'checksum', 'breakdown'];
     ids.forEach(id => element(id).replaceChildren());
     element('result').hidden = state.result === null;
+    renderPending();
     if (state.result === null) {
       delete element('postal-result').dataset.value;
       delete element('address-result').dataset.value;
@@ -503,6 +571,7 @@
         state.bars = core.transformBars(state.bars, alternative.transform);
         state.announcement = record('transform.applied');
         changed();
+        element('result-title').focus();
       });
       element('alternatives').append(button);
     }
@@ -540,14 +609,33 @@
     event.preventDefault();
   });
 
-  element('sample-select').addEventListener('change', event => {
-    const sample = samples.barcodes[Number(event.target.value)];
+  function loadSample(index) {
+    const sample = samples.barcodes[index];
     remember();
     state.bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
-    state.lastSample = Number(event.target.value);
+    state.lastSample = index;
+    element('sample-select').value = String(index);
     state.selected = 0;
     state.announcement = record('sample.loaded', { sample: record(sample.labelKey) });
     changed();
+  }
+  element('sample-select').addEventListener('change', event => loadSample(Number(event.target.value)));
+  element('sample-reload').addEventListener('click', () => {
+    if (state.lastSample !== null) loadSample(state.lastSample);
+  });
+  element('intro-sample').addEventListener('click', () => loadSample(0));
+  element('intro-mask').addEventListener('click', () => element('mask-title').focus());
+  element('intro-inspection').addEventListener('click', () => {
+    if (state.result !== null) element('inspection-title').focus();
+  });
+  element('goto-result').addEventListener('click', () => element('result-title').focus());
+  element('fill-unknown').addEventListener('click', () => {
+    if (element('fill-unknown').disabled) return;
+    remember();
+    state.bars = state.bars.map(value => value === undefined ? null : value);
+    state.announcement = record('actions.filledUnknown');
+    changed();
+    element('result-title').focus();
   });
 
   element('bar-text').addEventListener('input', event => {
@@ -565,8 +653,10 @@
       state.announcement = record('text.accepted');
       changed(true);
     } else {
+      state.pendingText = true;
       renderErrors();
       renderControls();
+      renderPending();
     }
   });
 
@@ -577,6 +667,7 @@
     state.selected = 0;
     state.announcement = record('actions.cleared');
     changed();
+    selectBar(0, true);
   });
   element('undo').addEventListener('click', () => {
     if (state.undo === null) return;
@@ -597,7 +688,7 @@
     if (preset === 'all') bars.fill(null);
     state.bars = bars;
     state.announcement = record('mask.applied', { preset: record(`mask.${preset}`) });
-    changed();
+    changed(false, 'mask-summary');
   });
   for (const id of ['range-start', 'range-end']) element(id).addEventListener('input', renderControls);
   element('range-apply').addEventListener('click', () => {
@@ -608,7 +699,7 @@
     state.bars = state.bars.slice();
     state.bars.fill(null, start - 1, end);
     state.announcement = plural('range.applied', end - start + 1, { start, end });
-    changed();
+    changed(false, 'range-summary');
   });
 
   function initialLanguage() {
@@ -637,7 +728,7 @@
 
   function showTab(name, focus = false) {
     state.tab = name;
-    for (const tab of ['decode', 'learn']) {
+    for (const tab of ['decode', 'learn', 'quiz']) {
       const selected = tab === name;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
@@ -675,7 +766,9 @@
     [...element('sample-select').options].forEach((option, index) => {
       option.textContent = translate(index === 0 ? 'sample.choose' : samples.barcodes[index - 1].labelKey);
     });
-    for (const language of ['ja', 'en']) element(`learn-${language}`).hidden = language !== state.language;
+    for (const language of ['ja', 'en']) {
+      for (const panel of ['learn', 'quiz']) element(`${panel}-${language}`).hidden = language !== state.language;
+    }
     renderInput();
     renderErrors();
     renderControls();
@@ -762,6 +855,15 @@
     });
     renderExtraction();
     renderQuizzes();
+    renderQuizReturn();
+  }
+
+  function renderQuizReturn() {
+    document.querySelectorAll('[data-quiz-return]').forEach(button => {
+      const index = lesson.returnQuestion;
+      button.hidden = index === null || Number(button.dataset.quizReturn) !== lesson.quizzes[index].section;
+      button.textContent = index === null ? '' : translate('quiz.return', { number: index + 1 });
+    });
   }
 
   function lessonSvg(bars, labelKey, height = 40) {
@@ -836,7 +938,36 @@
       renderQuizzes(index);
     });
     container.querySelector('[data-quiz-section]').addEventListener('click', () => {
+      lesson.returnQuestion = index;
+      renderQuizReturn();
+      showTab('learn');
       element(`learn-${state.language}-heading-${quiz.section}`).focus();
+    });
+  });
+  document.querySelectorAll('[data-learn-section]').forEach(button => {
+    button.addEventListener('click', () => {
+      element(`learn-${state.language}-heading-${button.dataset.learnSection}`).focus();
+    });
+  });
+  for (const language of ['ja', 'en']) {
+    for (let section = 1; section <= 12; section += 1) {
+      const button = node('button');
+      button.type = 'button';
+      button.dataset.quizReturn = section;
+      button.hidden = true;
+      button.addEventListener('click', () => {
+        showTab('quiz');
+        element(`quiz-${state.language}-${lesson.returnQuestion + 1}`).focus();
+      });
+      element(`learn-${language}-heading-${section}`).after(button);
+    }
+  }
+  document.querySelectorAll('[data-lesson-table]').forEach(details => {
+    details.open = matchMedia('(min-width: 48rem)').matches;
+    details.addEventListener('toggle', () => {
+      document.querySelectorAll(`[data-lesson-table="${details.dataset.lessonTable}"]`).forEach(other => {
+        if (other.open !== details.open) other.open = details.open;
+      });
     });
   });
   document.querySelectorAll('[data-learn-try]').forEach(button => {
@@ -855,13 +986,16 @@
     });
   });
 
-  for (const name of ['decode', 'learn']) {
+  const tabNames = ['decode', 'learn', 'quiz'];
+  for (const name of tabNames) {
     const tab = element(`tab-${name}`);
     tab.addEventListener('click', () => showTab(name));
     tab.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
-      const next = event.key === 'Home' ? 'decode' : event.key === 'End' ? 'learn' : name === 'decode' ? 'learn' : 'decode';
+      const offset = event.key === 'ArrowLeft' ? -1 : 1;
+      const next = event.key === 'Home' ? tabNames[0] : event.key === 'End' ? tabNames.at(-1)
+        : tabNames[(tabNames.indexOf(name) + offset + tabNames.length) % tabNames.length];
       showTab(next, true);
     });
   }
@@ -882,6 +1016,12 @@
   });
   element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();
+  if (typeof ResizeObserver === 'function') new ResizeObserver(updatePaletteSpace).observe(paletteDock);
+  else {
+    addEventListener('resize', updatePaletteSpace);
+    element('lang-toggle').addEventListener('click', updatePaletteSpace);
+  }
+  updatePaletteSpace();
   changed();
   showTab(state.tab);
   renderLanguage();

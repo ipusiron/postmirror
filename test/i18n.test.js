@@ -85,30 +85,51 @@ test('I18n: overview symbols and shape separators come from the dictionary', () 
   assert.match(app, /translate\('figure\.shapeLabel'/);
 });
 
+function languageBlock(html, id) {
+  const start = html.indexOf(`<div id="${id}"`);
+  const end = html.indexOf(`<!-- /${id} -->`, start);
+  assert.ok(start >= 0 && end > start, id);
+  return html.slice(start, end);
+}
+
 test('I18n: English text has no Japanese outside the explicit sample spans', () => {
   const japanese = /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/u;
   for (const [key, value] of Object.entries(messages.en)) {
     if (key !== 'language.target') assert.doesNotMatch(value, japanese, key);
   }
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const english = html.slice(html.indexOf('<div id="learn-en"'), html.indexOf('id="language-announcement"'))
-    .replace(/<span\b[^>]*\bdata-ja-sample[^>]*>[^<]*<\/span>/g, '');
-  assert.doesNotMatch(english, japanese);
+  for (const id of ['learn-en', 'quiz-en']) {
+    const english = languageBlock(html, id).replace(/<span\b[^>]*\bdata-ja-sample[^>]*>[^<]*<\/span>/g, '');
+    assert.doesNotMatch(english, japanese, id);
+  }
 });
 
-test('I18n: both lessons have matching 13 sections and seven separate quiz groups', () => {
+test('I18n: both lessons have 12 sections and both quiz panels have seven distinct groups', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const blocks = ['ja', 'en'].map(language => {
-    const start = html.indexOf(`<div id="learn-${language}"`);
-    const end = language === 'ja' ? html.indexOf('<div id="learn-en"') : html.indexOf('id="language-announcement"');
-    return html.slice(start, end);
-  });
-  for (const [index, language] of ['ja', 'en'].entries()) {
-    const sectionIds = [...blocks[index].matchAll(new RegExp(`<section id="learn-${language}-(\\d+)"`, 'g'))].map(match => +match[1]);
-    assert.deepStrictEqual(sectionIds, Array.from({ length: 13 }, (_, index) => index + 1));
-    assert.equal([...blocks[index].matchAll(/<fieldset data-quiz="\d+">/g)].length, 7);
-    const names = new Set([...blocks[index].matchAll(/name="(quiz-[^"]+)"/g)].map(match => match[1]));
-    assert.deepStrictEqual([...names], Array.from({ length: 7 }, (_, index) => `quiz-${language}-${index + 1}`));
+  const allNames = [];
+  for (const language of ['ja', 'en']) {
+    const learn = languageBlock(html, `learn-${language}`);
+    const quiz = languageBlock(html, `quiz-${language}`);
+    const sections = [...learn.matchAll(new RegExp(`<section id="learn-${language}-(\\d+)"`, 'g'))].map(match => +match[1]);
+    assert.deepStrictEqual(sections, Array.from({ length: 12 }, (_, index) => index + 1));
+    assert.equal([...learn.matchAll(/data-quiz="\d+"/g)].length, 0);
+    assert.equal([...quiz.matchAll(/<fieldset data-quiz="\d+"/g)].length, 7);
+    const names = [...new Set([...quiz.matchAll(/name="(quiz-[^"]+)"/g)].map(match => match[1]))];
+    assert.deepStrictEqual(names, Array.from({ length: 7 }, (_, index) => `quiz-${language}-${index + 1}`));
+    allNames.push(...names);
+    if (language === 'ja') {
+      for (const word of FORBIDDEN) assert.doesNotMatch(learn + quiz, new RegExp(word), word);
+    }
   }
-  for (const word of FORBIDDEN) assert.doesNotMatch(blocks[0], new RegExp(word), word);
+  assert.equal(new Set(allNames).size, 14);
+});
+
+test('I18n: neutral inspection labels and language-specific separators', () => {
+  for (const file of ['messages.js', 'index.html']) {
+    const text = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    assert.doesNotMatch(text, /隠せた|■\s*Hidden| — /u, file);
+  }
+  assert.equal(messages.en['inspection.sectionAddress'], 'address number');
+  assert.match(messages.ja['learn.stage'], /：/);
+  assert.match(messages.en['learn.stage'], /: /);
 });

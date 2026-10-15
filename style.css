@@ -64,6 +64,21 @@ footer {
   border-inline-start: 3px solid var(--accent);
 }
 
+.lesson-toc {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 8px;
+  margin-block: 1rem;
+}
+
+.lesson-toc button {
+  text-align: start;
+}
+
+[data-quiz-return] {
+  margin-block-end: 0.5rem;
+}
+
 button, input, textarea, select {
   font: inherit;
   color: inherit;
@@ -117,6 +132,10 @@ textarea {
   align-items: start;
 }
 
+#panel-decode {
+  overflow-anchor: none;
+}
+
 .bar-card {
   width: 138px;
   border: 1px solid var(--border);
@@ -153,7 +172,7 @@ textarea {
   border-radius: 0;
   padding: 2px;
   box-shadow: inset 0 0 0 1px var(--border);
-  scroll-margin-bottom: 140px;
+  scroll-margin-bottom: var(--palette-space, 8px);
 }
 
 .bar-button[aria-pressed="true"] {
@@ -342,8 +361,25 @@ svg {
 }
 
 .inspection-label.ok {
-  color: var(--ok-fg);
-  background: var(--ok-bg);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.inspection-list .inspection-label, #breakdown .inspection-label {
+  white-space: nowrap;
+}
+
+.card-symbol .inspection-label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  column-gap: 0.25em;
+}
+
+.inspection-state, .candidate-count {
+  white-space: nowrap;
 }
 
 .inspection-list {
@@ -351,7 +387,7 @@ svg {
 }
 
 .inspection-list li {
-  margin-block: 6px;
+  margin-block: 4px;
 }
 
 .overview-inspection {
@@ -365,7 +401,7 @@ svg {
 }
 
 .overview-inspection.ok {
-  fill: var(--ok-fg);
+  fill: var(--muted);
 }
 
 .inspection-background.warn {
@@ -373,7 +409,7 @@ svg {
 }
 
 .inspection-background.ok {
-  fill: var(--ok-bg);
+  fill: var(--surface);
 }
 
 .mini-bars {
