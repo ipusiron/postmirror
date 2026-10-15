@@ -227,3 +227,11 @@ test('README English: no untranslated prose and every customer barcode sentence 
   assert.ok(sentences.length >= 4);
   for (const sentence of sentences) assert.match(sentence, /Japan Post|Japanese/);
 });
+
+test('README: inspection terminology matches the neutral screen labels', () => {
+  for (const name of ['README.md', 'README.en.md']) {
+    const text = fs.readFileSync(path.join(root, name), 'utf8');
+    assert.doesNotMatch(text, /隠せた|■\s*Hidden/u, name);
+    assert.ok(text.includes(name === 'README.md' ? '決まらない（候補N通り）' : 'Undetermined (N candidates)'));
+  }
+});

@@ -39,25 +39,31 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- Enter 67 bars using character cards and a shape palette
-- Type or paste bar sequences, or load eight examples published by Japan Post
+- Decode, Learn, and Quiz tabs
+- Three getting-started steps and buttons that jump to results or inspection
+- Enter 67 bars using character cards and a shape palette that keeps the selected bar in view
+- See the symbol for a completed three-bar card before entering all 67 bars
+- Type or paste sequences, load eight examples published by Japan Post, and reload the selected sample
 - Decode postal codes and address numbers, assemble letters, and inspect each character
 - Check the check-digit calculation and choose an operation to reread a different orientation
-- Mark a range unknown, try four masking examples, and undo the previous operation once
-- See readable characters, restored characters, unresolved characters, and candidate counts
-- Explore 13 learning sections with diagrams, tables, step-by-step extraction, and seven questions
+- Mark a range unknown, try four masking examples, or mark the remaining empty bars unknown
+- See readable, restored, and undetermined characters, candidate counts, and unapplied text edits
+- Undo the previous bulk operation once
+- Explore 12 learning sections with diagrams, tables, and step-by-step extraction, plus seven questions in a separate Quiz tab
 - Switch between Japanese and English, with dark colors following your device setting
 
 ## 📖 How to use
 
-1. Select “Calculation example (p17, p21)” from “Sample” and inspect the overview and result.
-2. For manual entry, select a bar button and press 1–4 or “?” in the palette. Selection moves to the next bar. Decoding starts when all 67 bars have been entered.
-3. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1–4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving.
-4. In the text input, use 1–4, the aliases F/A/D/T (either case), and `?` for unknown bars. Spaces, newlines, `,`, and `|` are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Ordinary paste works. The bar input updates only when the text contains exactly 67 bars and no errors.
-5. Read the postal code, address number, notes, and calculation. Open “Show the character-by-character breakdown” to compare position, section, bars, character, check value, and inspection. The breakdown starts closed on narrow screens.
-6. Mark covered bars unknown. “Mark range unknown” accepts start and end positions from 1 to 67. Each masking example reloads the last selected sample. Undo restores the previous operation once; editing a single bar or the text discards that undo state.
-7. Compare “○ Readable”, “△ Restored by calculation”, and “■ Hidden (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
-8. Open Learn for bar shapes, the table, extraction rules, and masking. “Try in Decode” loads a public example. Switching languages preserves input, inspection, and quiz answers.
+1. Under Getting started, press “Load the calculation example”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
+2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
+3. For manual entry, select a bar and press 1–4 or “?” in the palette. The next bar scrolls clear of the palette. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered.
+4. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1–4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving.
+5. After partial entry, “Mark remaining empty bars as unknown” preserves entered and already unknown bars, changes only empty positions, and moves to the result. One Undo restores the empty positions. Clear moves focus to the first bar.
+6. In the text input, use 1–4, the aliases F/A/D/T (either case), and `?` for unknown bars. Spaces, newlines, `,`, and `|` are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Only valid text containing exactly 67 bars is applied. Until then, the result and contextual summary identify the text as unapplied and the displayed result as belonging to the last applied bars.
+7. Use “Go to results” beside the progress count to read the postal code, address number, notes, and calculation. Open the character-by-character breakdown to compare each character. The breakdown starts closed on narrow screens. Rereading an orientation moves focus to the result heading.
+8. Mark covered bars unknown. “Mark range unknown” accepts positions from 1 to 67. “Second half of the address number” means bars 45–67, including the check digit and stop. Each masking example starts from the last selected sample. Its contextual summary disappears when the bars change. Undo restores the previous bulk operation once; editing a single bar or the text discards that undo state.
+9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
+10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves input, inspection, and answers.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
 
@@ -98,11 +104,11 @@ F/A/D/T are input aliases. The display uses Japan Post's numbers 1–4. The semi
 
 | Section | Characters | Bars |
 |---|---:|---:|
-| Start | — | 2 |
+| Start | Not counted (marker) | 2 |
 | Postal code | 7 | 21 |
 | Address number | 13 | 39 |
 | Check digit | 1 | 3 |
-| Stop | — | 2 |
+| Stop | Not counted (marker) | 2 |
 | Total | 21 (excluding start and stop) | 67 |
 
 | Symbol | Bars | Check value |
@@ -193,7 +199,7 @@ A. This version uses manual bar entry. It does not import images.
 
 Q. Does it show place names?
 
-A. No. It displays the postal code and address number. Postal codes can be looked up to find areas, so consider what remains in a photo even when this tool does not show place names.
+A. No. It displays the postal code and address number. Anyone can look up a postal code to find the town area, so a barcode in a photo can reveal the area where you live even though this tool does not show place names.
 
 Q. Is data sent anywhere?
 
@@ -205,7 +211,7 @@ A. Mainly bulk business mail such as direct mail and invoices, and business repl
 
 Q. Is mosaic masking enough?
 
-A. Mosaic and blur retain values calculated from the original information. Cover the whole barcode opaquely, export a separate file, and reopen it yourself to check it.
+A. They are not recommended. Images treated with mosaic or blur retain values calculated from the original information. Cover the whole barcode opaquely, export a separate file, and reopen it yourself to check it.
 
 ## 🔗 Related tools
 
@@ -240,7 +246,7 @@ postmirror/                         # Tool root
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
 ├── package.json                    # Dependency-free node --test command
-├── index.html                      # Bar input, decoding, inspection, bilingual lessons, and CSP
+├── index.html                      # Decode, Learn, and Quiz tabs, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
@@ -270,7 +276,8 @@ postmirror/                         # Tool root
 ## 💻 Requirements
 
 - Chromium: input, decoding, masking, learning, and language switching checked over HTTP and `file://`, at widths 320, 390, 768, and 1280 px, in Japanese and English
-- Firefox: horizontal overflow, console errors, page errors, and CSP violations checked over HTTP and `file://` at 320 px in both languages and at 390 px in Japanese; general interaction coverage remains untested
+- Firefox: display and interactions with tabs, languages, samples, masks, inspection, and quizzes checked over HTTP and `file://` at 320 px in both languages and at 390 px in Japanese
+- Windows WebKit (webkit-2191): decoding, horizontal overflow, console errors, page errors, and CSP violations checked over HTTP and `file://` at 390 px in both languages. This does not replace testing on iOS Safari
 - Safari, physical smartphones, actual screen-reader speech, and reopening closed tabs remain untested
 - JavaScript is required. Back/forward checks confirmed in-memory page restoration in Chromium over HTTP; `file://` and Firefox history behavior was recorded only
 
