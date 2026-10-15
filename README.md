@@ -34,7 +34,7 @@ tags:
 repo_url: "https://github.com/ipusiron/postmirror"
 demo_url: "https://ipusiron.github.io/postmirror/"
 
-hub: false
+hub: true
 ---
 -->
 
