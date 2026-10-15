@@ -65,6 +65,7 @@
     'footer.independent': 'PostMirrorは個人が作成したツールで、日本郵便株式会社とは関係がありません。'
       + 'カスタマバーコードの仕様は、日本郵便が公開している「郵便番号・バーコードマニュアル」に基づきます。',
     'footer.intent': '作者は悪用を勧めません。郵便物の写真やバーコードを扱ってよいかどうかは、国・地域の法令や状況によって異なります。',
+    'footer.github': 'GitHubリポジトリー',
     'sample.label': '日本郵便の公開例を読み込む',
     'sample.choose': 'サンプルを選んでください',
     'sample.calculation': '計算例（p17・p21）',
@@ -305,6 +306,7 @@
       + ' The barcode specification follows the postal code and barcode manual published by Japan Post (in Japanese).',
     'footer.intent': 'The author does not encourage misuse. Whether you may handle photos or barcodes of mail depends on the laws'
       + ' and circumstances of your country or region.',
+    'footer.github': 'GitHub repository',
     'sample.label': 'Load a Japan Post published example',
     'sample.choose': 'Choose a sample',
     'sample.calculation': 'Calculation example (p17, p21)',
