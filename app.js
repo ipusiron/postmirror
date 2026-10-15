@@ -6,12 +6,13 @@
   const messages = globalThis.PostMirrorMessages;
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null,
-    lastSample: null, errors: [], announcement: null, undo: null
+    lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
+    language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
   const element = id => document.getElementById(id);
   const record = (key, params = {}) => ({ key, params });
   const plural = (key, count, params = {}) => record(`${key}.${count === 1 ? 'one' : 'other'}`, { count, ...params });
-  const translate = (key, params = {}) => messages.ja[key].replace(/\{(\w+)\}/g, (_, name) =>
+  const translate = (key, params = {}) => messages[state.language][key].replace(/\{(\w+)\}/g, (_, name) =>
     params[name]?.key ? message(params[name]) : String(params[name]));
   const message = item => translate(item.key, item.params);
   const node = (tag, text, className) => {
@@ -41,6 +42,19 @@
   const complete = () => state.bars.every(value => value !== undefined);
   const buttons = [];
   const cards = [];
+  const lessonBars = [0, 2].map(index => {
+    const sample = samples.barcodes[index];
+    return core.encodeAddress(sample.postalCode, sample.addressNumber);
+  });
+  const extraction = samples.extraction.map(sample => [
+    { id: 'original', text: sample.addressB }, ...globalThis.PostMirrorExtract.extractAddressNumber(sample.addressB).steps
+  ]);
+  const lesson = {
+    steps: [0, 0, 0],
+    quizzes: [3, 1, 1, 0, 2, 1, 1].map((answer, index) => ({
+      answer, section: [9, 8, 5, 7, 10, 6, 9][index], selected: null, checked: false
+    }))
+  };
 
   function barLabel(index) {
     const group = groupFor(index);
@@ -98,7 +112,7 @@
       const symbol = node('p', undefined, 'card-symbol');
       card.append(row, symbol);
       element('bar-grid').append(card);
-      cards.push({ group, symbol });
+      cards.push({ group, symbol, card });
     }
     for (const value of [1, 2, 3, 4, null]) {
       const button = node('button', undefined, 'palette-button');
@@ -215,7 +229,7 @@
     for (const error of state.errors) {
       const paragraph = node('p');
       if (error.key === 'text.invalid-char') {
-        for (const part of messages.ja[error.key].split(/(\{\w+\})/)) {
+        for (const part of messages[state.language][error.key].split(/(\{\w+\})/)) {
           if (part === '{char}') paragraph.append(node('bdi', visibleChar(error.params.char)));
           else paragraph.append(document.createTextNode(part.replace(/\{(\w+)\}/g, (_, key) => error.params[key])));
         }
@@ -227,6 +241,7 @@
 
   function changed(fromText = false) {
     state.result = complete() ? core.decodeBars(state.bars) : null;
+    state.checksum = state.result ? core.explainChecksum(state.result) : null;
     if (!fromText) {
       element('bar-text').value = complete() ? core.formatBarText(state.bars, { group: true }) : '';
       state.errors = [];
@@ -386,7 +401,7 @@
 
   function renderChecksum() {
     const container = element('checksum');
-    const parts = core.explainChecksum(state.result);
+    const parts = state.checksum;
     if (parts === null) {
       appendMessage(container, record('checksum.unavailable'));
       return;
@@ -459,17 +474,7 @@
       if (inspectable()) cells.inspection.append(inspectionBadge(char));
       else cells.inspection.textContent = translate('inspection.unavailable');
       if (['invalid-pattern', 'no-candidate'].includes(char.status)) {
-        const mask = node('button', translate('character.mask'));
-        mask.type = 'button';
-        mask.dataset.maskChar = char.index;
-        mask.addEventListener('click', () => {
-          remember();
-          state.bars = core.maskChars(state.bars, [char.index]);
-          state.announcement = record('character.masked', { position: char.index + 1 });
-          changed();
-          element('judgment').scrollIntoView({ block: 'nearest' });
-        });
-        cells.inspection.append(mask);
+        cells.inspection.append(maskCharacterButton(char.index, 'maskChar'));
       }
       body.append(row);
     }
@@ -505,6 +510,9 @@
     state.result.issues.forEach(issue => {
       const item = appendMessage(element('issues'), issueMessage(issue), 'li');
       item.dataset.issue = issue.code;
+      if (['invalid-pattern', 'no-candidate'].includes(issue.code) && issue.charIndex !== undefined) {
+        item.append(maskCharacterButton(issue.charIndex, 'issueMaskChar'));
+      }
     });
     renderInspection();
     renderChecksum();
@@ -602,10 +610,261 @@
     changed();
   });
 
-  for (const target of document.querySelectorAll('[data-i18n]')) target.textContent = translate(target.dataset.i18n);
-  element('bar-text').placeholder = translate('text.placeholder');
-  element('bar-grid').setAttribute('aria-label', translate('input.group'));
-  element('bar-palette').setAttribute('aria-label', translate('palette.label'));
+  function initialLanguage() {
+    const query = new URLSearchParams(location.search).get('lang');
+    if (['ja', 'en'].includes(query)) return query;
+    try {
+      const saved = localStorage.getItem('postmirror.lang');
+      if (['ja', 'en'].includes(saved)) return saved;
+    } catch (_) { /* The browser may block storage. */ }
+    return navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+  }
+
+  function maskCharacterButton(index, attribute) {
+    const button = node('button', translate('character.mask'));
+    button.type = 'button';
+    button.dataset[attribute] = index;
+    button.addEventListener('click', () => {
+      remember();
+      state.bars = core.maskChars(state.bars, [index]);
+      state.announcement = record('character.masked', { position: index + 1 });
+      changed();
+      element('judgment').scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    });
+    return button;
+  }
+
+  function showTab(name, focus = false) {
+    state.tab = name;
+    for (const tab of ['decode', 'learn']) {
+      const selected = tab === name;
+      element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
+      element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
+      element(`panel-${tab}`).hidden = !selected;
+    }
+    if (focus) element(`tab-${name}`).focus();
+  }
+
+  function renderLanguage() {
+    document.documentElement.lang = state.language;
+    document.title = translate('page.title');
+    document.querySelectorAll('[data-i18n]').forEach(item => { item.textContent = translate(item.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-label]').forEach(item => {
+      item.setAttribute('aria-label', translate(item.dataset.i18nLabel));
+    });
+    const toggle = element('lang-toggle');
+    toggle.textContent = translate('language.target');
+    toggle.setAttribute('aria-label', translate('language.target'));
+    toggle.lang = state.language === 'ja' ? 'en' : 'ja';
+    element('bar-text').placeholder = translate('text.placeholder');
+    element('bar-grid').setAttribute('aria-label', translate('input.title'));
+    element('bar-palette').setAttribute('aria-label', translate('palette.label'));
+    cards.forEach(({ group, card }) => {
+      const label = translate('card.label', { section: translate(`section.${group.section}`), number: group.number });
+      card.setAttribute('aria-label', label);
+      card.querySelector('.card-heading').textContent = label;
+      card.querySelector('.card-range').textContent = translate('card.range', {
+        start: group.start + 1, end: group.start + group.length
+      });
+    });
+    document.querySelectorAll('.palette-button').forEach(button => {
+      const value = button.dataset.value === '?' ? null : Number(button.dataset.value);
+      button.setAttribute('aria-label', translate(`shape.${shapeKey(value)}`));
+    });
+    [...element('sample-select').options].forEach((option, index) => {
+      option.textContent = translate(index === 0 ? 'sample.choose' : samples.barcodes[index - 1].labelKey);
+    });
+    for (const language of ['ja', 'en']) element(`learn-${language}`).hidden = language !== state.language;
+    renderInput();
+    renderErrors();
+    renderControls();
+    renderResult();
+    renderLearn();
+  }
+
+  function renderLearn() {
+    document.querySelectorAll('[data-figure]').forEach(container => {
+      const kind = container.dataset.figure;
+      container.replaceChildren();
+      if (kind === 'envelope' || kind === 'structure') {
+        container.append(lessonSvg(lessonBars[0].bars, `figure.${kind}`));
+        if (kind === 'structure') {
+          const bands = node('div', undefined, 'structure-bands');
+          for (const [section] of sections) {
+            const text = ['postal', 'address'].includes(section) ? translate(`section.${section}`)
+              : { start: 'S', cd: 'C', stop: 'E' }[section];
+            const band = node('span', text, `structure-band structure-${section}`);
+            band.setAttribute('aria-label', translate(`section.${section}`));
+            bands.append(band);
+          }
+          container.append(bands);
+        }
+      } else if (kind === 'shapes') {
+        const list = node('ul', undefined, 'shape-legend');
+        for (const value of [1, 2, 3, 4]) {
+          const item = node('li');
+          item.append(lessonSvg([value], `shape.${value}`), node('span', `${value}: ${translate(`shape.${value}`)}`));
+          list.append(item);
+        }
+        container.append(list);
+      } else if (kind === 'symbols' || kind === 'letters') {
+        const table = node('table', undefined, 'learn-table symbol-table');
+        table.append(node('caption', translate(`figure.${kind}`)));
+        const head = node('thead');
+        const row = node('tr');
+        const keys = kind === 'symbols' ? ['figure.symbol', 'column.bars', 'figure.value'] : ['figure.letter', 'figure.pair', 'column.bars'];
+        keys.forEach(key => {
+          const th = node('th', translate(key));
+          th.scope = 'col';
+          row.append(th);
+        });
+        head.append(row);
+        const body = node('tbody');
+        if (kind === 'symbols') {
+          for (const symbol of core.SYMBOLS) {
+            const row = node('tr');
+            const bars = node('td');
+            bars.append(lessonSvg(symbol.bars, 'figure.symbols'));
+            row.append(node('td', symbol.id), bars, node('td', String(symbol.value)));
+            body.append(row);
+          }
+        } else {
+          for (const control of ['CC1', 'CC2', 'CC3']) {
+            for (let digit = 0; digit <= 9; digit += 1) {
+              const letter = core.letterFor(control, digit);
+              if (!letter) continue;
+              const row = node('tr');
+              const bars = node('td');
+              const pattern = [control, String(digit)].flatMap(id => core.SYMBOLS.find(symbol => symbol.id === id).bars);
+              bars.append(lessonSvg(pattern, 'figure.letters'));
+              row.append(node('td', letter), node('td', `${control} ${digit}`), bars);
+              body.append(row);
+            }
+          }
+        }
+        table.append(head, body);
+        container.append(table);
+      } else if (kind === 'checksum') {
+        for (const encoded of lessonBars) {
+          const sum = encoded.chars.reduce((total, id) => total + core.SYMBOLS.find(symbol => symbol.id === id).value, 0);
+          const cd = core.SYMBOLS.find(symbol => symbol.id === encoded.checkDigit).value;
+          const svg = svgNode('svg', { viewBox: '0 0 320 44', role: 'img', class: 'formula-svg' });
+          svg.setAttribute('aria-label', translate('figure.formulaAria', { sum, cd }));
+          const label = svgNode('text', { x: 4, y: 29, class: 'formula-label' });
+          label.textContent = translate('figure.formula', { sum, cd });
+          svg.append(label);
+          container.append(svg);
+        }
+      }
+    });
+    renderExtraction();
+    renderQuizzes();
+  }
+
+  function lessonSvg(bars, labelKey, height = 40) {
+    const width = Math.max(24, bars.length * core.GEOMETRY.pitch * 5);
+    const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img', class: 'lesson-bars' });
+    svg.setAttribute('aria-label', translate(labelKey));
+    bars.forEach((bar, index) => drawBar(svg, bar, index * core.GEOMETRY.pitch * 5 + 2.5, 5, 5));
+    return svg;
+  }
+
+  function renderExtraction() {
+    document.querySelectorAll('[data-extract]').forEach(container => {
+      const index = Number(container.dataset.extract);
+      const position = lesson.steps[index];
+      const step = extraction[index][position];
+      container.querySelector('[data-extract-title]').textContent = translate('learn.example', {
+        number: index + 1, page: samples.extraction[index].sourcePages.join(', ')
+      });
+      container.querySelector('[data-extract-stage]').textContent = translate('learn.stage', {
+        position, name: translate(`step.${step.id}`)
+      });
+      container.querySelector('[data-extract-text]').textContent = step.text;
+      container.querySelector('[data-extract-move="-1"]').disabled = position === 0;
+      container.querySelector('[data-extract-move="1"]').disabled = position === extraction[index].length - 1;
+    });
+  }
+
+  function renderQuizzes() {
+    document.querySelectorAll('[data-quiz]').forEach(container => {
+      const index = Number(container.dataset.quiz);
+      const quiz = lesson.quizzes[index];
+      container.querySelectorAll('input').forEach(input => { input.checked = Number(input.value) === quiz.selected; });
+      container.querySelector('[data-quiz-check]').disabled = quiz.selected === null;
+      const feedback = container.querySelector('[data-quiz-feedback]');
+      feedback.replaceChildren();
+      const section = container.querySelector('[data-quiz-section]');
+      section.hidden = !quiz.checked;
+      section.textContent = translate('quiz.section', { number: quiz.section });
+      if (quiz.checked) {
+        feedback.append(node('p', translate(quiz.selected === quiz.answer ? 'quiz.correct' : 'quiz.incorrect')),
+          node('p', translate(`quiz.explain${index + 1}`)));
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-extract-move]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (button.disabled) return;
+      const index = Number(button.closest('[data-extract]').dataset.extract);
+      lesson.steps[index] = Math.max(0, Math.min(extraction[index].length - 1, lesson.steps[index] + Number(button.dataset.extractMove)));
+      renderExtraction();
+    });
+  });
+  document.querySelectorAll('[data-quiz]').forEach(container => {
+    const index = Number(container.dataset.quiz);
+    const quiz = lesson.quizzes[index];
+    container.addEventListener('change', event => {
+      if (!event.target.matches('input[type="radio"]')) return;
+      quiz.selected = Number(event.target.value);
+      quiz.checked = false;
+      renderQuizzes();
+    });
+    container.querySelector('[data-quiz-check]').addEventListener('click', () => {
+      if (quiz.selected === null) return;
+      quiz.checked = true;
+      renderQuizzes();
+    });
+    container.querySelector('[data-quiz-section]').addEventListener('click', () => {
+      element(`learn-${state.language}-heading-${quiz.section}`).focus();
+    });
+  });
+  document.querySelectorAll('[data-learn-try]').forEach(button => {
+    button.addEventListener('click', () => {
+      remember();
+      state.bars = lessonBars[0].bars.slice();
+      if (button.dataset.learnTry === 'cd') state.bars.fill(null, 62, 65);
+      else for (let index = 0; index < 21; index += 1) state.bars[3 + index * 3] = null;
+      state.lastSample = 0;
+      state.selected = 0;
+      element('sample-select').value = '0';
+      state.announcement = record('mask.applied', { preset: record(`mask.${button.dataset.learnTry}`) });
+      changed();
+      showTab('decode');
+      element('result-title').focus();
+    });
+  });
+
+  for (const name of ['decode', 'learn']) {
+    const tab = element(`tab-${name}`);
+    tab.addEventListener('click', () => showTab(name));
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 'decode' : event.key === 'End' ? 'learn' : name === 'decode' ? 'learn' : 'decode';
+      showTab(next, true);
+    });
+  }
+  element('lang-toggle').addEventListener('click', () => {
+    state.language = state.language === 'ja' ? 'en' : 'ja';
+    try { localStorage.setItem('postmirror.lang', state.language); } catch (_) { /* Keep the current view usable. */ }
+    renderLanguage();
+    element('language-announcement').textContent = translate('language.changed');
+  });
+  element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();
   changed();
+  showTab(state.tab);
+  renderLanguage();
 })();

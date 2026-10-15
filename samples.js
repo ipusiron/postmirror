@@ -48,7 +48,8 @@
     { addressB: '6丁目7-14　ABCビル2F', sourcePages: ['p25'], version }
   ];
   const question2 = {
-    addressB: '1丁目3番2号　郵便プラザ503室', sourcePages: ['p17'], version
+    addressB: '1丁目3番2号　郵便プラザ503室', sourcePages: ['p17'], version,
+    choices: ['1-3-2', '1-3-2-503', '132503', '1-3-2-503室']
   };
   function freeze(value) {
     if (value && typeof value === 'object') {

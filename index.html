@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; connect-src 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>PostMirror</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
@@ -14,10 +17,20 @@
 </head>
 <body>
   <header class="page-header">
+    <div class="language-row"><button id="lang-toggle" type="button"></button></div>
     <h1>PostMirror</h1>
     <p data-i18n="header.description"></p>
   </header>
+  <noscript>
+    <p lang="ja">PostMirrorを使うにはJavaScriptを有効にしてください。</p>
+    <p lang="en">Enable JavaScript to use PostMirror.</p>
+  </noscript>
   <main>
+    <div class="tabs" role="tablist" data-i18n-label="tabs.label">
+      <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
+      <button id="tab-learn" type="button" role="tab" aria-selected="false" aria-controls="panel-learn" tabindex="-1" data-i18n="tab.learn"></button>
+    </div>
+    <div id="panel-decode" role="tabpanel" aria-labelledby="tab-decode">
     <p data-i18n="intro.prompt"></p>
     <p class="privacy" data-i18n="privacy"></p>
     <section aria-labelledby="sample-label">
@@ -69,7 +82,7 @@
       <div id="text-errors" aria-live="polite"></div>
     </section>
     <section id="result" aria-labelledby="result-title" hidden>
-      <h2 id="result-title" data-i18n="result.title"></h2>
+      <h2 id="result-title" tabindex="-1" data-i18n="result.title"></h2>
       <p id="judgment" class="judgment" aria-live="polite"></p>
       <div id="alternatives" class="actions"></div>
       <h3 data-i18n="result.readable"></h3>
@@ -89,12 +102,724 @@
         <h3 id="checksum-title" data-i18n="checksum.title"></h3>
         <div id="checksum"></div>
       </section>
-      <section aria-labelledby="breakdown-title">
+      <details id="breakdown-details">
+        <summary data-i18n="breakdown.summary"></summary>
         <h3 id="breakdown-title" data-i18n="breakdown.title"></h3>
         <table id="breakdown"></table>
-      </section>
+      </details>
     </section>
     <p id="input-announcement" class="sr-only" aria-live="polite"></p>
+    </div>
+    <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
+      <p data-i18n="learn.intro"></p>
+      <p class="muted" data-i18n="learn.name"></p>
+      <div id="learn-ja" lang="ja">
+      <section id="learn-ja-1" aria-labelledby="learn-ja-heading-1">
+        <h2 id="learn-ja-heading-1" tabindex="-1">1. なぜ消すのか</h2>
+        <p>宛名を隠しても、近くのカスタマバーコードから郵便番号と住所表示番号が読めます。横書きでは原則として宛先の氏名の直下に印字します（p13）。</p>
+        <div class="envelope" role="img" data-i18n-label="figure.envelope">
+          <p data-i18n="figure.fictional"></p>
+          <p><span class="covered-name" data-i18n="figure.name"></span></p>
+          <div data-figure="envelope"></div>
+        </div>
+        <p>図のバーコードから読める内容は100-0013／1-3-2-503です（p17の公式例）。印字できる範囲は郵便物の表面の広い範囲に及び、向きも2通りあります（p13）。</p>
+      </section>
+      <section id="learn-ja-2" aria-labelledby="learn-ja-heading-2">
+        <h2 id="learn-ja-heading-2" tabindex="-1">2. どの郵便物に付いているか</h2>
+        <p>バーコードは、郵便物を差し出すための必要条件ではありません。付いていることの多い郵便物と、利用の条件になっている郵便物を区別します。</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">郵便物</th>
+            <th scope="col">付き方と条件</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>企業が大量に出すDM・請求書</td>
+              <td>バーコード割引。同時に1,000通以上で1%</td>
+            </tr>
+            <tr>
+              <td>料金受取人払の返信封筒・はがき</td>
+              <td>第一種定形郵便物と第二種郵便物では、印字が利用の条件</td>
+            </tr>
+            <tr>
+              <td>個人が切手を貼って出す郵便物</td>
+              <td>原則として付かない（公式の文言からの推論）</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="learn-ja-3" aria-labelledby="learn-ja-heading-3">
+        <h2 id="learn-ja-heading-3" tabindex="-1">3. 4つの形と3本で1文字</h2>
+        <p>バーの太さや間隔ではなく、縦の延び方で読みます。1文字は3本で、4³＝64通りのうち19通りを使います。図は模式図です。セミロングバーの長さの比4は推測値で、解読には使いません。</p>
+        <div class="learn-figure" data-figure="shapes"></div>
+        <div class="learn-figure" data-figure="symbols"></div>
+      </section>
+      <section id="learn-ja-4" aria-labelledby="learn-ja-heading-4">
+        <h2 id="learn-ja-heading-4" tabindex="-1">4. 67本の構成</h2>
+        <p>スタート2本＋郵便番号21本＋住所表示番号39本＋チェックデジット（CD）3本＋ストップ2本＝67本です。郵便番号内のハイフンと、郵便番号と住所表示番号の間の区切りは符号に入れません。住所表示番号の中のハイフンは残します。</p>
+        <div class="learn-figure" data-figure="structure"></div>
+      </section>
+      <section id="learn-ja-5" aria-labelledby="learn-ja-heading-5">
+        <h2 id="learn-ja-heading-5" tabindex="-1">5. 英字は2文字分</h2>
+        <p>A〜JはCC1、K〜TはCC2、U〜ZはCC3に、英字の序数を10で割った余りの数字を続けます。Aを0とするので、B604はCC1 1 6 0 4となり、英字Bだけで2文字分を使います。</p>
+        <div class="learn-figure" data-figure="letters"></div>
+      </section>
+      <section id="learn-ja-6" aria-labelledby="learn-ja-heading-6">
+        <h2 id="learn-ja-heading-6" tabindex="-1">6. CC4と13けた・20けた</h2>
+        <p>住所表示番号は英字を展開して13文字にそろえ、足りない分をCC4で埋めます。郵便番号と合わせて20文字を超えた分は切り捨てます。20文字目が英字の制御コードなら、その制御コードだけを残します。</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">郵便番号</th>
+            <th scope="col">符号の中身</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>100-0013</td>
+              <td>1-3-2-503とCC4×4</td>
+            </tr>
+            <tr>
+              <td>064-0804</td>
+              <td>29-1524-23-2-（末尾はハイフン）</td>
+            </tr>
+            <tr>
+              <td>910-0067</td>
+              <td>3-80-25J1-2の後にCC1。最後の英字はA〜Jのどれか決まらない</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="learn-ja-7" aria-labelledby="learn-ja-heading-7">
+        <h2 id="learn-ja-heading-7" tabindex="-1">7. チェックデジット</h2>
+        <p>チェック用数字は0〜9が0〜9、ハイフンが10、CC1〜CC8が11〜18です。21文字の合計が19の倍数になるようにCDを決めます。20文字の合計をSとすると、CD＝(19−(S mod 19)) mod 19です。</p>
+        <div class="learn-figure" data-figure="checksum"></div>
+        <p>霞が関の例は合計105からCD 9、個別番号の例は合計209からCD 0になります。19種が0〜18に1対1で対応するため、読めない1文字は計算で戻ります。ほかの文字が正しく読めていることが前提です。</p>
+        <p>ほかの文字がすべて読めていれば、1本の読み誤りは必ず検出できますが、訂正はできません。Day102で扱う誤り訂正との違いです。読めない文字があると、ほかの文字の読み誤りを検出できないことがあります。</p>
+        <button type="button" data-learn-try="cd" data-i18n="learn.try"></button>
+      </section>
+      <section id="learn-ja-8" aria-labelledby="learn-ja-heading-8">
+        <h2 id="learn-ja-heading-8" tabindex="-1">8. 住所表示番号の抜き出し規則</h2>
+        <p>郵便番号に対応する住所Aを除いた住所Bから、住所表示番号を抜き出します（p18・p19）。基本ルール6つと補足ルール5つを、次の順に適用します。正規化は本ツールの処理で、公式の規定ではありません。</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">規則</th>
+            <th scope="col">処理</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>正規化（独自処理）</td>
+              <td>1文字ずつNFKCで正規化し、ハイフンに似た文字をハイフンにする</td>
+            </tr>
+            <tr>
+              <td>基本1</td>
+              <td>英小文字を大文字にする</td>
+            </tr>
+            <tr>
+              <td>基本2</td>
+              <td>&amp;・/・「・」・.を取り除いて詰める</td>
+            </tr>
+            <tr>
+              <td>補足1</td>
+              <td>丁目・丁・番地・番・号・地割・線・の・ノの直前の漢数字を算用数字にする</td>
+            </tr>
+            <tr>
+              <td>基本3・4、補足2・3</td>
+              <td>数字、ハイフン、前後が英字でない英字1文字を残す。ただし数字の直後の単独のFを除く。残す文字の前の不要な連なりをハイフン1文字にし、末尾の不要な連なりを除く</td>
+            </tr>
+            <tr>
+              <td>基本5</td>
+              <td>続いたハイフンを1つにする</td>
+            </tr>
+            <tr>
+              <td>基本6</td>
+              <td>先頭のハイフンを除く。末尾のハイフンは残す</td>
+            </tr>
+            <tr>
+              <td>補足4・5</td>
+              <td>英字の直前と直後のハイフンを除く。英字が続いても残す</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="extraction" data-extract="0">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+        <div class="extraction" data-extract="1">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+        <div class="extraction" data-extract="2">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+      </section>
+      <section id="learn-ja-9" aria-labelledby="learn-ja-heading-9">
+        <h2 id="learn-ja-heading-9" tabindex="-1">9. 何が読めて何が読めないか</h2>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">読めるもの</th>
+            <th scope="col">読めないもの</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>郵便番号。町域、超高層ビルの階、個別番号なら1つの事業所や私書箱</td>
+              <td>氏名・建物名</td>
+            </tr>
+            <tr>
+              <td>丁目・番・号・部屋番号の数字、英字1文字</td>
+              <td>数字が丁目・番・号のどれに当たるか、20文字を超えた部分</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>郵便番号は日本郵便の郵便番号検索などで誰でも町域まで引けます。このツールが地名を出さなくても、特定する手間は小さいといえます。</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">特殊番号</th>
+            <th scope="col">読み方</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>大口事業所・私書箱の個別番号</td>
+              <td>住所表示番号をCC4で埋める</td>
+            </tr>
+            <tr>
+              <td>私書箱の包括番号</td>
+              <td>***-8691・***-**91と私書箱番号</td>
+            </tr>
+            <tr>
+              <td>料金受取人払の包括番号</td>
+              <td>***-8790・***-**90と整理番号。返信先の番号で、返送する人の住所ではない</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>ほかの番号を使う地域もあります。2026年9月30日版の郵便番号データを数えた値では、階ごとの番号を持つビルが86棟・3,437行、複数の町域を持つ番号が1,339件、代表番号が1,870件あります。</p>
+      </section>
+      <section id="learn-ja-10" aria-labelledby="learn-ja-heading-10">
+        <h2 id="learn-ja-heading-10" tabindex="-1">10. 隠し方の作法</h2>
+        <p>バーコード全体をスタートからストップまで、不透明な単色で塗りつぶします。別のファイルへ書き出し、そのファイルを自分で開き直して確認してください。EXIFの位置情報はDay007で確かめられます。</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">隠し方</th>
+            <th scope="col">残るもの</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>半透明のペン</td>
+              <td>下のバーの形が透ける</td>
+            </tr>
+            <tr>
+              <td>モザイク・ぼかし</td>
+              <td>元の情報から計算した値</td>
+            </tr>
+            <tr>
+              <td>一部だけを塗る</td>
+              <td>残った形と、チェックデジットから戻る文字</td>
+            </tr>
+            <tr>
+              <td>全体を不透明な単色で塗る</td>
+              <td>画像上のバーの形を隠す。別ファイルへ書き出して確認が必要</td>
+            </tr>
+            <tr>
+              <td>トリミングして上書き</td>
+              <td>元画像のデータが残る場合がある</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>モザイクとぼかしは元の情報の関数です。テキストの復元例にDepix、識別の研究にMcPhersonら（2016）があります。1文字の形が19種類なので照合で戻されやすいと考えられますが、これは推測で、バーコードでの実験は今後の候補です。</p>
+        <p>トリミングの上書き保存で元画像が残った例がaCropalypse（CVE-2023-21036・CVE-2023-28303）です。見た目だけで安全と判断せず、書き出した別ファイルを確認します。</p>
+        <button type="button" data-learn-try="central" data-i18n="learn.try"></button>
+      </section>
+      <section id="learn-ja-11" aria-labelledby="learn-ja-heading-11">
+        <h2 id="learn-ja-heading-11" tabindex="-1">11. このツールで読めないもの</h2>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">種類</th>
+            <th scope="col">扱い</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>局内バーコード・IDバーコード</td>
+              <td>区分機が透明インクで印字。本ツールでは読めない。写真に写るかと符号の仕様は未確認</td>
+            </tr>
+            <tr>
+              <td>宅配便の伝票のコード・追跡番号</td>
+              <td>本ツールでは読めない</td>
+            </tr>
+            <tr>
+              <td>米国IMb・英国RM4SCC</td>
+              <td>同じ4ステイト（4状態）の系統だが対応表が異なる</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 画像Exifチェッカー — 画像のEXIFを確認</a></p>
+        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec — 画像の差分を確認</a></p>
+        <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar — QRコードのリスクを確認</a></p>
+      </section>
+      <section id="learn-ja-12" aria-labelledby="learn-ja-heading-12">
+        <h2 id="learn-ja-heading-12" tabindex="-1">12. 確認問題</h2>
+        <fieldset data-quiz="0">
+          <legend>Q1. 宛名を黒く塗り、バーコードは残しました。バーコードから読めないものはどれですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="0">郵便番号</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="1">番地の数字</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="2">部屋番号</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-1" value="3">氏名</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="1">
+          <legend>Q2. 次の住所B（p17の公式例）の住所表示番号はどれですか。</legend>
+          <p><span lang="ja" data-ja-sample>1丁目3番2号　郵便プラザ503室</span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="0"><span lang="ja" data-ja-sample>1-3-2</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="1"><span lang="ja" data-ja-sample>1-3-2-503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="2"><span lang="ja" data-ja-sample>132503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-2" value="3"><span lang="ja" data-ja-sample>1-3-2-503室</span></label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="2">
+          <legend>Q3. 英字Bはバーコードの何文字分ですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="0">1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="1">2</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-3" value="2">3</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="3">
+          <legend>Q4. 右端の1文字だけ塗り、ほかは読めます。隠した文字は戻りますか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="0">戻る</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-4" value="1">戻らない</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="4">
+          <legend>Q5. 最も安全な隠し方はどれですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="0">モザイク</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="1">ぼかし</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="2">バーコード全体を不透明に塗りつぶす</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-5" value="3">1文字おきに塗る</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="5">
+          <legend>Q6. 住所表示番号が13文字に満たないとき、どの制御コードで埋めますか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="0">CC1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="1">CC4</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-6" value="2">CC8</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="6">
+          <legend>Q7. 料金受取人払の返信封筒のバーコードからわかるのはどちらですか。</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="0">差出人の住所</label>
+          <label class="quiz-option"><input type="radio" name="quiz-ja-7" value="1">受取人の番号</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+      </section>
+      <section id="learn-ja-13" aria-labelledby="learn-ja-heading-13">
+        <h2 id="learn-ja-heading-13" tabindex="-1">13. 参照資料</h2>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06 — 区分機と透明インク、印字例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10 — 局内・ID・カスタマバーコードの定義</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11 — 4形状とキャラクター表</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12 — 寸法、構成、けた数、チェック用数字</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13 — 印字位置、範囲、条件</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17 — 抜き出しの概要と霞が関の例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18 — 住所A・Bの分割と代表番号</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19 — 基本ルール、補足ルール、中間結果</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20 — 20けたでの切り捨て</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21 — チェックデジットの計算と印字例</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22 — 大口事業所・私書箱・料金受取人払の番号</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — 料金受取人払の包括番号、整理番号、見本</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25 — 検証例のチェックシート</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">バーコード付郵便物 — 割引の条件</a></p>
+      </section>
+      </div>
+      <div id="learn-en" lang="en" hidden>
+      <section id="learn-en-1" aria-labelledby="learn-en-heading-1">
+        <h2 id="learn-en-heading-1" tabindex="-1">1. Why cover the barcode?</h2>
+        <p>Even with the name covered, the nearby customer barcode can reveal the postal code and address number. For horizontal writing, it is normally printed directly below the recipient’s name (p13).</p>
+        <div class="envelope" role="img" data-i18n-label="figure.envelope">
+          <p data-i18n="figure.fictional"></p>
+          <p><span class="covered-name" data-i18n="figure.name"></span></p>
+          <div data-figure="envelope"></div>
+        </div>
+        <p>The barcode in the diagram reads 100-0013 / 1-3-2-503 (the official p17 example). The permitted printing area covers a broad part of the mail’s front, with two possible orientations (p13).</p>
+      </section>
+      <section id="learn-en-2" aria-labelledby="learn-en-heading-2">
+        <h2 id="learn-en-heading-2" tabindex="-1">2. Which mail carries a barcode?</h2>
+        <p>A barcode is not a general requirement for sending mail. Distinguish mail that often carries one from services that require one.</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Mail</th>
+            <th scope="col">Barcode use and conditions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Bulk direct mail and bills from companies</td>
+              <td>Barcode discount: 1% for at least 1,000 items sent at once</td>
+            </tr>
+            <tr>
+              <td>Business-reply envelopes and postcards</td>
+              <td>Required for standard-size first-class mail and second-class mail</td>
+            </tr>
+            <tr>
+              <td>Mail that individuals send with stamps</td>
+              <td>Generally absent (an inference from the official wording)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="learn-en-3" aria-labelledby="learn-en-heading-3">
+        <h2 id="learn-en-heading-3" tabindex="-1">3. Four shapes, three bars per character</h2>
+        <p>
+          Read the vertical extent of each bar, rather than its width or spacing. Three bars form one character; 19 of the 4³ = 64 patterns are used. The diagrams are schematic. The semi-long bar ratio of 4 is inferred and is not used for decoding.
+        </p>
+        <div class="learn-figure" data-figure="shapes"></div>
+        <div class="learn-figure" data-figure="symbols"></div>
+      </section>
+      <section id="learn-en-4" aria-labelledby="learn-en-heading-4">
+        <h2 id="learn-en-heading-4" tabindex="-1">4. The 67-bar structure</h2>
+        <p>Start 2 + postal code 21 + address number 39 + check digit (CD) 3 + stop 2 = 67 bars. The hyphen within the postal code and the separator between the postal code and address number are omitted. Hyphens inside the address number remain.</p>
+        <div class="learn-figure" data-figure="structure"></div>
+      </section>
+      <section id="learn-en-5" aria-labelledby="learn-en-heading-5">
+        <h2 id="learn-en-heading-5" tabindex="-1">5. A letter takes two characters</h2>
+        <p>A–J use CC1, K–T use CC2, and U–Z use CC3, followed by the remainder of the letter’s ordinal divided by 10. With A numbered 0, B604 becomes CC1 1 6 0 4; B alone takes two characters.</p>
+        <div class="learn-figure" data-figure="letters"></div>
+      </section>
+      <section id="learn-en-6" aria-labelledby="learn-en-heading-6">
+        <h2 id="learn-en-heading-6" tabindex="-1">6. CC4, 13 characters and 20 characters</h2>
+        <p>
+          After expanding letters, the address number is made 13 characters long by padding with CC4. Anything beyond 20 characters including the postal code is truncated. If the twentieth character is a letter control, that control remains alone.
+        </p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Postal code</th>
+            <th scope="col">Encoded content</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>100-0013</td>
+              <td>1-3-2-503 followed by four CC4 characters</td>
+            </tr>
+            <tr>
+              <td>064-0804</td>
+              <td>29-1524-23-2- (a trailing hyphen)</td>
+            </tr>
+            <tr>
+              <td>910-0067</td>
+              <td>3-80-25J1-2 followed by CC1; the last letter is an undetermined A–J</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="learn-en-7" aria-labelledby="learn-en-heading-7">
+        <h2 id="learn-en-heading-7" tabindex="-1">7. The check digit</h2>
+        <p>The check values are 0–9 for digits 0–9, 10 for the hyphen, and 11–18 for CC1–CC8. The CD makes the sum of all 21 characters a multiple of 19. For a 20-character sum S, CD = (19 − (S mod 19)) mod 19.</p>
+        <div class="learn-figure" data-figure="checksum"></div>
+        <p>
+          The Kasumigaseki example has a sum of 105 and CD 9; the individual postal-code example has a sum of 209 and CD 0. Because the 19 symbols map one-to-one to 0–18, one unreadable character can be restored, assuming all other characters
+          are read correctly.
+        </p>
+        <p>If all other characters are readable, a single misread bar is always detected, but cannot be corrected. This differs from the error correction covered in Day102. With unreadable characters, a misread elsewhere may go undetected.</p>
+        <button type="button" data-learn-try="cd" data-i18n="learn.try"></button>
+      </section>
+      <section id="learn-en-8" aria-labelledby="learn-en-heading-8">
+        <h2 id="learn-en-heading-8" tabindex="-1">8. Extracting the address number</h2>
+        <p>
+          The address number is extracted from address B, after removing address A covered by the postal code (p18–p19). The six basic rules and five supplementary rules are applied in the following order. Normalization is this tool’s own
+          processing, not an official rule.
+        </p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Rule</th>
+            <th scope="col">Operation</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Normalization (tool-specific)</td>
+              <td>Normalize each character with NFKC and convert hyphen-like characters to hyphens</td>
+            </tr>
+            <tr>
+              <td>Basic 1</td>
+              <td>Convert lowercase Latin letters to uppercase</td>
+            </tr>
+            <tr>
+              <td>Basic 2</td>
+              <td>Remove &amp;, /, the Japanese middle dot, and . without leaving gaps</td>
+            </tr>
+            <tr>
+              <td>Supplement 1</td>
+              <td>Convert kanji numerals immediately before the nine specified address suffixes to Arabic digits (chome, cho, banchi, ban, go, chiwari, sen, and the two forms of no)</td>
+            </tr>
+            <tr>
+              <td>Basic 3–4; supplements 2–3</td>
+              <td>Keep digits, hyphens and single letters with no adjacent letter, except a standalone F immediately after a digit. Replace each unwanted run before a kept character with one hyphen; drop the unwanted trailing run</td>
+            </tr>
+            <tr>
+              <td>Basic 5</td>
+              <td>Collapse consecutive hyphens</td>
+            </tr>
+            <tr>
+              <td>Basic 6</td>
+              <td>Remove a leading hyphen; keep a trailing hyphen</td>
+            </tr>
+            <tr>
+              <td>Supplements 4–5</td>
+              <td>Remove hyphens directly before and after letters; retain letters that become adjacent</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="extraction" data-extract="0">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+        <div class="extraction" data-extract="1">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+        <div class="extraction" data-extract="2">
+          <h3 data-extract-title></h3>
+          <p data-extract-stage></p>
+          <p><span lang="ja" data-ja-sample data-extract-text></span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <div class="actions">
+            <button type="button" data-extract-move="-1" data-i18n="learn.previous"></button>
+            <button type="button" data-extract-move="1" data-i18n="learn.next"></button>
+          </div>
+        </div>
+      </section>
+      <section id="learn-en-9" aria-labelledby="learn-en-heading-9">
+        <h2 id="learn-en-heading-9" tabindex="-1">9. What can and cannot be read</h2>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Readable</th>
+            <th scope="col">Not readable</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Postal code: a town area, a high-rise building floor, or one business or PO box with an individual code</td>
+              <td>Names of people and buildings</td>
+            </tr>
+            <tr>
+              <td>Digits for blocks, lots, buildings and rooms, and single letters</td>
+              <td>Which role each number has, and anything beyond 20 characters</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Anyone can look up the town area using Japan Post’s postal-code search and similar services. Identifying it takes little effort even though this tool does not display place names.</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Special codes</th>
+            <th scope="col">Interpretation</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Individual codes for large businesses and PO boxes</td>
+              <td>The address-number field is padded with CC4</td>
+            </tr>
+            <tr>
+              <td>Shared PO-box codes</td>
+              <td>***-8691 or ***-**91 plus the PO-box number</td>
+            </tr>
+            <tr>
+              <td>Shared business-reply codes</td>
+              <td>***-8790 or ***-**90 plus an administrative number. They identify the recipient, not the person sending the reply</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Some regions use other numbers. Counts from the September 30, 2026 postal-code data are 86 buildings and 3,437 rows with floor-specific codes, 1,339 codes covering multiple town areas, and 1,870 representative codes.</p>
+      </section>
+      <section id="learn-en-10" aria-labelledby="learn-en-heading-10">
+        <h2 id="learn-en-heading-10" tabindex="-1">10. How to cover a barcode</h2>
+        <p>Cover the entire barcode, from start to stop, with an opaque solid color. Export it to a separate file, then reopen that file yourself to check it. Use Day007 to check location information in EXIF.</p>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Method</th>
+            <th scope="col">What remains</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Translucent pen</td>
+              <td>Bar shapes show through</td>
+            </tr>
+            <tr>
+              <td>Mosaic or blur</td>
+              <td>Values calculated from the original information</td>
+            </tr>
+            <tr>
+              <td>Covering only part</td>
+              <td>Remaining shapes and characters restored from the check digit</td>
+            </tr>
+            <tr>
+              <td>Opaque solid color over the entire barcode</td>
+              <td>Hides bar shapes in the image; export to a separate file and verify</td>
+            </tr>
+            <tr>
+              <td>Cropping and overwriting</td>
+              <td>Original image data may remain</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Mosaic and blur are functions of the original information. Depix demonstrates text restoration, and McPherson and colleagues (2016) studied identification. With only 19 character shapes, matching may make restoration easier; this is
+          an inference, and barcode experiments are a possible future step.
+        </p>
+        <p>aCropalypse (CVE-2023-21036 and CVE-2023-28303) is an example of original image data remaining after cropping and overwriting. Check the separately exported file instead of judging safety from appearance alone.</p>
+        <button type="button" data-learn-try="central" data-i18n="learn.try"></button>
+      </section>
+      <section id="learn-en-11" aria-labelledby="learn-en-heading-11">
+        <h2 id="learn-en-heading-11" tabindex="-1">11. What this tool cannot decode</h2>
+        <table class="learn-table">
+          <thead><tr>
+            <th scope="col">Type</th>
+            <th scope="col">Treatment</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>Internal sorting barcodes and ID barcodes</td>
+              <td>Printed by sorting machines in transparent ink. This tool cannot decode them. Their visibility in photos and coding specifications are unverified</td>
+            </tr>
+            <tr>
+              <td>Parcel-label codes and tracking numbers</td>
+              <td>This tool cannot decode them</td>
+            </tr>
+            <tr>
+              <td>US IMb and UK RM4SCC</td>
+              <td>Also in the four-state family, but with different symbol tables</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><a href="https://ipusiron.github.io/image-exif-checker/" target="_blank" rel="noopener noreferrer">Day007 Image Exif Checker — Inspect image EXIF</a></p>
+        <p><a href="https://ipusiron.github.io/image-diff-sec/" target="_blank" rel="noopener noreferrer">Day021 ImageDiffSec — Inspect image differences</a></p>
+        <p><a href="https://ipusiron.github.io/qr-risk-radar/" target="_blank" rel="noopener noreferrer">Day074 QR Risk Radar — Inspect QR-code risks</a></p>
+      </section>
+      <section id="learn-en-12" aria-labelledby="learn-en-heading-12">
+        <h2 id="learn-en-heading-12" tabindex="-1">12. Check your understanding</h2>
+        <fieldset data-quiz="0">
+          <legend>Q1. The name is blacked out but the barcode remains. Which item cannot be read from the barcode?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-1" value="0">Postal code</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-1" value="1">Street-address digits</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-1" value="2">Room number</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-1" value="3">Name</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="1">
+          <legend>Q2. What is the address number for this address B (official p17 example)?</legend>
+          <p><span lang="ja" data-ja-sample>1丁目3番2号　郵便プラザ503室</span></p>
+          <p data-i18n="learn.jaSample"></p>
+          <label class="quiz-option"><input type="radio" name="quiz-en-2" value="0"><span lang="ja" data-ja-sample>1-3-2</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-2" value="1"><span lang="ja" data-ja-sample>1-3-2-503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-2" value="2"><span lang="ja" data-ja-sample>132503</span></label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-2" value="3"><span lang="ja" data-ja-sample>1-3-2-503室</span></label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="2">
+          <legend>Q3. How many barcode characters does the letter B take?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-3" value="0">1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-3" value="1">2</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-3" value="2">3</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="3">
+          <legend>Q4. Only the rightmost character is covered; the rest are readable. Can the hidden character be restored?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-4" value="0">Yes</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-4" value="1">No</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="4">
+          <legend>Q5. Which is the safest way to cover the barcode?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-5" value="0">Mosaic</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-5" value="1">Blur</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-5" value="2">Opaque fill over the entire barcode</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-5" value="3">Cover every other character</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="5">
+          <legend>Q6. Which control pads an address number shorter than 13 characters?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-6" value="0">CC1</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-6" value="1">CC4</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-6" value="2">CC8</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+        <fieldset data-quiz="6">
+          <legend>Q7. What does the barcode on a business-reply envelope identify?</legend>
+          <label class="quiz-option"><input type="radio" name="quiz-en-7" value="0">The sender’s address</label>
+          <label class="quiz-option"><input type="radio" name="quiz-en-7" value="1">The recipient’s number</label>
+          <button type="button" data-quiz-check data-i18n="quiz.check" disabled></button>
+          <div data-quiz-feedback aria-live="polite"></div>
+          <button type="button" data-quiz-section hidden></button>
+        </fieldset>
+      </section>
+      <section id="learn-en-13" aria-labelledby="learn-en-heading-13">
+        <h2 id="learn-en-heading-13" tabindex="-1">13. References</h2>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p06.html" target="_blank" rel="noopener noreferrer">p06 — Sorting machines, transparent ink and printed examples</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p10.html" target="_blank" rel="noopener noreferrer">p10 — Definitions of internal, ID and customer barcodes</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html" target="_blank" rel="noopener noreferrer">p11 — Four bar shapes and the character table</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p12.html" target="_blank" rel="noopener noreferrer">p12 — Dimensions, structure, character counts and check values</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p13.html" target="_blank" rel="noopener noreferrer">p13 — Print positions, areas and conditions</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p17.html" target="_blank" rel="noopener noreferrer">p17 — Extraction overview and the Kasumigaseki example</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p18.html" target="_blank" rel="noopener noreferrer">p18 — Address A/B division and representative codes</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p19.html" target="_blank" rel="noopener noreferrer">p19 — Basic and supplementary rules and intermediate results</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p20.html" target="_blank" rel="noopener noreferrer">p20 — Truncation at 20 characters</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p21.html" target="_blank" rel="noopener noreferrer">p21 — Check-digit calculations and a printed example</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p22.html" target="_blank" rel="noopener noreferrer">p22 — Codes for large businesses, PO boxes and business replies</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html" target="_blank" rel="noopener noreferrer">p23 — Shared business-reply codes, administrative numbers and samples</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html" target="_blank" rel="noopener noreferrer">p25 — Validation example checklist</a></p>
+        <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes — Discount conditions</a></p>
+      </section>
+      </div>
+    </div>
+    <p id="language-announcement" class="sr-only" aria-live="polite"></p>
   </main>
   <footer>
     <p data-i18n="footer.independent"></p>

@@ -10,7 +10,7 @@ const samples = require('../samples.js');
 // Keep this list identical in the README tests when that document is completed.
 const FORBIDDEN = [
   '既に', '全て', '分かる', '無い', 'インターフェース', 'か所', 'に限る', '想定していない',
-  '自分宛てに限', '4ステート', '〒', 'カスタマーバーコード',
+  '自分宛てに限', '4ステート', '〒',
   'サーバ(?!ー)', 'ユーザ(?!ー)', 'ブラウザ(?!ー)', 'パラメータ(?!ー)', 'エディタ(?!ー)',
   'フォルダ(?!ー)', 'リポジトリ(?!ー)', 'マネージャ(?!ー)'
 ];
@@ -51,4 +51,27 @@ test('I18n: every static HTML message has a dictionary entry', () => {
   const keys = [...html.matchAll(/data-i18n="([^"]+)"/g)].map(match => match[1]);
   assert.ok(keys.length >= 5);
   for (const key of keys) assert.ok(Object.hasOwn(messages.ja, key), key);
+});
+
+test('I18n: the official barcode spelling is used throughout the screen sources', () => {
+  for (const file of ['messages.js', 'index.html']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), /カスタマーバーコード/);
+  }
+});
+
+test('I18n: both lessons have matching 13 sections and seven separate quiz groups', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const blocks = ['ja', 'en'].map(language => {
+    const start = html.indexOf(`<div id="learn-${language}"`);
+    const end = language === 'ja' ? html.indexOf('<div id="learn-en"') : html.indexOf('id="language-announcement"');
+    return html.slice(start, end);
+  });
+  for (const [index, language] of ['ja', 'en'].entries()) {
+    const sectionIds = [...blocks[index].matchAll(new RegExp(`<section id="learn-${language}-(\\d+)"`, 'g'))].map(match => +match[1]);
+    assert.deepStrictEqual(sectionIds, Array.from({ length: 13 }, (_, index) => index + 1));
+    assert.equal([...blocks[index].matchAll(/<fieldset data-quiz="\d+">/g)].length, 7);
+    const names = new Set([...blocks[index].matchAll(/name="(quiz-[^"]+)"/g)].map(match => match[1]));
+    assert.deepStrictEqual([...names], Array.from({ length: 7 }, (_, index) => `quiz-${language}-${index + 1}`));
+  }
+  for (const word of FORBIDDEN) assert.doesNotMatch(blocks[0], new RegExp(word), word);
 });

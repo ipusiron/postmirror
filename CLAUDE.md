@@ -2,12 +2,12 @@
 
 PostMirror（ポストミラー）は、日本郵便のカスタマバーコードを手入力で解読し、郵便物の写真から読める情報を確かめる防犯のための自己点検ツールです。
 自分宛ての郵便物で試すことを勧め、作者は悪用を勧めない旨を画面とREADMEに記載します。
-現在は第1弾の段階③まで実装しています。画面は日本語固定で、言語の切り替えは段階④で追加します。
+現在は第1弾の段階④を実装しています。日英の切り替え、座学、ダーク表示に対応します。
 
 ## 構成
 
 第1弾の完成形は次のとおりです。
-「段階②以降に追加」と記したファイルは、現在のリポジトリーにはありません。
+「段階⑤で追加」と記したファイルは、現在のリポジトリーにはありません。
 
 ```text
 postmirror/                         # ツールのルート
@@ -20,31 +20,31 @@ postmirror/                         # ツールのルート
 ├── README.md                       # YAMLメタデータ付きの日本語版
 ├── README.en.md                    # 英語版
 ├── package.json                    # 依存なし、scripts.testはnode --test
-├── index.html                      # バーの入力、解読と点検（座学とCSPは段階④で追加）
-├── style.css                       # モバイル優先の配色と配置（ダークは段階④で追加）
+├── index.html                      # バーの入力、解読と点検、日英の座学とCSP
+├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
 ├── extract-core.js                 # 住所表示番号の抜き出し規則
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
-├── app.js                          # 画面、入力と描画（言語の切り替えは段階④で追加）
-├── assets/                         # READMEの日本語画面例（段階②以降に追加）
-│   ├── screenshot.png              # 解読タブ（段階②以降に追加）
-│   ├── screenshot2.png             # 座学タブ（段階②以降に追加）
-│   ├── screenshot3.png             # 隠したバーの点検（段階②以降に追加）
-│   ├── screenshot4.png             # 解読タブのダーク表示（段階②以降に追加）
-│   └── en/                         # READMEの英語画面例（段階②以降に追加）
-│       ├── screenshot.png          # 英語表示の解読タブ（段階②以降に追加）
-│       ├── screenshot2.png         # 英語表示の座学タブ（段階②以降に追加）
-│       └── screenshot3.png         # 英語表示の隠したバーの点検（段階②以降に追加）
+├── app.js                          # 画面、入力と描画、言語とタブの切り替え
+├── assets/                         # READMEの日本語画面例（段階⑤で追加）
+│   ├── screenshot.png              # 解読タブ（段階⑤で追加）
+│   ├── screenshot2.png             # 座学タブ（段階⑤で追加）
+│   ├── screenshot3.png             # 隠したバーの点検（段階⑤で追加）
+│   ├── screenshot4.png             # 解読タブのダーク表示（段階⑤で追加）
+│   └── en/                         # READMEの英語画面例（段階⑤で追加）
+│       ├── screenshot.png          # 英語表示の解読タブ（段階⑤で追加）
+│       ├── screenshot2.png         # 英語表示の座学タブ（段階⑤で追加）
+│       └── screenshot3.png         # 英語表示の隠したバーの点検（段階⑤で追加）
 └── test/                           # node:testのテスト
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
-    ├── readme.test.js              # 日英READMEの数値、構成と表記（段階②以降に追加）
-    ├── html.test.js                # HTMLと保存先の静的検査（CSPは段階④で追加）
+    ├── readme.test.js              # 日英READMEの数値、構成と表記（段階⑤で追加）
+    ├── html.test.js                # HTML、CSP、保存先、座学の静的検査
     ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
     ├── format.test.js              # 最長行と行数の下限
-    └── contrast.test.js            # ライトとダークのコントラスト（段階②以降に追加）
+    └── contrast.test.js            # ライトとダークのコントラストとフォーカスの間隔
 ```
 
 | ファイル | グローバル名 | 役割 |
@@ -107,13 +107,13 @@ python -m http.server
 - 入力したバー、郵便番号、住所表示番号、解読結果を端末外へ送らず、URLやストレージに入れない
 - localStorageは言語設定の`postmirror.lang`（jaまたはen）だけに使い、読み書きをtry/catchで包む。sessionStorage、IndexedDB、Cookieは使わない
 - URLから読むのは`?lang=ja|en`と読み込み時の`#learn`だけ。入力の共有リンク、解読結果のコピーボタン、郵便番号検索への値の受け渡しを作らない
-- 文言は`messages.js`に集め、コアはコードと数値を返す。`barcode-core.js`にはコメントを含めて日本語を置かない
+- 動的な文言は`messages.js`に集め、座学の本文は日英のHTMLブロックに置く。コアはコードと数値を返す。`barcode-core.js`にはコメントを含めて日本語を置かない
 - 描画はtextContent、createElement、createElementNS、setAttributeを使う。innerHTML、インラインのイベントハンドラー、style属性を使わない
 - CSPでconnect-srcをnoneにする。依存パッケージ、CDN、外部フォント、バンドラー、TypeScript、フレームワークを足さない
 - file://での動作を保ち、type="module"、fetch、Workerを使わない。package.jsonにtype: moduleを追加しない
 - 郵便番号データを同梱せず、地名を表示しない。第1弾に画像からの読み取りを足さない
 - `test/`にブラウザー操作のスクリプトや補助のJavaScriptを置かない。node --testが自動実行するため、補助データはJSONで持つ
-- 最長行はJavaScriptとCSSが160文字、HTMLが250文字。行数の下限はbarcode-core.jsが200行、extract-core.jsが60行。後続段階で対象を追加する
+- 最長行はJavaScriptとCSSが160文字、HTMLが250文字。行数の下限はbarcode-core.jsが200行、extract-core.jsが60行、samples.jsが40行、messages.jsとindex.htmlが100行、style.cssが150行、app.jsが300行
 - 読めない文字の復元は、ほかの文字が正しく読めていることを前提とする。チェックデジットを誤り訂正や住所の実在確認として説明しない
 
 ## 素材の規則
