@@ -23,6 +23,15 @@
     <section aria-labelledby="sample-label">
       <label id="sample-label" for="sample-select" data-i18n="sample.label"></label>
       <select id="sample-select"></select>
+      <h2 data-i18n="mask.title"></h2>
+      <p data-i18n="mask.help"></p>
+      <div id="mask-presets" class="actions">
+        <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
+        <button type="button" data-preset="central" data-i18n="mask.central" disabled></button>
+        <button type="button" data-preset="latter" data-i18n="mask.latter" disabled></button>
+        <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
+      </div>
+      <p id="mask-reason" data-i18n="mask.needsSample"></p>
     </section>
     <section aria-labelledby="overview-title">
       <h2 id="overview-title" data-i18n="overview.title"></h2>
@@ -34,6 +43,10 @@
     <section aria-labelledby="input-title">
       <h2 id="input-title" data-i18n="input.title"></h2>
       <p id="input-help" data-i18n="input.help"></p>
+      <div class="actions">
+        <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
+        <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
+      </div>
       <p id="input-progress" aria-live="polite"></p>
       <p id="selected-bar"></p>
       <div id="bar-grid" role="group" aria-describedby="input-help"></div>
@@ -41,12 +54,45 @@
         <div id="bar-palette" role="group"></div>
         <p class="legend" data-i18n="palette.legend"></p>
       </div>
+      <h3 data-i18n="range.title"></h3>
+      <div class="range-inputs">
+        <label><span data-i18n="range.start"></span><input id="range-start" type="text" inputmode="numeric" autocomplete="off" value="1"></label>
+        <label><span data-i18n="range.end"></span><input id="range-end" type="text" inputmode="numeric" autocomplete="off" value="67"></label>
+      </div>
+      <button id="range-apply" type="button" data-i18n="range.apply" aria-describedby="range-reason"></button>
+      <p id="range-reason" aria-live="polite"></p>
     </section>
     <section aria-labelledby="text-label">
       <h2 id="text-label"><label for="bar-text" data-i18n="text.label"></label></h2>
       <p id="text-help" data-i18n="text.help"></p>
       <textarea id="bar-text" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="text-help text-errors"></textarea>
       <div id="text-errors" aria-live="polite"></div>
+    </section>
+    <section id="result" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" data-i18n="result.title"></h2>
+      <p id="judgment" class="judgment" aria-live="polite"></p>
+      <div id="alternatives" class="actions"></div>
+      <h3 data-i18n="result.readable"></h3>
+      <dl class="readable">
+        <dt data-i18n="section.postal"></dt><dd id="postal-result"></dd>
+        <dt data-i18n="section.address"></dt><dd id="address-result"></dd>
+      </dl>
+      <p data-i18n="result.meaning"></p>
+      <div id="postal-notes"></div>
+      <h3 data-i18n="result.notes"></h3>
+      <ul id="issues"></ul>
+      <section aria-labelledby="inspection-title">
+        <h3 id="inspection-title" data-i18n="inspection.title"></h3>
+        <div id="inspection"></div>
+      </section>
+      <section aria-labelledby="checksum-title">
+        <h3 id="checksum-title" data-i18n="checksum.title"></h3>
+        <div id="checksum"></div>
+      </section>
+      <section aria-labelledby="breakdown-title">
+        <h3 id="breakdown-title" data-i18n="breakdown.title"></h3>
+        <table id="breakdown"></table>
+      </section>
     </section>
     <p id="input-announcement" class="sr-only" aria-live="polite"></p>
   </main>

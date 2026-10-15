@@ -27,7 +27,7 @@ test('HTML: no inline handlers, styles, or unsafe DOM insertion', () => {
 });
 
 test('HTML: input IDs are unique and text entry does not opt into form persistence', () => {
-  for (const id of ['bar-grid', 'bar-palette', 'bar-text', 'sample-select']) {
+  for (const id of ['bar-grid', 'bar-palette', 'bar-text', 'sample-select', 'result', 'inspection']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   const textarea = /<textarea\b[^>]*id="bar-text"[^>]*>/.exec(html)[0];
