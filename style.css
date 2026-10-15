@@ -361,8 +361,25 @@ svg {
 }
 
 .inspection-label.ok {
-  color: var(--ok-fg);
-  background: var(--ok-bg);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.inspection-list .inspection-label, #breakdown .inspection-label {
+  white-space: nowrap;
+}
+
+.card-symbol .inspection-label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  column-gap: 0.25em;
+}
+
+.inspection-state, .candidate-count {
+  white-space: nowrap;
 }
 
 .inspection-list {
@@ -370,7 +387,7 @@ svg {
 }
 
 .inspection-list li {
-  margin-block: 6px;
+  margin-block: 4px;
 }
 
 .overview-inspection {
@@ -384,7 +401,7 @@ svg {
 }
 
 .overview-inspection.ok {
-  fill: var(--ok-fg);
+  fill: var(--muted);
 }
 
 .inspection-background.warn {
@@ -392,7 +409,7 @@ svg {
 }
 
 .inspection-background.ok {
-  fill: var(--ok-bg);
+  fill: var(--surface);
 }
 
 .mini-bars {

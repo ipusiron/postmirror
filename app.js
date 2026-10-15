@@ -228,7 +228,7 @@
       symbol.textContent = group.length === 2 ? translate('symbol.marker')
         : char ? char.symbol ?? translate('symbol.unknown') : localSymbol(group);
       if (char && inspectable()) {
-        symbol.append(node('br'), inspectionBadge(char));
+        symbol.append(node('br'), inspectionBadge(char, true));
       }
     });
     const count = state.bars.filter(value => value !== undefined).length;
@@ -342,9 +342,18 @@
     return record('inspection.unavailable');
   }
 
-  function inspectionBadge(char) {
+  function inspectionBadge(char, compact = false) {
     const color = char.status === 'read' || char.status === 'recovered' ? 'warn' : 'ok';
     const badge = node('span', message(inspectionLabel(char)), `inspection-label ${color}`);
+    if (compact && ['candidates', 'hidden'].includes(char.status) && char.possible.length >= 2) {
+      badge.setAttribute('role', 'img');
+      badge.setAttribute('aria-label', message(inspectionLabel(char)));
+      const status = node('span', translate('inspection.cardUndetermined'), 'inspection-state');
+      const count = node('span', message(plural('inspection.cardCandidates', char.possible.length)), 'candidate-count');
+      status.setAttribute('aria-hidden', 'true');
+      count.setAttribute('aria-hidden', 'true');
+      badge.replaceChildren(status, count);
+    }
     badge.dataset.inspection = char.status;
     badge.dataset.charIndex = char.index;
     return badge;
@@ -398,7 +407,7 @@
     const leaked = chars => chars.filter(char => char.status === 'read' || char.status === 'recovered').length;
     return [plural('inspection.postalSummary', leaked(state.result.chars.slice(0, 7))),
       plural('inspection.summary', leaked(state.result.chars.slice(7, 20)), {
-        section: translate('section.address'), total: 13
+        section: translate('inspection.sectionAddress'), total: 13
       })];
   }
 
@@ -426,9 +435,11 @@
     const result = state.result;
     if (!inspectable()) {
       appendMessage(container, record(`inspection.${result.checksum.status}`));
+      appendMessage(container, record('inspection.cover'));
       return;
     }
     inspectionSummaries().forEach(item => appendMessage(container, item));
+    appendMessage(container, record('inspection.cover'));
     if (!state.bars.includes(null)) appendMessage(container, record('inspection.hint'));
     const list = node('ul', undefined, 'inspection-list');
     for (const char of result.chars) {
@@ -447,9 +458,7 @@
     if (result.chars.some(char => char.status === 'recovered')) appendMessage(container, record('inspection.assumption'));
     if ([0, 1, 65, 66].some(index => state.bars[index] === null)) appendMessage(container, record('inspection.markers'));
     if (state.bars.slice(50, 62).includes(null)) appendMessage(container, record('inspection.padding'));
-    if (!result.chars.some(char => ['hidden', 'candidates'].includes(char.status))) {
-      appendMessage(container, record('inspection.cover'));
-    }
+
   }
 
   function checkValue(value) {

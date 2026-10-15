@@ -123,3 +123,13 @@ test('I18n: both lessons have 12 sections and both quiz panels have seven distin
   }
   assert.equal(new Set(allNames).size, 14);
 });
+
+test('I18n: neutral inspection labels and language-specific separators', () => {
+  for (const file of ['messages.js', 'index.html']) {
+    const text = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    assert.doesNotMatch(text, /隠せた|■\s*Hidden| — /u, file);
+  }
+  assert.equal(messages.en['inspection.sectionAddress'], 'address number');
+  assert.match(messages.ja['learn.stage'], /：/);
+  assert.match(messages.en['learn.stage'], /: /);
+});
