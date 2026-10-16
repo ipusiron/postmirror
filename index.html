@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="barcode-core.js" defer></script>
   <script src="extract-core.js" defer></script>
+  <script src="image-core.js" defer></script>
   <script src="samples.js" defer></script>
   <script src="messages.js" defer></script>
   <script src="app.js" defer></script>
@@ -28,6 +29,7 @@
   <main>
     <div class="tabs" role="tablist" data-i18n-label="tabs.label">
       <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
+      <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
       <button id="tab-learn" type="button" role="tab" aria-selected="false" aria-controls="panel-learn" tabindex="-1" data-i18n="tab.learn"></button>
       <button id="tab-quiz" type="button" role="tab" aria-selected="false" aria-controls="panel-quiz" tabindex="-1" data-i18n="tab.quiz"></button>
     </div>
@@ -130,6 +132,42 @@
       </details>
     </section>
     <p id="input-announcement" class="sr-only" aria-live="polite"></p>
+    </div>
+    <div id="panel-lab" role="tabpanel" aria-labelledby="tab-lab" hidden>
+      <section aria-labelledby="lab-intro-title">
+        <h2 id="lab-intro-title" data-i18n="intro.title"></h2>
+        <ol>
+          <li data-i18n="lab.step1"></li>
+          <li data-i18n="lab.step2"></li>
+          <li data-i18n="lab.step3"></li>
+        </ol>
+      </section>
+      <p class="privacy" data-i18n="lab.privacy"></p>
+      <section aria-labelledby="lab-controls-title">
+        <h2 id="lab-controls-title" data-i18n="lab.title"></h2>
+        <div class="lab-controls">
+          <label for="lab-sample" data-i18n="lab.sample"></label>
+          <select id="lab-sample"></select>
+          <label for="lab-mask" data-i18n="lab.mask"></label>
+          <select id="lab-mask"></select>
+          <div id="lab-character-field" hidden>
+            <label for="lab-character" data-i18n="lab.character"></label>
+            <select id="lab-character"></select>
+          </div>
+        </div>
+        <canvas id="lab-canvas" class="lab-canvas" width="596" height="88" role="img"></canvas>
+      </section>
+      <section aria-labelledby="lab-result-title">
+        <h2 id="lab-result-title" data-i18n="lab.result"></h2>
+        <div id="lab-output" aria-live="polite">
+          <p id="lab-status"></p>
+          <p id="lab-known"></p>
+          <h3 data-i18n="lab.judgment"></h3>
+          <p id="lab-judgment"></p>
+          <div id="lab-summary"></div>
+        </div>
+        <button id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
+      </section>
     </div>
     <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
       <p data-i18n="learn.intro"></p>

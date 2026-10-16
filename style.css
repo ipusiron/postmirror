@@ -682,3 +682,21 @@ input[type="radio"] {
   background: var(--accent);
   color: var(--bg);
 }
+
+.lab-controls {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lab-controls select {
+  width: 100%;
+  min-width: 44px;
+  padding: 0.5rem;
+}
+
+.lab-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: 1rem;
+}

@@ -48,7 +48,7 @@ test('I18n: Japanese wording follows the shared forbidden list', () => {
 
 test('I18n: every static HTML message has a dictionary entry', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const keys = [...html.matchAll(/data-i18n="([^"]+)"/g)].map(match => match[1]);
+  const keys = [...html.matchAll(/data-i18n(?:-label)?="([^"]+)"/g)].map(match => match[1]);
   assert.ok(keys.length >= 5);
   for (const key of keys) assert.ok(Object.hasOwn(messages.ja, key), key);
 });

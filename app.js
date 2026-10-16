@@ -4,6 +4,10 @@
   const core = globalThis.PostMirrorCore;
   const samples = globalThis.PostMirrorSamples;
   const messages = globalThis.PostMirrorMessages;
+  const imaging = globalThis.PostMirrorImage;
+  const lab = { sample: 0, mask: 'none', character: 8, image: null, read: null, decoded: null };
+  const labMasks = ['none', 'fill', 'character', 'upper', 'line-1', 'line-0.25', 'translucent-black', 'translucent-white',
+    'mosaic-0.5', 'mosaic-1', 'mosaic-2', 'blur-0.5', 'blur-1', 'blur-2'];
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
@@ -403,10 +407,10 @@
     return description;
   }
 
-  function inspectionSummaries() {
+  function inspectionSummaries(result = state.result) {
     const leaked = chars => chars.filter(char => char.status === 'read' || char.status === 'recovered').length;
-    return [plural('inspection.postalSummary', leaked(state.result.chars.slice(0, 7))),
-      plural('inspection.summary', leaked(state.result.chars.slice(7, 20)), {
+    return [plural('inspection.postalSummary', leaked(result.chars.slice(0, 7))),
+      plural('inspection.summary', leaked(result.chars.slice(7, 20)), {
         section: translate('inspection.sectionAddress'), total: 13
       })];
   }
@@ -726,9 +730,122 @@
     return button;
   }
 
+  function buildLab() {
+    for (const [index, sample] of samples.barcodes.entries()) {
+      const option = node('option');
+      option.value = String(index);
+      option.dataset.i18n = sample.labelKey;
+      element('lab-sample').append(option);
+    }
+    for (const kind of labMasks) {
+      const option = node('option');
+      option.value = kind;
+      option.dataset.i18n = `lab.mask.${kind}`;
+      element('lab-mask').append(option);
+    }
+    for (let number = 1; number <= 21; number++) {
+      const option = node('option');
+      option.value = String(number);
+      element('lab-character').append(option);
+    }
+    element('lab-character').value = String(lab.character);
+    for (const [id, field] of [['lab-sample', 'sample'], ['lab-mask', 'mask'], ['lab-character', 'character']]) {
+      element(id).addEventListener('change', event => {
+        lab[field] = field === 'mask' ? event.target.value : Number(event.target.value);
+        readLab();
+      });
+    }
+    element('lab-transfer').addEventListener('click', () => {
+      if (!lab.read) return;
+      remember();
+      state.bars = lab.read.bars.slice();
+      state.lastSample = null;
+      element('sample-select').value = '';
+      state.selected = 0;
+      state.announcement = record('lab.transferred');
+      changed();
+      showTab('decode');
+      element('result-title').focus();
+    });
+  }
+
+  function labMask(region) {
+    const p = 8, mid = region.start.y;
+    const rect = { x: region.start.x - 0.75 * p, y: mid - 2 * p,
+      width: region.end.x - region.start.x + 1.5 * p, height: 4 * p };
+    const kind = lab.mask;
+    if (kind === 'none') return null;
+    if (kind === 'character') {
+      return { kind: 'fill', rect: { x: region.start.x + (1.5 + 3 * (lab.character - 1)) * p,
+        y: mid - 1.5 * p, width: 3 * p, height: 3 * p } };
+    }
+    if (kind === 'upper') return { kind: 'fill', rect: { ...rect, height: 2 * p } };
+    if (kind.startsWith('line-')) {
+      return { kind: 'line', start: { x: rect.x, y: mid }, end: { x: rect.x + rect.width, y: mid },
+        thicknessPx: Number(kind.split('-')[1]) * p };
+    }
+    if (kind.startsWith('translucent-')) return { kind: 'translucent', rect, alpha: 0.5, color: kind.endsWith('white') ? 255 : 0 };
+    if (kind.startsWith('mosaic-')) return { kind: 'mosaic', rect, blockPx: Number(kind.split('-')[1]) * p };
+    if (kind.startsWith('blur-')) return { kind: 'blur', rect, sigmaPx: Number(kind.split('-')[1]) * p };
+    return { kind: 'fill', rect };
+  }
+
+  function paintLab() {
+    if (!lab.image) return;
+    const canvas = element('lab-canvas');
+    canvas.width = lab.image.width;
+    canvas.height = lab.image.height;
+    canvas.getContext('2d').putImageData(new ImageData(lab.image.data, lab.image.width, lab.image.height), 0, 0);
+  }
+
+  function readLab() {
+    const sample = samples.barcodes[lab.sample];
+    const bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
+    const rendered = imaging.renderBarcode(bars, { pxPerPitch: 8, angleDeg: 0 });
+    const mask = labMask(rendered.region);
+    lab.image = mask ? imaging.applyMask(rendered.image, mask) : rendered.image;
+    lab.read = imaging.readBarsInRegion(lab.image, rendered.region);
+    lab.decoded = core.decodeBars(lab.read.bars);
+    paintLab();
+    renderLab();
+  }
+
+  function renderLab() {
+    element('lab-character-field').hidden = lab.mask !== 'character';
+    for (const option of element('lab-character').options) {
+      option.textContent = translate('lab.characterNumber', { number: option.value });
+    }
+    const mask = lab.mask === 'character' ? translate('lab.characterMask', { number: lab.character }) : translate(`lab.mask.${lab.mask}`);
+    element('lab-canvas').setAttribute('aria-label', translate('lab.canvas', {
+      sample: translate(samples.barcodes[lab.sample].labelKey), mask
+    }));
+    if (!lab.read) return;
+    const status = element('lab-status');
+    status.dataset.status = lab.read.status;
+    status.textContent = translate(`lab.status.${lab.read.status}`);
+    const known = lab.read.bars.filter(value => value !== null).length;
+    element('lab-known').textContent = message(plural('lab.known', known));
+    element('lab-known').dataset.known = String(known);
+    const decoded = element('lab-judgment');
+    decoded.dataset.status = lab.decoded.status;
+    decoded.textContent = message(judgment(lab.decoded));
+    const summary = element('lab-summary');
+    summary.replaceChildren();
+    inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
+    appendMessage(summary, record('inspection.cover'));
+  }
+
   function showTab(name, focus = false) {
+    if (state.tab === 'lab' && name !== 'lab') {
+      element('lab-canvas').width = 0;
+      element('lab-canvas').height = 0;
+    }
     state.tab = name;
-    for (const tab of ['decode', 'learn', 'quiz']) {
+    if (name === 'lab') {
+      if (!lab.read) readLab();
+      else paintLab();
+    }
+    for (const tab of ['decode', 'lab', 'learn', 'quiz']) {
       const selected = tab === name;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
@@ -774,6 +891,7 @@
     renderControls();
     renderResult();
     renderLearn();
+    renderLab();
   }
 
   function renderLearn() {
@@ -986,7 +1104,7 @@
     });
   });
 
-  const tabNames = ['decode', 'learn', 'quiz'];
+  const tabNames = ['decode', 'lab', 'learn', 'quiz'];
   for (const name of tabNames) {
     const tab = element(`tab-${name}`);
     tab.addEventListener('click', () => showTab(name));
@@ -1016,6 +1134,7 @@
   });
   element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();
+  buildLab();
   if (typeof ResizeObserver === 'function') new ResizeObserver(updatePaletteSpace).observe(paletteDock);
   else {
     addEventListener('resize', updatePaletteSpace);
