@@ -374,23 +374,86 @@
     return fit;
   }
 
+  function refineRegion(sample, pitch) {
+    // Cache the strip once, then score all 33 x 33 independent endpoint offsets.
+    // Each pitch interval must contain both ink and a gap, regardless of phase.
+    const count = 537, rows = 37;
+    const strip = new Float64Array(count * rows);
+    let darkest = 255, lightest = 0;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < count; x++) {
+        const value = sample((x / 8 - 0.5) * pitch, (y / 8 - 2.25) * pitch);
+        strip[y * count + x] = value;
+        darkest = Math.min(darkest, value);
+        lightest = Math.max(lightest, value);
+      }
+    }
+    const contrast = Math.max(24, (lightest - darkest) * 0.25);
+    const scores = [];
+    let best = 0;
+    for (let a = -16; a <= 16; a++) {
+      for (let b = -16; b <= 16; b++) {
+        let score = 0;
+        for (let i = 0; i < 67; i++) {
+          let low = 255, high = 0;
+          for (let j = 0; j <= 8; j++) {
+            const x = i * 8 + j;
+            const y = 18 + a + (b - a) * (x / 8 - 0.5) / 66;
+            const y0 = Math.floor(y), fraction = y - y0;
+            const value = strip[y0 * count + x] * (1 - fraction) + strip[(y0 + 1) * count + x] * fraction;
+            low = Math.min(low, value);
+            high = Math.max(high, value);
+          }
+          score += Math.min(1, (high - low) / contrast);
+        }
+        scores.push({ a, b, score });
+        best = Math.max(best, score);
+      }
+    }
+    // Use the center of the best plateau rather than an arbitrary edge of it.
+    const plateau = scores.filter(candidate => candidate.score >= best - 0.01);
+    const a = plateau.reduce((sum, candidate) => sum + candidate.a, 0) / plateau.length;
+    const b = plateau.reduce((sum, candidate) => sum + candidate.b, 0) / plateau.length;
+    return { first: a * pitch / 8, last: b * pitch / 8 };
+  }
+
   function readBarsInRegion(image, region, options = {}) {
     validateImage(image);
+    const selected = channels(image);
+    const result = readLine(image, region, selected, true);
+    if (result.status === 'read') return result;
+    // A low-contrast overlay can bias the timing plateau. Keep the supplied line
+    // as a second geometric candidate, accepting it only with all 67 bars known.
+    const original = readLine(image, region, selected, false);
+    return original.status === 'read' ? original : result;
+  }
+
+  function readLine(image, region, selected, refine) {
+    validateImage(image);
     if (!region) throw new TypeError('invalid-region');
-    const start = point(region.start), end = point(region.end);
-    const dx = end.x - start.x, dy = end.y - start.y;
-    const length = Math.hypot(dx, dy), nominal = length / 66;
-    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    let start = point(region.start), end = point(region.end);
+    let dx = end.x - start.x, dy = end.y - start.y;
+    let length = Math.hypot(dx, dy), nominal = length / 66;
+    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
     if (nominal < 4) return emptyRead(nominal > 0 ? 'low-resolution' : 'region-too-small', nominal, angle);
     const inside = p => p.x >= 0.5 && p.x <= image.width - 0.5 && p.y >= 0.5 && p.y <= image.height - 0.5;
     if (!inside(start) || !inside(end)) return emptyRead('region-outside-image', nominal, angle);
-    const ux = dx / length, uy = dy / length;
-    const selected = channels(image);
+    let ux = dx / length, uy = dy / length;
     const sample = (u, v) => bilinear(selected.gray, image.width, image.height,
       start.x + ux * u - uy * v, start.y + uy * u + ux * v);
-    const origin = -2 * nominal, step = nominal / 8;
+    const adjustment = refine ? refineRegion(sample, nominal) : { first: 0, last: 0 };
+    start = { x: start.x - uy * adjustment.first, y: start.y + ux * adjustment.first };
+    end = { x: end.x - uy * adjustment.last, y: end.y + ux * adjustment.last };
+    dx = end.x - start.x;
+    dy = end.y - start.y;
+    length = Math.hypot(dx, dy);
+    nominal = length / 66;
+    ux = dx / length;
+    uy = dy / length;
+    angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    const origin = -4.5 * nominal, step = nominal / 8;
     const profile = [];
-    for (let i = 0; i <= 560; i++) {
+    for (let i = 0; i <= 600; i++) {
       const u = origin + i * step;
       let value = 255;
       for (let j = -2; j <= 2; j++) value = Math.min(value, sample(u, j * nominal * 0.3));
@@ -401,7 +464,7 @@
       const local = sauvola(selected.gray, image.width, image.height, 3 * nominal);
       peaks = clockPeaks(profile, step, origin, nominal, u => local(start.x + ux * u, start.y + uy * u));
     }
-    peaks = peaks.filter(peak => peak.u >= -1.4 * nominal && peak.u <= length + 1.4 * nominal);
+    peaks = peaks.filter(peak => peak.u >= -4 * nominal && peak.u <= length + 4 * nominal);
     if (peaks.length < 60 || peaks.length > 67) return emptyRead(peaks.length ? 'bar-count' : 'no-bars', nominal, angle);
     const differences = peaks.slice(1).map((peak, i) => peak.u - peaks[i].u).filter(d => d > nominal * 0.65 && d < nominal * 1.35);
     const pitch = median(differences);
@@ -423,10 +486,11 @@
     const result = emptyRead('bar-count', fit.slope, angle);
     for (let i = 0; i < 67; i++) {
       const peak = aligned[i], edge = edges[i];
-      if (!peak) continue;
       const center = reference.intercept + reference.slope * i;
       const v = center * fit.slope;
-      result.centers[i] = { x: start.x + ux * peak.u - uy * v, y: start.y + uy * peak.u + ux * v };
+      const u = peak ? peak.u : fit.intercept + i * fit.slope;
+      result.centers[i] = { x: start.x + ux * u - uy * v, y: start.y + uy * u + ux * v };
+      if (!peak) continue;
       if (!edge) { result.confidence[i] = 0; continue; }
       const up = center - 0.5 - edge.top, down = edge.bottom - center - 0.5;
       const guess = up > 0.5 ? (down > 0.5 ? 1 : 2) : (down > 0.5 ? 3 : 4);
@@ -449,9 +513,8 @@
         || (inner[0] !== null && inner[1] !== null && inner[0] !== inner[1])) {
       return emptyRead('start-stop', fit.slope, angle);
     }
-    const found = result.centers.filter(Boolean).length;
-    result.status = found < 67 ? 'unreadable' : result.bars.includes(null) ? 'partial' : 'read';
-    result.reasons = result.status === 'read' ? [] : [found < 67 ? 'bar-count' : 'low-confidence'];
+    result.status = result.bars.includes(null) ? 'partial' : 'read';
+    result.reasons = result.status === 'read' ? [] : ['low-confidence'];
     result.angleDeg = angle + Math.atan(reference.slope) * 180 / Math.PI;
     return result;
   }

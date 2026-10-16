@@ -64,7 +64,12 @@ postmirror/                         # ツールのルート
 矩形はmask.rect、直線はmask.start、mask.end、thicknessPxで指定し、blurはsigmaPxを使います。
 readBarsInRegionはstartからendの順で67本を返し、上はその向きの左の法線です。
 confidenceは67個の配列で、信頼度0.2未満と位置不明のバーをnullにします。
-タイミング帯からピッチと位相を測り直し、スペースの明るさを確認します。チェックデジットは参照しません。
+両端をそれぞれ直交方向へ±2ピッチ、1/8ピッチ刻みで探し、タイミング帯へ線を合わせます。
+線方向は両端付近の±4ピッチを調べ、ピッチと位相を測り直し、スペースの明るさを確認します。
+補正後に全67本を読めない場合は元の線も調べ、全67本が読めた場合だけ採用します。
+灰色化とチャンネルの選択は1回だけ行い、チェックデジットは参照しません。
+両端を含む67位置の格子が決まれば、読めたバーに応じてreadかpartialを返します。
+山が欠けた位置のcentersは格子から補い、barsとconfidenceはnullにします。格子が決まらなければunreadableです。
 画像コアは画面への組み込み前で、通常スクリプトではbarcode-core.jsの後に読み込みます。
 `extract-core.js`は`barcode-core.js`に依存しません。
 画面は`barcode-core.js`、`extract-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。

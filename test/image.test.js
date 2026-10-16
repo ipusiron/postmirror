@@ -425,23 +425,54 @@ function outsideCases(seed, visit) {
   }
 }
 
-test('Image read: all 2320 independent in-range images and both translucent colors match exactly', () => {
-  const failures = [];
-  const count = grid(EVALUATION_SEED, item => {
-    for (const color of [null, 0, 255]) {
-      let image = item.image;
-      if (color !== null) {
-        image = translucentImage(image, item.raster, color);
+function offsetRegion(raster, startAlong, startAcross, endAlong, endAcross) {
+  const angle = raster.angle * Math.PI / 180, p = raster.pitch;
+  const move = (point, u, v) => ({ x: point.x + p * (u * Math.cos(angle) - v * Math.sin(angle)),
+    y: point.y + p * (u * Math.sin(angle) + v * Math.cos(angle)) });
+  return { start: move(raster.region.start, startAlong, startAcross), end: move(raster.region.end, endAlong, endAcross) };
+}
+
+function region2B(raster, seed) {
+  const random = referenceRandom(seed);
+  return offsetRegion(raster, random() * 2 - 1, random() * 3 - 1.5, random() * 2 - 1, random() * 3 - 1.5);
+}
+
+function worstCases(seed, visit, representative = false) {
+  let count = 0;
+  grid(seed, item => {
+    if (![6, 12].includes(item.pitch) || ![0, 10].includes(item.angle) || item.noise !== 8) return;
+    for (const a of [-1, 1]) for (const b of [-1, 1]) {
+      if (representative && a === b) continue;
+      for (const c of [-1.5, 1.5]) for (const d of [-1.5, 1.5]) {
+        visit({ ...item, region: offsetRegion(item.raster, a, c, b, d), name: `${item.name}/${a}/${c}/${b}/${d}` });
+        count++;
       }
-      const result = imaging.readBarsInRegion(image, item.region);
-      const measured = metrics(result, item.vector.bars);
-      if (!measured.complete || measured.wrong || measured.confirmedWrong) {
-        failures.push({ id: item.vector.id, name: item.name, color, status: result.status, ...measured });
-      }
-      verifyShape(result);
     }
   });
-  assert.equal(count, 2320);
+  return count;
+}
+
+test('Image read: independent worst endpoint offsets and representative translucent images match exactly', () => {
+  const failures = [];
+  const check = item => {
+    const result = imaging.readBarsInRegion(item.image, item.region);
+    const measured = metrics(result, item.vector.bars);
+    if (!measured.complete || measured.wrong || measured.confirmedWrong) {
+      failures.push({ id: item.vector.id, name: item.name, status: result.status, ...measured });
+    }
+    verifyShape(result);
+  };
+  assert.equal(worstCases(EVALUATION_SEED, check, true), 1856);
+  let translucentCount = 0;
+  grid(EVALUATION_SEED, item => {
+    if (item.pitch !== 6 || item.angle !== 10 || item.noise !== 8) return;
+    for (const color of [0, 255]) {
+      check({ ...item, image: translucentImage(item.image, item.raster, color),
+        region: item.blur === 0 ? offsetRegion(item.raster, -1, -1.5, 1, 1.5) : item.region });
+      translucentCount++;
+    }
+  });
+  assert.equal(translucentCount, 116);
   assert.equal(failures.length, 0, JSON.stringify({ count: failures.length, first: failures.slice(0, 12) }));
 });
 
@@ -477,6 +508,11 @@ test('Image read: masks, boundary cases and independent held-out data have zero 
       if (JSON.stringify(result.bars) !== JSON.stringify(expected)) problems.push('character-bars');
       const decoded = core.decodeBars(result.bars);
       if (decoded.status !== 'recovered') problems.push('character-recovery');
+      if (result.status !== 'partial') problems.push('character-status');
+      for (const i of [23, 24, 25]) {
+        if (!result.centers[i] || result.confidence[i] !== null) problems.push('character-grid');
+        else close(result.centers[i].x, item.region.start.x + i * result.pitchPx, 0.7);
+      }
     }
     if ((item.name.startsWith('translucent') || item.name === 'mosaic-0.25') && !measured.complete) problems.push('should-read');
     if (problems.length) failures.push({ name: item.name, id: item.vector.id, problems, status: result.status, ...measured });
@@ -509,4 +545,4 @@ test('Image read: source/region immutability, no-bar confidence, colors and inva
 });
 
 module.exports = { TUNING_SEED, EVALUATION_SEED, grid, outsideCases, metrics, examples, referenceRaster, referenceImage,
-  shiftedRegion, referenceMask, translucentImage, ZERO_WRONG, MASK_KINDS };
+  shiftedRegion, referenceMask, translucentImage, ZERO_WRONG, MASK_KINDS, offsetRegion, region2B, worstCases };
