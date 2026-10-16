@@ -149,7 +149,8 @@
           <label for="lab-sample" data-i18n="lab.sample"></label>
           <select id="lab-sample"></select>
           <label for="lab-mask" data-i18n="lab.mask"></label>
-          <select id="lab-mask"></select>
+          <select id="lab-mask" aria-describedby="lab-mask-help"></select>
+          <p id="lab-mask-help" class="muted" data-i18n="lab.maskHelp"></p>
           <div id="lab-character-field" hidden>
             <label for="lab-character" data-i18n="lab.character"></label>
             <select id="lab-character"></select>
@@ -167,6 +168,38 @@
           <div id="lab-summary"></div>
         </div>
         <button id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
+      </section>
+      <section aria-labelledby="photo-title">
+        <h2 id="photo-title" data-i18n="photo.title"></h2>
+        <p id="photo-own" data-i18n="photo.own"></p>
+        <label for="photo-file" data-i18n="photo.file"></label>
+        <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-own photo-keyboard">
+        <p id="photo-keyboard" class="muted" data-i18n="photo.keyboard"></p>
+        <div aria-live="polite">
+          <p id="photo-notice"></p>
+          <p id="photo-step"></p>
+        </div>
+        <div id="photo-work" hidden>
+          <canvas id="photo-overview" class="photo-canvas" width="0" height="0" role="img"></canvas>
+          <canvas id="photo-zoom" class="photo-canvas" width="0" height="0" role="img" hidden></canvas>
+          <section id="photo-output" aria-labelledby="photo-result-title" hidden>
+            <h3 id="photo-result-title" tabindex="-1" data-i18n="lab.result"></h3>
+            <div id="photo-result-wrap" class="photo-result-wrap" tabindex="0" role="region" data-i18n-label="photo.resultImage">
+              <canvas id="photo-result" width="0" height="0" role="img"></canvas>
+            </div>
+            <p id="photo-marks"></p>
+            <div aria-live="polite">
+              <p id="photo-status"></p>
+              <p id="photo-known"></p>
+              <h4 data-i18n="lab.judgment"></h4>
+              <p id="photo-judgment"></p>
+              <div id="photo-summary"></div>
+            </div>
+            <button id="photo-transfer" type="button" data-i18n="photo.transfer" disabled></button>
+          </section>
+          <button id="photo-reselect" type="button" data-i18n="photo.reselect" disabled></button>
+        </div>
+        <button id="photo-clear" type="button" data-i18n="photo.clear" disabled></button>
       </section>
     </div>
     <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>

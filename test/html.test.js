@@ -121,12 +121,22 @@ test('HTML: external links use the approved URLs and isolated new tabs', () => {
   assert.deepStrictEqual(actual, allowed);
 });
 
-test('HTML: sample experiment uses an accessible canvas without file or remote image input', () => {
+test('HTML: image experiments use accessible canvases and one local file input', () => {
   for (const id of ['lab-sample', 'lab-mask', 'lab-character', 'lab-canvas', 'lab-status', 'lab-known', 'lab-judgment', 'lab-transfer']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   assert.match(html, /<canvas[^>]+id="lab-canvas"[^>]+role="img"/);
   assert.match(app, /setAttribute\('aria-label', translate\('lab\.canvas'/);
-  assert.doesNotMatch(html, /<input[^>]+type="file"|<img[^>]+src="blob:/);
+  const files = [...html.matchAll(/<input\b[^>]*type="file"[^>]*>/g)];
+  assert.equal(files.length, 1);
+  assert.match(files[0][0], /accept="image\/jpeg,image\/png,image\/webp"/);
+  assert.doesNotMatch(files[0][0], /\s(?:capture|multiple)(?:\s|=|>)/i);
+  assert.doesNotMatch(html, /<img[^>]+src="blob:/);
+  for (const id of ['photo-overview', 'photo-zoom', 'photo-result']) {
+    assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
+    assert.match(html, new RegExp(`<canvas[^>]+id="${id}"[^>]+role="img"`));
+  }
+  assert.doesNotMatch(app, /\.(?:capture|multiple)\s*=/);
+  assert.doesNotMatch(app, /setAttribute\(\s*['"](?:capture|multiple)['"]/);
   assert.doesNotMatch(app, /createObjectURL|toDataURL|toBlob|getUserMedia/);
 });
