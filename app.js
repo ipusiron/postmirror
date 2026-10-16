@@ -12,7 +12,7 @@
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     origins: Array(67).fill(null), lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
-    language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
+    mode: 'customer', language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
   const element = id => document.getElementById(id);
   const record = (key, params = {}) => ({ key, params });
@@ -738,7 +738,7 @@
   }
 
   const photo = {
-    mode: 'customer', version: 0, bitmap: null, pixels: null, region: null, crop: null, zoom: null,
+    version: 0, bitmap: null, pixels: null, region: null, crop: null, zoom: null,
     rough: [], precise: [], pitch: 0, step: 'empty', resized: false, read: null, decoded: null
   };
   const photoCanvases = ['photo-overview', 'photo-zoom', 'photo-result'];
@@ -881,8 +881,8 @@
   }
 
   function readPhoto() {
-    photo.read = photo.mode === 'nw7' ? nw7.read(photo.pixels, photo.region) : imaging.readBarsInRegion(photo.pixels, photo.region);
-    photo.decoded = photo.mode === 'nw7' || photo.read.status === 'unreadable' ? null : core.decodeBars(photo.read.bars);
+    photo.read = state.mode === 'nw7' ? nw7.read(photo.pixels, photo.region) : imaging.readBarsInRegion(photo.pixels, photo.region);
+    photo.decoded = state.mode === 'nw7' || photo.read.status === 'unreadable' ? null : core.decodeBars(photo.read.bars);
     photo.step = 'result';
     renderPhoto();
     paintPhotoResult();
@@ -921,14 +921,14 @@
     const canvas = element('photo-result');
     const pitch = photo.read.pitchPx || photo.pitch;
     const available = element('photo-result-wrap').clientWidth;
-    const fit = photo.mode === 'nw7' || photo.read.status === 'unreadable';
+    const fit = state.mode === 'nw7' || photo.read.status === 'unreadable';
     const width = Math.ceil(fit ? available : Math.max(available, photo.pixels.width * 8 / pitch));
     canvas.style.width = `${width}px`;
     canvas.width = photo.pixels.width;
     canvas.height = photo.pixels.height;
     const context = canvas.getContext('2d');
     context.putImageData(photo.pixels, 0, 0);
-    if (photo.mode === 'nw7') return;
+    if (state.mode === 'nw7') return;
     const scale = canvas.width / width;
     const radius = 3 * scale;
     const colors = getComputedStyle(document.documentElement);
@@ -955,8 +955,7 @@
   }
 
   function renderPhoto() {
-    const linear = photo.mode === 'nw7';
-    element('photo-mode').value = photo.mode;
+    const linear = state.mode === 'nw7';
     element('photo-customer-example').hidden = linear;
     element('photo-nw7-example').hidden = !linear;
     for (const [id, key] of [['photo-format', 'format'], ['photo-keyboard', 'keyboard'], ['photo-taps', 'fourTaps'],
@@ -1036,13 +1035,6 @@
   }
 
   function buildPhoto() {
-    element('photo-mode').addEventListener('change', event => {
-      photo.mode = event.target.value === 'nw7' ? 'nw7' : 'customer';
-      try {
-        if (photo.bitmap) resetPhotoRegion();
-        else renderPhoto();
-      } catch (_) { photoFailure(); }
-    });
     element('photo-file').addEventListener('change', event => loadPhoto(event.target.files[0]));
     element('photo-clear').addEventListener('click', () => releasePhoto());
     element('photo-back').addEventListener('click', () => {
@@ -1052,7 +1044,7 @@
       try { resetPhotoRegion(); } catch (_) { photoFailure(); }
     });
     element('photo-transfer').addEventListener('click', () => {
-      if (photo.mode === 'customer') transferImage(photo.read);
+      if (state.mode === 'customer') transferImage(photo.read);
     });
     element('photo-overview').addEventListener('click', event => {
       if (photo.step !== 'rough') return;
@@ -1218,7 +1210,40 @@
     if (lab.read.status === 'unreadable') appendMessage(summary, record('image.otherMethods'));
   }
 
+  function availableTabs() {
+    return state.mode === 'nw7' ? ['photo', 'learn'] : ['decode', 'lab', 'photo', 'learn', 'quiz'];
+  }
+
+  function renderMode() {
+    const linear = state.mode === 'nw7';
+    document.querySelectorAll('input[name="barcode-mode"]').forEach(input => {
+      input.checked = input.value === state.mode;
+      input.closest('label').classList.toggle('is-selected', input.checked);
+    });
+    element('mode-summary').textContent = translate(`mode.${state.mode}.scope`);
+    element('learn-customer').hidden = linear;
+    element('learn-nw7').hidden = !linear;
+    const tabs = document.querySelector('.tabs');
+    tabs.classList.toggle('tabs-pair', linear);
+    tabs.setAttribute('aria-label', translate(`mode.${state.mode}.tabs`));
+  }
+
+  function changeMode(mode) {
+    if (!['customer', 'nw7'].includes(mode) || mode === state.mode) return;
+    state.mode = mode;
+    renderMode();
+    showTab(state.tab);
+    try {
+      if (photo.bitmap) resetPhotoRegion();
+      else renderPhoto();
+    } catch (_) { photoFailure(); }
+    // Keep focus on the mode choice while its tab list and content change.
+    element(`mode-${mode}`).focus({ preventScroll: true });
+  }
+
   function showTab(name, focus = false) {
+    const available = availableTabs();
+    if (!available.includes(name)) name = available[0];
     if (state.tab === 'lab' && name !== 'lab') {
       element('lab-canvas').width = 0;
       element('lab-canvas').height = 0;
@@ -1231,6 +1256,7 @@
     }
     for (const tab of ['decode', 'lab', 'photo', 'learn', 'quiz']) {
       const selected = tab === name;
+      element(`tab-${tab}`).hidden = !available.includes(tab);
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
       element(`panel-${tab}`).hidden = !selected;
@@ -1277,6 +1303,7 @@
     renderLearn();
     renderLab();
     renderPhoto();
+    renderMode();
   }
 
   function renderLearn() {
@@ -1498,11 +1525,16 @@
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
       const offset = event.key === 'ArrowLeft' ? -1 : 1;
-      const next = event.key === 'Home' ? tabNames[0] : event.key === 'End' ? tabNames.at(-1)
-        : tabNames[(tabNames.indexOf(name) + offset + tabNames.length) % tabNames.length];
+      const available = availableTabs();
+      const next = event.key === 'Home' ? available[0] : event.key === 'End' ? available.at(-1)
+        : available[(available.indexOf(name) + offset + available.length) % available.length];
       showTab(next, true);
     });
   }
+  document.querySelectorAll('input[name="barcode-mode"]').forEach(input => {
+    input.addEventListener('change', () => { if (input.checked) changeMode(input.value); });
+  });
+  element('nw7-open-photo').addEventListener('click', () => showTab('photo', true));
   let languageRender = 0;
   element('lang-toggle').addEventListener('click', () => {
     const version = ++languageRender;

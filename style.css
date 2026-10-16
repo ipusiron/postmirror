@@ -908,3 +908,29 @@ input[type="radio"] {
   border-top: 2px dashed var(--accent);
 }
 .barcode-value { font: 1.35rem monospace; overflow-wrap: anywhere; user-select: text; }
+
+/* The mode applies to the whole tab group. Both choices stay visible. */
+.mode-picker { margin-block: 1rem; }
+.mode-choices { display: grid; gap: 0.5rem; }
+.mode-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  min-width: 0;
+  padding: 0.75rem;
+  margin: 0;
+  border: 2px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  cursor: pointer;
+}
+.mode-choice.is-selected { border-color: var(--accent); }
+.mode-choice > span { min-width: 0; }
+.mode-detail { display: block; font-size: 0.875rem; font-weight: 400; }
+.mode-summary { margin-bottom: 0; }
+.tabs.tabs-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tabs-pair [role="tab"] { grid-column: auto; }
+@media (min-width: 30rem) {
+  .mode-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

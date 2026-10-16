@@ -7,9 +7,33 @@
   'use strict';
 
   const ja = {
-    "photo.mode": "読み取る形式",
-    "photo.mode.customer": "日本郵便（4つの形）",
-    "photo.mode.nw7": "NW-7（線の太さ）",
+    "mode.title": "バーコードのモードを選ぶ",
+    "mode.customer.title": "日本郵便（カスタマバーコード）",
+    "mode.customer.detail": "高さと位置が変わる4つの形。郵便番号と住所表示番号を解読します。",
+    "mode.nw7.title": "NW-7（Codabar）",
+    "mode.nw7.detail": "高さがそろい、線と隙間の幅が変わる形。写真から番号などを読み取ります。",
+    "mode.customer.scope": "日本郵便モード：解読・画像実験・画像点検・座学・確認問題の5タブを使えます。",
+    "mode.nw7.scope": "NW-7モード：画像点検と座学を使えます。サンプルの解読・画像実験・確認問題は日本郵便モードの機能です。",
+    "mode.customer.tabs": "日本郵便モードの機能",
+    "mode.nw7.tabs": "NW-7モードの機能",
+    "nw7.learn.title": "NW-7の見方と点検",
+    "nw7.learn.intro": "NW-7はCodabarとも呼ばれ、図書館や配送ラベルなどで使われます。このモードでは、写真に写った番号などの内容を確かめます。",
+    "nw7.learn.shapesTitle": "形と読み取れる文字",
+    "nw7.learn.shapes": "バーの高さはそろい、線と隙間の幅で文字を表します。1文字は4本のバーと3つの隙間からできています。日本郵便の4形状・67本の読み方とは異なります。",
+    "nw7.learn.characters": "内容に使えるのは数字0〜9と6つの記号（- $ : / . +）です。前後に開始・終了記号A〜Dが付きます。PostMirrorは前後の記号を除いて2〜80文字を読み取ります。",
+    "nw7.learn.resultTitle": "読み取り結果の意味",
+    "nw7.learn.example": "例：架空の「A123456A」なら、内容は「123456」、開始と終了の目印はそれぞれ「A」です。目印は小文字で印字されることもあります。",
+    "nw7.learn.result": "番号を読み取っても、宛先の住所や配達状況がわかったことにはなりません。PostMirrorは番号を照会せず、郵便番号・住所表示番号として解読しません。",
+    "nw7.learn.check": "NW-7のチェック用文字は任意です。付いているかを自動で判断せず、読み取った内容をそのまま表示します。番号の正しさを保証する表示ではないため、印字と照合してください。",
+    "nw7.learn.tryTitle": "自分の画像で試す",
+    "nw7.learn.openPhoto": "NW-7の画像点検へ",
+    "nw7.learn.privacy": "写真は端末内だけで処理し、外へ送らず保存もしません。画像点検から別のタブへ移ると、画像と読み取り結果を消します。",
+    "nw7.learn.limitsTitle": "対応範囲と読めないとき",
+    "nw7.learn.limits": "高さがそろうバーコードにも複数の形式があります。このモードはNW-7専用で、Code 128・JAN・ITF・QRコードなどは対象外です。形式は自動では選びません。",
+    "nw7.learn.failure": "NW-7なのに読めない場合は、両端の選択位置、ぼけ、隠れている部分を確かめます。読めなかった結果は、ほかの方法でも読めないことを意味しません。",
+    "nw7.learn.sourcesTitle": "参照資料",
+    "nw7.learn.sourceStructure": "BarTender：Codabarの構成と文字（英語）",
+    "nw7.learn.sourceCheck": "STRICH：Codabarと任意のチェック文字（英語）",
     "nw7.format": "NW-7（Codabar）を読み取ります。高さがそろい、線と隙間の幅が変わる形式です。同じ見た目でも、Code 128・JANなどの別形式には対応していません。",
     "nw7.exampleLabel": "NW-7の形とタップ位置の見本。同じ高さの細いバーと太いバーの中央を点線が横切ります。",
     "nw7.tapBand": "いちばん左と右のバーを、上下の中央付近で押します。白い余白や、下に印字された数字は押しません。",
@@ -30,7 +54,7 @@
     "photo.own": "自分宛ての郵便物の写真で試してください。",
     "photo.privacy": "画像は端末の中で開くだけで、外へ送らず、保存もしません。ほかのタブへ移ると、画像と読み取り結果を消します。",
     "photo.helpTitle": "対応するバーコードとタップ位置",
-    "photo.format": "対象は日本郵便のカスタマバーコードです。同じ太さのバーが、上下に長さを変えて並びます。線の太さが変わるNW-7は、上の形式を切り替えてください。",
+    "photo.format": "対象は日本郵便のカスタマバーコードです。同じ太さのバーが、上下に長さを変えて並びます。線の太さが変わるNW-7は、ページ上部でモードを切り替えてください。",
     "photo.exampleLabel": "形とタップ位置の見本。4形状のバーの中央を横切る点線と、左右の端のバーに丸を示しています。",
     "photo.leftEnd": "左端をタップ",
     "photo.rightEnd": "右端をタップ",
@@ -49,7 +73,7 @@
     "photo.back": "1つ前に戻る",
     "photo.noGrid": "カスタマバーコードを確認できませんでした。対応する形式・選んだ範囲・画質を確認してください。",
     "photo.notDecoded": "バーの位置を特定できていないため、郵便番号・住所表示番号の判定は行っていません。",
-    "photo.failureHelp": "高さがそろい、太さが変わるNW-7なら、上の形式を切り替えてください。対応する4形状の写真なら、両端の選択位置や、ぼけ・隠れを確認してください。",
+    "photo.failureHelp": "高さがそろい、太さが変わるNW-7なら、ページ上部でモードを切り替えてください。対応する4形状の写真なら、両端の選択位置や、ぼけ・隠れを確認してください。",
     "photo.unreadableImage": "選んだ範囲の全体。バーの位置を特定できていないため、読み取りの印は付けていません。",
     "photo.retry": "範囲がずれていると、読めないバーが出ます。「範囲を指定し直す」を押して、左右の端のバーを中央の高さで選び直してください。",
     "photo.file": "画像を選ぶ（JPEG・PNG・WebP）",
@@ -152,7 +176,7 @@
     'breakdown.summary': "1文字ずつの内訳を開く",
     'learn.intro': "SNSやフリマアプリに郵便物の写真を載せる前に、何が写っているかを確かめるための知識をまとめました。",
     'learn.name': "PostMirror（ポストミラー）のPostは、郵便とSNSの投稿の両方を指します。投稿の前に自分の郵便物を映して確かめる鏡、という意味の名前です。",
-    'header.description': 'カスタマバーコードのバーを1本ずつ読み、郵便物の写真から何が読めるかを確かめます。',
+    'header.description': '郵便物のバーコードから何が読めるかを、形式に合わせて確かめます。',
     'decode.title': 'サンプルで解読を試す',
     'intro.prompt': '日本郵便の公開サンプルを使って、バーの並びから郵便番号・住所表示番号を解読します。',
     'decode.otherInputs': '手入力するときは、下の「バーを入力する」または「文字列で入力・貼り付け」を使います。'
@@ -361,9 +385,39 @@
   };
 
   const en = {
-    "photo.mode": "Barcode format",
-    "photo.mode.customer": "Japan Post (four shapes)",
-    "photo.mode.nw7": "NW-7 (varying widths)",
+    "mode.title": "Choose a barcode mode",
+    "mode.customer.title": "Japan Post customer barcode",
+    "mode.customer.detail": "Four shapes with varying height and position. Decode a postal code and address number.",
+    "mode.nw7.title": "NW-7 (Codabar)",
+    "mode.nw7.detail": "Equal-height bars with varying bar and space widths. Read numbers and symbols from a photo.",
+    "mode.customer.scope": "Japan Post mode offers five tabs: Decode, Image lab, Your image, Learn and Quiz.",
+    "mode.nw7.scope": "NW-7 mode offers Your image and Learn. Sample decoding, image experiments and quizzes are features of Japan Post mode.",
+    "mode.customer.tabs": "Japan Post mode features",
+    "mode.nw7.tabs": "NW-7 mode features",
+    "nw7.learn.title": "Understanding and checking NW-7",
+    "nw7.learn.intro": "NW-7, also called Codabar, is used in libraries and shipping labels. This mode checks numbers and symbols visible in a photo.",
+    "nw7.learn.shapesTitle": "Shapes and supported characters",
+    "nw7.learn.shapes": "Bars have equal height. Bar and space widths encode each character using four bars and three spaces. Japan "
+      + "Post’s four shapes and 67-bar structure do not apply.",
+    "nw7.learn.characters": "Content uses digits 0–9 and six symbols (- $ : / . +), with A–D start and stop markers. PostMirror reads 2–80 "
+      + "content characters, excluding these markers.",
+    "nw7.learn.resultTitle": "What the reading result means",
+    "nw7.learn.example": "For the fictional example A123456A, the content is 123456 and both markers are A. Markers may be printed in lowercase.",
+    "nw7.learn.result": "Reading a number does not identify a destination address or delivery status. PostMirror does not look it up "
+      + "or decode it as a postal code and address number.",
+    "nw7.learn.check": "A check character is optional. Its presence is not inferred, and all content is displayed unchanged. Compare "
+      + "the result with the printed text; it is not a guarantee that the number is correct.",
+    "nw7.learn.tryTitle": "Try your own image",
+    "nw7.learn.openPhoto": "Check an NW-7 image",
+    "nw7.learn.privacy": "Photos are processed on this device, never sent or saved. Leaving Your image clears the photo and its reading result.",
+    "nw7.learn.limitsTitle": "Scope and unreadable images",
+    "nw7.learn.limits": "Several formats use equal-height bars. This mode supports NW-7 only, not Code 128, EAN/JAN, ITF or QR codes. "
+      + "The format is not selected automatically.",
+    "nw7.learn.failure": "If an NW-7 image is unreadable, check the selected endpoints, blur and covered areas. Failure here does not "
+      + "mean that other methods cannot read it.",
+    "nw7.learn.sourcesTitle": "References",
+    "nw7.learn.sourceStructure": "BarTender: Codabar structure and characters",
+    "nw7.learn.sourceCheck": "STRICH: Codabar and optional check characters",
     "nw7.format": "Read NW-7 (Codabar): equal-height bars and spaces of varying widths. Similar-looking formats such as Code 128 and "
       + "EAN/JAN are not supported.",
     "nw7.exampleLabel": "NW-7 shape and tap-position example: a dashed line crosses the middle of thin and thick bars of equal height.",
@@ -389,7 +443,7 @@
     "photo.privacy": "Images stay on this device and are never sent anywhere or saved. Leaving this tab clears the image and its reading result.",
     "photo.helpTitle": "Supported barcode and where to tap",
     "photo.format": "Use a Japan Post customer barcode: equally thin bars extend above and below a central band. "
-      + "For NW-7 barcodes with varying widths, switch the format above.",
+      + "For NW-7 barcodes with varying widths, switch the mode at the top of the page.",
     "photo.exampleLabel": "Shape and tap-position example: a dashed line crosses the central band of four bar shapes, "
       + "with circles on the leftmost and rightmost bars.",
     "photo.leftEnd": "Tap the left end",
@@ -410,7 +464,7 @@
     "photo.back": "Go back one step",
     "photo.noGrid": "Could not locate a Japan Post customer barcode. Check the format, selected region and image quality.",
     "photo.notDecoded": "The bar positions could not be located, so the postal code and address number have not been evaluated.",
-    "photo.failureHelp": "For equal-height NW-7 bars, switch the format above. For the supported four shapes, "
+    "photo.failureHelp": "For equal-height NW-7 bars, switch the mode at the top of the page. For the supported four shapes, "
       + "check the selected endpoints, blur and any covered areas.",
     "photo.unreadableImage": "The entire selected region. No reading marks are shown because the bar positions could not be located.",
     "photo.retry": "Misaligned endpoints can leave bars unreadable. Press “Select the region again” and tap the end bars along the central band.",
@@ -515,7 +569,7 @@
     'breakdown.summary': "Show the character-by-character breakdown",
     'learn.intro': "This tab explains what to check before posting a photo of your mail on social media or marketplace apps.",
     'learn.name': "The \"Post\" in PostMirror means both mail and a social media post. It is a mirror for checking your own mail before you post.",
-    'header.description': 'Read a Japan Post customer barcode bar by bar and see what a photo of your mail can reveal.',
+    'header.description': 'Choose the barcode format and see what a photo of your mail can reveal.',
     'decode.title': 'Try decoding a sample',
     'intro.prompt': 'Use a Japan Post published sample to decode the postal code and address number from its bar pattern.',
     'decode.otherInputs': 'To enter bars yourself, use Enter the bars or Enter or paste a bar string below.'

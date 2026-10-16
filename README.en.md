@@ -16,7 +16,7 @@ Start with mail addressed to you.
 
 The name: "post" means both mail and a social media post. PostMirror is a mirror for checking your own mail before you post.
 
-The Your image tab also supports NW-7 (Codabar). Choose Japan Post or NW-7 before selecting the region. NW-7 displays its content separately from postal-code and address decoding.
+Choose Japan Post or NW-7 (Codabar) at the top of the page. The descriptions above the tabs explain their shapes and available features. Tabs and lessons follow the selected mode. NW-7 reads content from photos separately from postal-code and address decoding.
 
 ## 🌐 Demo
 
@@ -45,7 +45,8 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- Five tabs: Decode, Image lab, Your image, Learn, and Quiz
+- A page-wide mode choice: five tabs for Japan Post, or Your image and Learn for NW-7
+- Japan Post decoding, image experiments, photo inspection, lessons, and quiz, plus a dedicated NW-7 lesson
 - Apply 14 covering methods to sample images in Image lab and check what can be read
 - Open your own image on your device and read a region selected in two stages
 - Three getting-started steps and buttons that jump to results or inspection
@@ -61,6 +62,14 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 - Switch between Japanese and English, with dark colors following your device setting
 
 ## 📖 How to use
+
+First choose a mode above the tabs. Select Japan Post for four shapes with varying height and position, or NW-7 (Codabar) for equal-height bars with varying bar and space widths. Format detection is not automatic.
+
+In NW-7 mode, use Learn to check the structure, result meaning, and supported scope, then choose a photo in Your image and tap four times. Content and start/stop markers are shown separately. Check characters are not validated, so compare the result with the printed number. Sample decoding, Image lab, and Quiz belong to Japan Post mode.
+
+Switching modes preserves Japan Post input and Quiz answers. Switching within Your image keeps the bitmap but clears the selected region and result. Leaving Your image for another tab clears the image.
+
+The following steps describe Japan Post mode.
 
 1. In Decode, open “Try decoding a sample” and press “Load and decode a sample”. This loads the Japan Post calculation example into the bar input and shows its decoded result. Choose other examples from “Sample to decode”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
 2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
@@ -218,7 +227,7 @@ A. No. It is an independent personal project and is not affiliated with Japan Po
 
 Q. Can it read an image?
 
-A. Open the “Your image” tab and check the supported format first. Choose Japan Post (four shapes) or NW-7 (varying widths) in the format selector. Switching keeps the image but asks you to select the region again. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
+A. Choose Japan Post (four shapes) or NW-7 (bar and space widths) at the top of the page, then check the supported-shape example in the “Your image” tab. Switching keeps the image but asks you to select the region again. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
 
 Q. Does it show place names?
 

@@ -109,6 +109,8 @@ test('HTML: external links use the approved URLs and isolated new tabs', () => {
     ...['image-exif-checker', 'image-diff-sec', 'qr-risk-radar'].map(slug => `https://ipusiron.github.io/${slug}/`)
   ].map(url => [url, 2]));
   allowed.set('https://github.com/ipusiron/postmirror', 1);
+  allowed.set('https://barcodeguide.seagullscientific.com/Content/Symbologies/Codabar.htm', 1);
+  allowed.set('https://docs.strich.io/codabar.html', 1);
   const links = [...html.matchAll(/<a\b([^>]+)>/g)];
   assert.equal(links.length, [...allowed.values()].reduce((sum, count) => sum + count, 0));
   const actual = new Map();

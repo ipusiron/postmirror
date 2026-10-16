@@ -28,6 +28,20 @@
     <p lang="en">Enable JavaScript to use PostMirror.</p>
   </noscript>
   <main>
+    <fieldset id="barcode-mode" class="mode-picker" aria-describedby="mode-summary">
+      <legend data-i18n="mode.title"></legend>
+      <div class="mode-choices">
+        <label class="mode-choice">
+          <input id="mode-customer" type="radio" name="barcode-mode" value="customer" checked>
+          <span><strong data-i18n="mode.customer.title"></strong><span class="mode-detail" data-i18n="mode.customer.detail"></span></span>
+        </label>
+        <label class="mode-choice">
+          <input id="mode-nw7" type="radio" name="barcode-mode" value="nw7">
+          <span><strong data-i18n="mode.nw7.title"></strong><span class="mode-detail" data-i18n="mode.nw7.detail"></span></span>
+        </label>
+      </div>
+      <p id="mode-summary" class="mode-summary" aria-live="polite"></p>
+    </fieldset>
     <div class="tabs" role="tablist" data-i18n-label="tabs.label">
       <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
       <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
@@ -178,11 +192,6 @@
       <section aria-labelledby="photo-title">
         <h2 id="photo-title" data-i18n="photo.title"></h2>
         <p id="photo-own" data-i18n="photo.own"></p>
-        <label for="photo-mode" data-i18n="photo.mode"></label>
-        <select id="photo-mode" aria-describedby="photo-format">
-          <option value="customer" data-i18n="photo.mode.customer"></option>
-          <option value="nw7" data-i18n="photo.mode.nw7"></option>
-        </select>
         <p id="photo-format" data-i18n="photo.format"></p>
         <p class="privacy" data-i18n="photo.privacy"></p>
         <details class="photo-help" open>
@@ -264,6 +273,29 @@
       </section>
     </div>
     <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
+      <section id="learn-nw7" aria-labelledby="learn-nw7-title" hidden>
+        <h2 id="learn-nw7-title" data-i18n="nw7.learn.title"></h2>
+        <p data-i18n="nw7.learn.intro"></p>
+        <h3 data-i18n="nw7.learn.shapesTitle"></h3>
+        <p data-i18n="nw7.learn.shapes"></p>
+        <p data-i18n="nw7.learn.characters"></p>
+        <h3 data-i18n="nw7.learn.resultTitle"></h3>
+        <p data-i18n="nw7.learn.example"></p>
+        <p data-i18n="nw7.learn.result"></p>
+        <p data-i18n="nw7.learn.check"></p>
+        <h3 data-i18n="nw7.learn.tryTitle"></h3>
+        <p data-i18n="nw7.fourTaps"></p>
+        <p data-i18n="nw7.tapBand"></p>
+        <p data-i18n="nw7.learn.privacy"></p>
+        <button id="nw7-open-photo" type="button" data-i18n="nw7.learn.openPhoto"></button>
+        <h3 data-i18n="nw7.learn.limitsTitle"></h3>
+        <p data-i18n="nw7.learn.limits"></p>
+        <p data-i18n="nw7.learn.failure"></p>
+        <h3 data-i18n="nw7.learn.sourcesTitle"></h3>
+        <p><a href="https://barcodeguide.seagullscientific.com/Content/Symbologies/Codabar.htm" target="_blank" rel="noopener noreferrer" data-i18n="nw7.learn.sourceStructure"></a></p>
+        <p><a href="https://docs.strich.io/codabar.html" target="_blank" rel="noopener noreferrer" data-i18n="nw7.learn.sourceCheck"></a></p>
+      </section>
+      <div id="learn-customer">
       <p data-i18n="learn.intro"></p>
       <p class="muted" data-i18n="learn.name"></p>
       <div id="learn-ja" lang="ja">
@@ -908,6 +940,7 @@
         <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes: Discount conditions</a></p>
       </section>
       </div><!-- /learn-en -->
+      </div><!-- /learn-customer -->
     </div>
     <div id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
       <div id="quiz-ja" lang="ja">
