@@ -821,10 +821,45 @@
       element(id).width = 0;
       element(id).height = 0;
     }
-    const scale = Math.min(1, 1600 / Math.max(photo.bitmap.width, photo.bitmap.height));
-    drawPhotoCrop(element('photo-overview'), photoRect(0, 0, photo.bitmap.width, photo.bitmap.height),
-      Math.max(1, Math.round(photo.bitmap.width * scale)), Math.max(1, Math.round(photo.bitmap.height * scale)));
+    paintPhotoOverview();
     renderPhoto();
+    element('photo-step').scrollIntoView({ block: 'nearest', behavior: 'auto' });
+  }
+
+  function paintPhotoOverview() {
+    const scale = Math.min(1, 1600 / Math.max(photo.bitmap.width, photo.bitmap.height));
+    const canvas = element('photo-overview');
+    const context = drawPhotoCrop(canvas, photoRect(0, 0, photo.bitmap.width, photo.bitmap.height),
+      Math.max(1, Math.round(photo.bitmap.width * scale)), Math.max(1, Math.round(photo.bitmap.height * scale)));
+    const point = photo.rough[0];
+    if (!point) return;
+    const unit = canvas.width / canvas.clientWidth;
+    context.beginPath();
+    context.arc(point.x * canvas.width / photo.bitmap.width, point.y * canvas.height / photo.bitmap.height, 8 * unit, 0, Math.PI * 2);
+    context.lineWidth = 5 * unit;
+    context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+    context.stroke();
+    context.lineWidth = 3 * unit;
+    context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    context.stroke();
+  }
+
+  function backPhotoStep() {
+    if (!photo.bitmap) return;
+    photo.pixels = photo.region = photo.crop = photo.read = photo.decoded = null;
+    element('photo-result').width = element('photo-result').height = 0;
+    if (photo.precise.length) {
+      photo.precise.pop();
+      showPhotoZoom();
+    } else {
+      photo.rough.pop();
+      photo.zoom = null;
+      photo.step = 'rough';
+      element('photo-zoom').width = element('photo-zoom').height = 0;
+      renderPhoto();
+      paintPhotoOverview();
+      element('photo-step').scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
   }
 
   function canvasPoint(event, rect) {
@@ -917,19 +952,29 @@
 
   function renderPhoto() {
     const loaded = photo.bitmap !== null;
+    const selecting = ['rough', 'left', 'right'].includes(photo.step);
+    const tap = photo.step === 'rough' ? photo.rough.length + 1 : photo.step === 'left' ? 3 : photo.step === 'right' ? 4 : 0;
     element('photo-work').hidden = !loaded;
-    element('photo-step').textContent = ['rough', 'left', 'right'].includes(photo.step) ? translate(`photo.step.${photo.step}`) : '';
+    element('photo-progress').hidden = !selecting;
+    element('photo-progress').querySelectorAll('li').forEach((item, index) => {
+      if (index + 1 === tap) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+    element('photo-step').textContent = selecting ? translate(`photo.step.${tap}`) : '';
+    element('photo-position').textContent = selecting ? translate(tap < 3 ? 'photo.roughHint' : 'photo.zoomHint') : '';
     element('photo-step').dataset.step = photo.step;
     element('photo-notice').textContent = photo.step === 'error' ? translate('photo.error')
-      : photo.step === 'loading' ? translate('photo.loading') : photo.resized ? translate('photo.resized') : '';
+      : photo.step === 'loading' ? translate('photo.loading')
+        : photo.read?.status === 'unreadable' ? translate('photo.noGrid') : photo.resized ? translate('photo.resized') : '';
     element('photo-overview').hidden = photo.step !== 'rough';
     element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
     element('photo-output').hidden = photo.step !== 'result';
     element('photo-transfer').disabled = !photo.read;
+    element('photo-back').disabled = !loaded || (!photo.rough.length && !photo.precise.length);
     element('photo-reselect').disabled = !loaded;
     element('photo-clear').disabled = photo.step === 'empty';
-    element('photo-overview').setAttribute('aria-label', translate('photo.overview'));
-    element('photo-zoom').setAttribute('aria-label', translate(photo.step === 'right' ? 'photo.zoomRight' : 'photo.zoomLeft'));
+    element('photo-overview').setAttribute('aria-label', translate(`photo.step.${photo.rough.length ? 2 : 1}`));
+    element('photo-zoom').setAttribute('aria-label', translate(`photo.step.${photo.step === 'right' ? 4 : 3}`));
     element('photo-result').setAttribute('aria-label', photo.read ? photoMarkSummary() : translate('photo.resultImage'));
     if (!photo.read) {
       for (const id of ['photo-status', 'photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
@@ -960,6 +1005,9 @@
   function buildPhoto() {
     element('photo-file').addEventListener('change', event => loadPhoto(event.target.files[0]));
     element('photo-clear').addEventListener('click', () => releasePhoto());
+    element('photo-back').addEventListener('click', () => {
+      try { backPhotoStep(); } catch (_) { photoFailure(); }
+    });
     element('photo-reselect').addEventListener('click', () => {
       try { resetPhotoRegion(); } catch (_) { photoFailure(); }
     });
@@ -969,15 +1017,9 @@
       try {
         photo.rough.push(canvasPoint(event, { x: 0, y: 0, width: photo.bitmap.width, height: photo.bitmap.height }));
         if (photo.rough.length === 1) {
-          const canvas = element('photo-overview');
-          const context = canvas.getContext('2d');
-          const point = photo.rough[0];
-          const scale = canvas.width / photo.bitmap.width;
-          context.beginPath();
-          context.arc(point.x * scale, point.y * scale, 5 * canvas.width / canvas.clientWidth, 0, Math.PI * 2);
-          context.lineWidth = 2 * canvas.width / canvas.clientWidth;
-          context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-          context.stroke();
+          paintPhotoOverview();
+          renderPhoto();
+          element('photo-step').scrollIntoView({ block: 'nearest', behavior: 'auto' });
         }
         if (photo.rough.length === 2) {
           photo.pitch = Math.hypot(photo.rough[1].x - photo.rough[0].x, photo.rough[1].y - photo.rough[0].y) / 66;
