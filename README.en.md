@@ -43,8 +43,8 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- Five tabs: Decode, Samples, Your image, Learn, and Quiz
-- Apply 14 covering methods to sample images in Samples and check what can be read
+- Five tabs: Decode, Image lab, Your image, Learn, and Quiz
+- Apply 14 covering methods to sample images in Image lab and check what can be read
 - Open your own image on your device and read a region selected in two stages
 - Three getting-started steps and buttons that jump to results or inspection
 - Enter 67 bars using character cards and a shape palette that keeps the selected bar in view
@@ -60,7 +60,7 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## 📖 How to use
 
-1. Under Getting started, press “Load the calculation example”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
+1. In Decode, open “Try decoding a sample” and press “Load and decode a sample”. This loads the Japan Post calculation example into the bar input and shows its decoded result. Choose other examples from “Sample to decode”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
 2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
 3. For manual entry, select a bar and press 1–4 or “?” in the palette. The next bar scrolls clear of the palette. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered.
 4. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1–4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving.
@@ -71,7 +71,7 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
 10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves the Decode input and inspection, and the Quiz answers.
 
-11. In Samples, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
+11. In Image lab, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
 12. In the “Your image” tab, check the supported-shape example and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
@@ -159,7 +159,7 @@ Address numbers shorter than 13 characters are padded with CC4. After expanding 
 The sum of all 21 check values must be divisible by 19, so one unreadable character is uniquely recoverable from the other 20.
 However, when a character is unreadable, mistakes in other characters may go undetected. A restored character assumes that the others were read correctly. Swapping two characters also leaves the sum unchanged and is not detected. The check digit is neither error correction nor confirmation that an address exists.
 
-The Samples tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
+The Image lab tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
 The image core estimates a grid of bar positions, corrects the endpoints, and classifies extensions above and below the central band. Confidence below 0.2 is treated as unknown. Neither reading nor endpoint selection uses the check digit. If no grid can be established, the result is unreadable.
 For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
 All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
@@ -279,7 +279,7 @@ postmirror/                         # Tool root
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
 ├── package.json                    # Dependency-free node --test command
-├── index.html                      # Decode, Samples, Your image, Learn, and Quiz tabs, plus CSP
+├── index.html                      # Decode, Image lab, Your image, Learn, and Quiz tabs, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
