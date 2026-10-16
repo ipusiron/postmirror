@@ -63,11 +63,12 @@ test('HTML: exact restrictive CSP, referrer, bilingual noscript and empty favico
 });
 
 test('HTML: accessible tabs and the breakdown within details', () => {
-  for (const id of ['tab-decode', 'tab-lab', 'tab-learn', 'tab-quiz', 'panel-decode', 'panel-lab', 'panel-learn', 'panel-quiz', 'lang-toggle']) {
+  const names = ['decode', 'lab', 'photo', 'learn', 'quiz'];
+  for (const id of [...names.flatMap(name => [`tab-${name}`, `panel-${name}`]), 'lang-toggle']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   assert.match(html, /role="tablist"/);
-  for (const name of ['decode', 'lab', 'learn', 'quiz']) {
+  for (const name of names) {
     assert.match(html, new RegExp(`id="tab-${name}"[^>]+role="tab"[^>]+aria-controls="panel-${name}"`));
     assert.match(html, new RegExp(`id="panel-${name}"[^>]+role="tabpanel"[^>]+aria-labelledby="tab-${name}"`));
   }
@@ -125,6 +126,13 @@ test('HTML: image experiments use accessible canvases and one local file input',
   for (const id of ['lab-sample', 'lab-mask', 'lab-character', 'lab-canvas', 'lab-status', 'lab-known', 'lab-judgment', 'lab-transfer']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
+  const samplePanel = html.split('id="panel-lab"')[1].split('id="panel-photo"')[0];
+  const photoPanel = html.split('id="panel-photo"')[1].split('id="panel-learn"')[0];
+  assert.match(samplePanel, /id="lab-canvas"/);
+  assert.doesNotMatch(samplePanel, /id="photo-/);
+  assert.match(photoPanel, /id="photo-file"/);
+  assert.doesNotMatch(photoPanel, /id="lab-/);
+  assert.ok(photoPanel.indexOf('id="photo-format"') < photoPanel.indexOf('<details'));
   assert.match(html, /<canvas[^>]+id="lab-canvas"[^>]+role="img"/);
   assert.match(app, /setAttribute\('aria-label', translate\('lab\.canvas'/);
   const files = [...html.matchAll(/<input\b[^>]*type="file"[^>]*>/g)];

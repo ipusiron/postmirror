@@ -916,7 +916,7 @@
   }
 
   function paintPhotoResult() {
-    if (photo.step !== 'result' || !photo.pixels || state.tab !== 'lab') return;
+    if (photo.step !== 'result' || !photo.pixels || state.tab !== 'photo') return;
     const canvas = element('photo-result');
     const pitch = photo.read.pitchPx || photo.pitch;
     const available = element('photo-result-wrap').clientWidth;
@@ -1196,14 +1196,14 @@
     if (state.tab === 'lab' && name !== 'lab') {
       element('lab-canvas').width = 0;
       element('lab-canvas').height = 0;
-      releasePhoto();
     }
+    if (state.tab === 'photo' && name !== 'photo') releasePhoto();
     state.tab = name;
     if (name === 'lab') {
       if (!lab.read) readLab();
       else paintLab();
     }
-    for (const tab of ['decode', 'lab', 'learn', 'quiz']) {
+    for (const tab of ['decode', 'lab', 'photo', 'learn', 'quiz']) {
       const selected = tab === name;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
@@ -1464,7 +1464,7 @@
     });
   });
 
-  const tabNames = ['decode', 'lab', 'learn', 'quiz'];
+  const tabNames = ['decode', 'lab', 'photo', 'learn', 'quiz'];
   for (const name of tabNames) {
     const tab = element(`tab-${name}`);
     tab.addEventListener('click', () => showTab(name));
