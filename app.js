@@ -5,6 +5,7 @@
   const samples = globalThis.PostMirrorSamples;
   const messages = globalThis.PostMirrorMessages;
   const imaging = globalThis.PostMirrorImage;
+  const nw7 = globalThis.PostMirrorNW7;
   const lab = { sample: 0, mask: 'none', character: 8, image: null, read: null, decoded: null };
   const labMasks = ['none', 'fill', 'character', 'upper', 'line-1', 'line-0.25', 'translucent-black', 'translucent-white',
     'mosaic-0.5', 'mosaic-1', 'mosaic-2', 'blur-0.5', 'blur-1', 'blur-2'];
@@ -737,7 +738,7 @@
   }
 
   const photo = {
-    version: 0, bitmap: null, pixels: null, region: null, crop: null, zoom: null,
+    mode: 'customer', version: 0, bitmap: null, pixels: null, region: null, crop: null, zoom: null,
     rough: [], precise: [], pitch: 0, step: 'empty', resized: false, read: null, decoded: null
   };
   const photoCanvases = ['photo-overview', 'photo-zoom', 'photo-result'];
@@ -880,8 +881,8 @@
   }
 
   function readPhoto() {
-    photo.read = imaging.readBarsInRegion(photo.pixels, photo.region);
-    photo.decoded = photo.read.status === 'unreadable' ? null : core.decodeBars(photo.read.bars);
+    photo.read = photo.mode === 'nw7' ? nw7.read(photo.pixels, photo.region) : imaging.readBarsInRegion(photo.pixels, photo.region);
+    photo.decoded = photo.mode === 'nw7' || photo.read.status === 'unreadable' ? null : core.decodeBars(photo.read.bars);
     photo.step = 'result';
     renderPhoto();
     paintPhotoResult();
@@ -920,12 +921,14 @@
     const canvas = element('photo-result');
     const pitch = photo.read.pitchPx || photo.pitch;
     const available = element('photo-result-wrap').clientWidth;
-    const width = Math.ceil(photo.read.status === 'unreadable' ? available : Math.max(available, photo.pixels.width * 8 / pitch));
+    const fit = photo.mode === 'nw7' || photo.read.status === 'unreadable';
+    const width = Math.ceil(fit ? available : Math.max(available, photo.pixels.width * 8 / pitch));
     canvas.style.width = `${width}px`;
     canvas.width = photo.pixels.width;
     canvas.height = photo.pixels.height;
     const context = canvas.getContext('2d');
     context.putImageData(photo.pixels, 0, 0);
+    if (photo.mode === 'nw7') return;
     const scale = canvas.width / width;
     const radius = 3 * scale;
     const colors = getComputedStyle(document.documentElement);
@@ -952,6 +955,14 @@
   }
 
   function renderPhoto() {
+    const linear = photo.mode === 'nw7';
+    element('photo-mode').value = photo.mode;
+    element('photo-customer-example').hidden = linear;
+    element('photo-nw7-example').hidden = !linear;
+    for (const [id, key] of [['photo-format', 'format'], ['photo-keyboard', 'keyboard'], ['photo-taps', 'fourTaps'],
+      ['photo-not-decoded', 'notDecoded'], ['photo-failure-help', 'failureHelp']]) {
+      element(id).textContent = translate(`${linear ? 'nw7' : 'photo'}.${key}`);
+    }
     const loaded = photo.bitmap !== null;
     const located = photo.read !== null && photo.read.status !== 'unreadable';
     const selecting = ['rough', 'left', 'right'].includes(photo.step);
@@ -963,27 +974,33 @@
       else item.removeAttribute('aria-current');
     });
     element('photo-step').textContent = selecting ? translate(`photo.step.${tap}`) : '';
-    element('photo-position').textContent = selecting ? translate(tap < 3 ? 'photo.roughHint' : 'photo.zoomHint') : '';
+    const zoomHint = linear ? 'nw7.tapBand' : 'photo.zoomHint';
+    element('photo-position').textContent = selecting ? translate(tap < 3 ? 'photo.roughHint' : zoomHint) : '';
     element('photo-step').dataset.step = photo.step;
     element('photo-notice').textContent = photo.step === 'error' ? translate('photo.error')
       : photo.step === 'loading' ? translate('photo.loading')
-        : photo.read?.status === 'unreadable' ? translate('photo.noGrid') : photo.resized ? translate('photo.resized') : '';
+        : photo.read?.status === 'unreadable' ? translate(linear ? 'nw7.noGrid' : 'photo.noGrid') : photo.resized ? translate('photo.resized') : '';
     element('photo-overview').hidden = photo.step !== 'rough';
     element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
     element('photo-output').hidden = photo.step !== 'result';
-    element('photo-transfer').disabled = !located;
-    element('photo-marks').hidden = !located;
-    element('photo-known').hidden = !located;
-    element('photo-decoding').hidden = !located;
+    element('photo-transfer').hidden = linear;
+    element('photo-transfer').disabled = linear || !located;
+    element('photo-marks').hidden = linear || !located;
+    element('photo-known').hidden = linear || !located;
+    element('photo-decoding').hidden = linear || !located;
+    element('photo-nw7-output').hidden = !linear || !located;
+    element('photo-nw7-value').textContent = linear && located ? photo.read.text : '';
+    element('photo-nw7-guards').textContent = linear && located
+      ? translate('nw7.guards', { start: photo.read.start, stop: photo.read.stop }) : '';
     element('photo-failure').hidden = !photo.read || located;
     element('photo-back').disabled = !loaded || (!photo.rough.length && !photo.precise.length);
     element('photo-reselect').disabled = !loaded;
     element('photo-clear').disabled = photo.step === 'empty';
     element('photo-overview').setAttribute('aria-label', translate(`photo.step.${photo.rough.length ? 2 : 1}`));
     element('photo-zoom').setAttribute('aria-label', translate(`photo.step.${photo.step === 'right' ? 4 : 3}`));
-    const imageLabel = translate(photo.read && !located ? 'photo.unreadableImage' : 'photo.resultImage');
+    const imageLabel = translate(linear ? 'nw7.resultImage' : photo.read && !located ? 'photo.unreadableImage' : 'photo.resultImage');
     element('photo-result-wrap').setAttribute('aria-label', imageLabel);
-    element('photo-result').setAttribute('aria-label', located ? photoMarkSummary() : imageLabel);
+    element('photo-result').setAttribute('aria-label', located && !linear ? photoMarkSummary() : imageLabel);
     if (!photo.read) {
       for (const id of ['photo-status', 'photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
         element(id).replaceChildren();
@@ -994,7 +1011,7 @@
     }
     element('photo-status').dataset.status = photo.read.status;
     element('photo-status').textContent = translate(`lab.status.${photo.read.status}`);
-    if (!located) {
+    if (!located || linear) {
       for (const id of ['photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
         element(id).replaceChildren();
         delete element(id).dataset.status;
@@ -1019,6 +1036,13 @@
   }
 
   function buildPhoto() {
+    element('photo-mode').addEventListener('change', event => {
+      photo.mode = event.target.value === 'nw7' ? 'nw7' : 'customer';
+      try {
+        if (photo.bitmap) resetPhotoRegion();
+        else renderPhoto();
+      } catch (_) { photoFailure(); }
+    });
     element('photo-file').addEventListener('change', event => loadPhoto(event.target.files[0]));
     element('photo-clear').addEventListener('click', () => releasePhoto());
     element('photo-back').addEventListener('click', () => {
@@ -1027,7 +1051,9 @@
     element('photo-reselect').addEventListener('click', () => {
       try { resetPhotoRegion(); } catch (_) { photoFailure(); }
     });
-    element('photo-transfer').addEventListener('click', () => transferImage(photo.read));
+    element('photo-transfer').addEventListener('click', () => {
+      if (photo.mode === 'customer') transferImage(photo.read);
+    });
     element('photo-overview').addEventListener('click', event => {
       if (photo.step !== 'rough') return;
       try {

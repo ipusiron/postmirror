@@ -8,11 +8,11 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 const app = read('app.js');
 
-test('HTML: six local deferred classic scripts in dependency order', () => {
+test('HTML: seven local deferred classic scripts in dependency order', () => {
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
-  assert.equal(scripts.length, 6);
+  assert.equal(scripts.length, 7);
   assert.deepStrictEqual(scripts.map(match => /src="([^"]+)"/.exec(match[1])?.[1]), [
-    'barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js'
+    'barcode-core.js', 'extract-core.js', 'image-core.js', 'nw7-core.js', 'samples.js', 'messages.js', 'app.js'
   ]);
   for (const [, attributes, body] of scripts) {
     assert.match(attributes, /\bdefer\b/);

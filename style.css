@@ -887,3 +887,24 @@ input[type="radio"] {
   width: 44px;
   padding-inline: 2px;
 }
+
+/* NW-7 mode uses the same four endpoint taps, with equal-height bars. */
+.photo-nw7-bars {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  height: 80px;
+  padding: 0 8px;
+}
+.photo-nw7-bars span { width: 4px; height: 56px; background: var(--fg); }
+.photo-nw7-bars span:nth-child(3n) { width: 12px; }
+.photo-nw7-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 2px dashed var(--accent);
+}
+.barcode-value { font: 1.35rem monospace; overflow-wrap: anywhere; user-select: text; }

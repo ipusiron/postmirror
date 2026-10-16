@@ -34,7 +34,7 @@ test('I18n: Japanese and English keys and parameters match exactly', () => {
 });
 
 test('I18n: application and barcode core contain no Japanese literals or punctuation', () => {
-  for (const file of ['app.js', 'barcode-core.js', 'image-core.js']) {
+  for (const file of ['app.js', 'barcode-core.js', 'image-core.js', 'nw7-core.js']) {
     const text = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
     assert.doesNotMatch(text, /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/u, file);
   }
