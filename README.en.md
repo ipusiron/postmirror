@@ -16,7 +16,14 @@ Start with mail addressed to you.
 
 The name: "post" means both mail and a social media post. PostMirror is a mirror for checking your own mail before you post.
 
-Choose Japan Post or NW-7 (Codabar) at the top of the page. The descriptions above the tabs explain their shapes and available features. Tabs and lessons follow the selected mode. NW-7 reads content from photos separately from postal-code and address decoding.
+NW-7 (Codabar) image inspection and learning have moved to Day116, [Codabar Lens](https://ipusiron.github.io/codabar-lens/).
+PostMirror focuses on Japan Post customer barcodes. Both may appear on mail or labels, but they are different formats.
+
+| Comparison | PostMirror | Codabar Lens |
+|---|---|---|
+| Format | Japan Post customer barcode | NW-7 / Codabar |
+| Encoding | Four bar heights and positions | Bar and space widths |
+| Content | Postal code and address number | Digits and symbols; meaning depends on the issuer |
 
 ## 🌐 Demo
 
@@ -45,8 +52,7 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- A page-wide mode choice: five tabs for Japan Post, or Your image and Learn for NW-7
-- Japan Post decoding, image experiments, photo inspection, lessons, and quiz, plus a dedicated NW-7 lesson
+- Five tabs: Decode, Image lab, Your image, Learn, and Quiz
 - Apply 14 covering methods to sample images in Image lab and check what can be read
 - Open your own image on your device and read a region selected in two stages
 - Three getting-started steps and buttons that jump to results or inspection
@@ -62,14 +68,6 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 - Switch between Japanese and English, with dark colors following your device setting
 
 ## 📖 How to use
-
-First choose a mode above the tabs. Select Japan Post for four shapes with varying height and position, or NW-7 (Codabar) for equal-height bars with varying bar and space widths. Format detection is not automatic.
-
-In NW-7 mode, use Learn to check the structure, result meaning, and supported scope, then choose a photo in Your image and tap four times. Content and start/stop markers are shown separately. Check characters are not validated, so compare the result with the printed number. Sample decoding, Image lab, and Quiz belong to Japan Post mode.
-
-Switching modes preserves Japan Post input and Quiz answers. Switching within Your image keeps the bitmap but clears the selected region and result. Leaving Your image for another tab clears the image.
-
-The following steps describe Japan Post mode.
 
 1. In Decode, open “Try decoding a sample” and press “Load and decode a sample”. This loads the Japan Post calculation example into the bar input and shows its decoded result. Choose other examples from “Sample to decode”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
 2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
@@ -175,9 +173,6 @@ The image core estimates a grid of bar positions, corrects the endpoints, and cl
 For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
 All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
 
-NW-7 reads 2–80 content characters and the A–D start/stop markers. It measures narrow/wide bars and spaces and requires agreement across scanlines. Any check character is kept; its presence is not inferred or validated. Compare the result with the printed number. Some spacing or image conditions are unreadable. Format detection is not automatic.
-See [BarTender’s Codabar reference](https://barcodeguide.seagullscientific.com/Content/Symbologies/Codabar.htm) for the structure and [STRICH’s reference](https://docs.strich.io/codabar.html) for optional check characters.
-
 The primary source is Japan Post's postal code and barcode manual (in Japanese).
 
 - [p11: shapes and character table](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html)
@@ -216,7 +211,7 @@ PostMirror is an independent personal project and is not affiliated with or endo
 The barcode specification follows the postal code and barcode manual published by Japan Post (in Japanese).
 
 Names, building names, and parts truncated beyond the 20th data position cannot be read. The code does not indicate which digits are the block, lot, building, or room number.
-No postal-code database is bundled, and place names are not displayed. In-office barcodes, ID barcodes and foreign postal barcodes are not supported. NW-7 label content can be read, but no tracking lookup or address identification is performed. Code 128, EAN/JAN, ITF and QR codes are not supported.
+No postal-code database is bundled, and place names are not displayed. In-office barcodes, ID barcodes, parcel-label codes, tracking numbers, and foreign postal barcodes are not supported.
 
 The author does not encourage misuse.
 Whether you may handle photos or barcodes of mail depends on the laws and circumstances of your country or region.
@@ -229,7 +224,7 @@ A. No. It is an independent personal project and is not affiliated with Japan Po
 
 Q. Can it read an image?
 
-A. Choose Japan Post (four shapes) or NW-7 (bar and space widths) at the top of the page, then check the supported-shape example in the “Your image” tab. Switching keeps the image but asks you to select the region again. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
+A. Open the “Your image” tab and check the supported format first. Equal-height, varying-width barcodes and QR codes are not supported. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
 
 Q. Does it show place names?
 
@@ -260,8 +255,6 @@ A. They are not recommended. Images treated with mosaic or blur retain values ca
 - [Day114 Hex Dump Trainer](https://ipusiron.github.io/hex-dump-trainer/): practice reading encoded data yourself from positions and tables
 
 ## 🧪 Tests
-
-NW-7 tests use synthetic data independently written and read by ZXing-C++. They cover all 16 start/stop combinations, digits and symbols, length limits, reverse scans, rotation, missing data and conflicting scanlines, plus negative Code 128, EAN/JAN and ITF cases. No runtime dependency was added.
 
 Run `npm test` with Node.js 22 or later. No dependency installation is required.
 Tests cover 21 official examples, 17 extraction examples, known bar sequences, round trips, boundaries, invalid input, masking, orientation, HTML, language consistency, formatting, and contrast. README examples and numbers are also recalculated with the core. GitHub Actions runs Test automatically on push and pull_request.
@@ -302,7 +295,6 @@ postmirror/                         # Tool root
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
 ├── image-core.js                   # Synthetic images and image processing
-├── nw7-core.js                     # Read NW-7 content from a selected image region
 ├── samples.js                      # Versioned public examples and extraction examples
 ├── messages.js                     # Japanese and English messages
 ├── app.js                          # UI, image loading, input, rendering, languages, and tabs
@@ -322,8 +314,6 @@ postmirror/                         # Tool root
     ├── core.test.js                # Tables, known answers, restoration, candidates, orientation, and properties
     ├── extract.test.js             # Extraction stages and 17 public examples
     ├── image.test.js               # Independent image-processing tests
-    ├── nw7.test.js                 # NW-7 independent vectors and rejection checks
-    ├── nw7-vectors.json            # Independent synthetic NW-7 and other-format widths
     ├── readme.test.js              # README numbers, structure, images, and language
     ├── html.test.js                # HTML, CSP, storage, and lesson checks
     ├── i18n.test.js                # Message consistency and Japanese literal checks

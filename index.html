@@ -12,7 +12,6 @@
   <script src="barcode-core.js" defer></script>
   <script src="extract-core.js" defer></script>
   <script src="image-core.js" defer></script>
-  <script src="nw7-core.js" defer></script>
   <script src="samples.js" defer></script>
   <script src="messages.js" defer></script>
   <script src="app.js" defer></script>
@@ -28,20 +27,6 @@
     <p lang="en">Enable JavaScript to use PostMirror.</p>
   </noscript>
   <main>
-    <fieldset id="barcode-mode" class="mode-picker" aria-describedby="mode-summary">
-      <legend data-i18n="mode.title"></legend>
-      <div class="mode-choices">
-        <label class="mode-choice">
-          <input id="mode-customer" type="radio" name="barcode-mode" value="customer" checked>
-          <span><strong data-i18n="mode.customer.title"></strong><span class="mode-detail" data-i18n="mode.customer.detail"></span></span>
-        </label>
-        <label class="mode-choice">
-          <input id="mode-nw7" type="radio" name="barcode-mode" value="nw7">
-          <span><strong data-i18n="mode.nw7.title"></strong><span class="mode-detail" data-i18n="mode.nw7.detail"></span></span>
-        </label>
-      </div>
-      <p id="mode-summary" class="mode-summary" aria-live="polite"></p>
-    </fieldset>
     <div class="tabs" role="tablist" data-i18n-label="tabs.label">
       <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
       <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
@@ -193,10 +178,12 @@
         <h2 id="photo-title" data-i18n="photo.title"></h2>
         <p id="photo-own" data-i18n="photo.own"></p>
         <p id="photo-format" data-i18n="photo.format"></p>
+        <p data-i18n="photo.nw7Moved"></p>
+        <a href="https://ipusiron.github.io/codabar-lens/" target="_blank" rel="noopener noreferrer" data-i18n="photo.codabarLink"></a>
         <p class="privacy" data-i18n="photo.privacy"></p>
         <details class="photo-help" open>
           <summary data-i18n="photo.helpTitle"></summary>
-          <figure id="photo-customer-example" class="photo-example">
+          <figure class="photo-example">
             <div class="photo-example-bars" role="img" data-i18n-label="photo.exampleLabel">
               <span class="photo-example-bar"></span><span class="photo-example-bar lower"></span>
               <span class="photo-example-bar upper"></span><span class="photo-example-bar timing"></span>
@@ -209,17 +196,7 @@
             </div>
             <figcaption data-i18n="photo.tapBand"></figcaption>
           </figure>
-          <figure id="photo-nw7-example" class="photo-example" hidden>
-            <div class="photo-nw7-bars" role="img" data-i18n-label="nw7.exampleLabel">
-              <span></span><span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div class="photo-example-ends" aria-hidden="true">
-              <span data-i18n="photo.leftEnd"></span><span data-i18n="photo.rightEnd"></span>
-            </div>
-            <figcaption data-i18n="nw7.tapBand"></figcaption>
-          </figure>
-          <p id="photo-taps" data-i18n="photo.fourTaps"></p>
+          <p data-i18n="photo.fourTaps"></p>
         </details>
         <label for="photo-file" data-i18n="photo.file"></label>
         <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-own photo-format photo-keyboard">
@@ -245,15 +222,9 @@
             <div aria-live="polite">
               <p id="photo-status"></p>
               <div id="photo-failure" hidden>
-                <p id="photo-not-decoded" data-i18n="photo.notDecoded"></p>
-                <p id="photo-failure-help" data-i18n="photo.failureHelp"></p>
+                <p data-i18n="photo.notDecoded"></p>
+                <p data-i18n="photo.failureHelp"></p>
                 <p data-i18n="image.otherMethods"></p>
-              </div>
-              <div id="photo-nw7-output" hidden>
-                <h4 data-i18n="nw7.resultTitle"></h4>
-                <p id="photo-nw7-value" class="barcode-value" dir="ltr"></p>
-                <p id="photo-nw7-guards"></p>
-                <p data-i18n="nw7.resultHelp"></p>
               </div>
               <p id="photo-known"></p>
               <div id="photo-decoding">
@@ -282,29 +253,6 @@
       </section>
     </div>
     <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
-      <section id="learn-nw7" aria-labelledby="learn-nw7-title" hidden>
-        <h2 id="learn-nw7-title" data-i18n="nw7.learn.title"></h2>
-        <p data-i18n="nw7.learn.intro"></p>
-        <h3 data-i18n="nw7.learn.shapesTitle"></h3>
-        <p data-i18n="nw7.learn.shapes"></p>
-        <p data-i18n="nw7.learn.characters"></p>
-        <h3 data-i18n="nw7.learn.resultTitle"></h3>
-        <p data-i18n="nw7.learn.example"></p>
-        <p data-i18n="nw7.learn.result"></p>
-        <p data-i18n="nw7.learn.check"></p>
-        <h3 data-i18n="nw7.learn.tryTitle"></h3>
-        <p data-i18n="nw7.fourTaps"></p>
-        <p data-i18n="nw7.tapBand"></p>
-        <p data-i18n="nw7.learn.privacy"></p>
-        <button id="nw7-open-photo" type="button" data-i18n="nw7.learn.openPhoto"></button>
-        <h3 data-i18n="nw7.learn.limitsTitle"></h3>
-        <p data-i18n="nw7.learn.limits"></p>
-        <p data-i18n="nw7.learn.failure"></p>
-        <h3 data-i18n="nw7.learn.sourcesTitle"></h3>
-        <p><a href="https://barcodeguide.seagullscientific.com/Content/Symbologies/Codabar.htm" target="_blank" rel="noopener noreferrer" data-i18n="nw7.learn.sourceStructure"></a></p>
-        <p><a href="https://docs.strich.io/codabar.html" target="_blank" rel="noopener noreferrer" data-i18n="nw7.learn.sourceCheck"></a></p>
-      </section>
-      <div id="learn-customer">
       <p data-i18n="learn.intro"></p>
       <p class="muted" data-i18n="learn.name"></p>
       <div id="learn-ja" lang="ja">
@@ -581,7 +529,7 @@
             </tr>
             <tr>
               <td>宅配便の伝票のコード・追跡番号</td>
-              <td>NW-7は画像点検で内容を読める。追跡照会や住所の特定は行わない。Code 128・JANなどの別形式は対象外</td>
+              <td>本ツールでは読めない</td>
             </tr>
             <tr>
               <td>米国IMb・英国RM4SCC</td>
@@ -912,7 +860,7 @@
             </tr>
             <tr>
               <td>Parcel-label codes and tracking numbers</td>
-              <td>NW-7 content can be read in Your image. No tracking lookup or address identification. Other formats such as Code 128 and EAN/JAN are not supported</td>
+              <td>This tool cannot decode them</td>
             </tr>
             <tr>
               <td>US IMb and UK RM4SCC</td>
@@ -949,7 +897,6 @@
         <p><a href="https://www.post.japanpost.jp/service/discount/barcode.html" target="_blank" rel="noopener noreferrer">Mail with barcodes: Discount conditions</a></p>
       </section>
       </div><!-- /learn-en -->
-      </div><!-- /learn-customer -->
     </div>
     <div id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
       <div id="quiz-ja" lang="ja">

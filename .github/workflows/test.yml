@@ -24,7 +24,6 @@ jobs:
           node --check barcode-core.js
           node --check extract-core.js
           node --check image-core.js
-          node --check nw7-core.js
           node --check samples.js
           node --check messages.js
           node --check app.js

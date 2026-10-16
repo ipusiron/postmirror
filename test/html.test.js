@@ -8,11 +8,11 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 const app = read('app.js');
 
-test('HTML: seven local deferred classic scripts in dependency order', () => {
+test('HTML: six local deferred classic scripts in dependency order', () => {
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
-  assert.equal(scripts.length, 7);
+  assert.equal(scripts.length, 6);
   assert.deepStrictEqual(scripts.map(match => /src="([^"]+)"/.exec(match[1])?.[1]), [
-    'barcode-core.js', 'extract-core.js', 'image-core.js', 'nw7-core.js', 'samples.js', 'messages.js', 'app.js'
+    'barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js'
   ]);
   for (const [, attributes, body] of scripts) {
     assert.match(attributes, /\bdefer\b/);
@@ -109,8 +109,7 @@ test('HTML: external links use the approved URLs and isolated new tabs', () => {
     ...['image-exif-checker', 'image-diff-sec', 'qr-risk-radar'].map(slug => `https://ipusiron.github.io/${slug}/`)
   ].map(url => [url, 2]));
   allowed.set('https://github.com/ipusiron/postmirror', 1);
-  allowed.set('https://barcodeguide.seagullscientific.com/Content/Symbologies/Codabar.htm', 1);
-  allowed.set('https://docs.strich.io/codabar.html', 1);
+  allowed.set('https://ipusiron.github.io/codabar-lens/', 1);
   const links = [...html.matchAll(/<a\b([^>]+)>/g)];
   assert.equal(links.length, [...allowed.values()].reduce((sum, count) => sum + count, 0));
   const actual = new Map();
