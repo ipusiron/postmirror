@@ -213,10 +213,17 @@
             <p id="photo-marks"></p>
             <div aria-live="polite">
               <p id="photo-status"></p>
+              <div id="photo-failure" hidden>
+                <p data-i18n="photo.notDecoded"></p>
+                <p data-i18n="photo.failureHelp"></p>
+                <p data-i18n="image.otherMethods"></p>
+              </div>
               <p id="photo-known"></p>
-              <h4 data-i18n="lab.judgment"></h4>
-              <p id="photo-judgment"></p>
-              <div id="photo-summary"></div>
+              <div id="photo-decoding">
+                <h4 data-i18n="lab.judgment"></h4>
+                <p id="photo-judgment"></p>
+                <div id="photo-summary"></div>
+              </div>
             </div>
             <button id="photo-transfer" type="button" data-i18n="photo.transfer" disabled></button>
           </section>

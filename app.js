@@ -881,7 +881,7 @@
 
   function readPhoto() {
     photo.read = imaging.readBarsInRegion(photo.pixels, photo.region);
-    photo.decoded = core.decodeBars(photo.read.bars);
+    photo.decoded = photo.read.status === 'unreadable' ? null : core.decodeBars(photo.read.bars);
     photo.step = 'result';
     renderPhoto();
     paintPhotoResult();
@@ -919,7 +919,8 @@
     if (photo.step !== 'result' || !photo.pixels || state.tab !== 'lab') return;
     const canvas = element('photo-result');
     const pitch = photo.read.pitchPx || photo.pitch;
-    const width = Math.ceil(Math.max(element('photo-result-wrap').clientWidth, photo.pixels.width * 8 / pitch));
+    const available = element('photo-result-wrap').clientWidth;
+    const width = Math.ceil(photo.read.status === 'unreadable' ? available : Math.max(available, photo.pixels.width * 8 / pitch));
     canvas.style.width = `${width}px`;
     canvas.width = photo.pixels.width;
     canvas.height = photo.pixels.height;
@@ -952,6 +953,7 @@
 
   function renderPhoto() {
     const loaded = photo.bitmap !== null;
+    const located = photo.read !== null && photo.read.status !== 'unreadable';
     const selecting = ['rough', 'left', 'right'].includes(photo.step);
     const tap = photo.step === 'rough' ? photo.rough.length + 1 : photo.step === 'left' ? 3 : photo.step === 'right' ? 4 : 0;
     element('photo-work').hidden = !loaded;
@@ -969,13 +971,19 @@
     element('photo-overview').hidden = photo.step !== 'rough';
     element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
     element('photo-output').hidden = photo.step !== 'result';
-    element('photo-transfer').disabled = !photo.read;
+    element('photo-transfer').disabled = !located;
+    element('photo-marks').hidden = !located;
+    element('photo-known').hidden = !located;
+    element('photo-decoding').hidden = !located;
+    element('photo-failure').hidden = !photo.read || located;
     element('photo-back').disabled = !loaded || (!photo.rough.length && !photo.precise.length);
     element('photo-reselect').disabled = !loaded;
     element('photo-clear').disabled = photo.step === 'empty';
     element('photo-overview').setAttribute('aria-label', translate(`photo.step.${photo.rough.length ? 2 : 1}`));
     element('photo-zoom').setAttribute('aria-label', translate(`photo.step.${photo.step === 'right' ? 4 : 3}`));
-    element('photo-result').setAttribute('aria-label', photo.read ? photoMarkSummary() : translate('photo.resultImage'));
+    const imageLabel = translate(photo.read && !located ? 'photo.unreadableImage' : 'photo.resultImage');
+    element('photo-result-wrap').setAttribute('aria-label', imageLabel);
+    element('photo-result').setAttribute('aria-label', located ? photoMarkSummary() : imageLabel);
     if (!photo.read) {
       for (const id of ['photo-status', 'photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
         element(id).replaceChildren();
@@ -986,6 +994,14 @@
     }
     element('photo-status').dataset.status = photo.read.status;
     element('photo-status').textContent = translate(`lab.status.${photo.read.status}`);
+    if (!located) {
+      for (const id of ['photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
+        element(id).replaceChildren();
+        delete element(id).dataset.status;
+        delete element(id).dataset.known;
+      }
+      return;
+    }
     const known = photo.read.bars.filter(value => value !== null).length;
     element('photo-known').dataset.known = String(known);
     element('photo-known').textContent = message(plural('lab.known', known));
