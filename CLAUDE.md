@@ -23,6 +23,7 @@ postmirror/                         # ツールのルート
 ├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
 ├── extract-core.js                 # 住所表示番号の抜き出し規則
+├── image-core.js                   # 合成画像の描画と画像処理
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
 ├── app.js                          # 画面、入力と描画、言語とタブの切り替え
@@ -39,6 +40,7 @@ postmirror/                         # ツールのルート
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
+    ├── image.test.js               # 独立した画像処理のテスト
     ├── readme.test.js              # 日英READMEの数値、構成と表記
     ├── html.test.js                # HTML、CSP、保存先、座学の静的検査
     ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
@@ -50,12 +52,17 @@ postmirror/                         # ツールのルート
 |---|---|---|
 | barcode-core.js | PostMirrorCore | 解読、符号化、向きの変換、文字の遮蔽、検算式の部品 |
 | extract-core.js | PostMirrorExtract | 住所Bから住所表示番号を抜き出し、8段階の中間結果を返す |
+| image-core.js | PostMirrorImage | 合成画像の描画と隠し方の加工 |
 | samples.js | PostMirrorSamples | 公開例のデータ |
 | messages.js | PostMirrorMessages | 日英の文言 |
 
 コアはUMD形式の通常スクリプトです。
 `globalThis`へ公開し、CommonJSでは`module.exports`から同じAPIを返します。
-コアはDOM、Date、乱数、ストレージ、通信に触れず、公開する定数を`Object.freeze`で固定します。
+`barcode-core.js`と`extract-core.js`はDOM、Date、乱数、ストレージ、通信に触れず、公開する定数を`Object.freeze`で固定します。
+`image-core.js`もDOM、canvas、Date、ストレージ、通信に触れず、シード付きの自作の乱数だけを使います（Math.randomは使いません）。
+画像はRGBAのUint8ClampedArrayです。renderBarcodeは4×4の超標本化、applyMaskは元画像を保つ加工を行います。
+矩形はmask.rect、直線はmask.start、mask.end、thicknessPxで指定し、blurはsigmaPxを使います。
+画像コアは画面への組み込み前で、通常スクリプトではbarcode-core.jsの後に読み込みます。
 `extract-core.js`は`barcode-core.js`に依存しません。
 画面は`barcode-core.js`、`extract-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。
 
@@ -68,6 +75,7 @@ Node.js 22以上で、リポジトリーのルートから実行します。
 npm test
 node --check barcode-core.js
 node --check extract-core.js
+node --check image-core.js
 node --check samples.js
 node --check messages.js
 node --check app.js

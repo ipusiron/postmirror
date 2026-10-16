@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
-const sourceFiles = ['barcode-core.js', 'extract-core.js', 'samples.js', 'messages.js', 'app.js', 'style.css'];
+const sourceFiles = ['barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js', 'style.css'];
 const testFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.js')).map(file => `test/${file}`);
 
 for (const file of [...sourceFiles, ...testFiles]) {
@@ -16,7 +16,7 @@ for (const file of [...sourceFiles, ...testFiles]) {
 }
 
 const minimums = [['barcode-core.js', 200], ['extract-core.js', 60], ['samples.js', 40], ['messages.js', 100],
-  ['index.html', 100], ['style.css', 150], ['app.js', 300]];
+  ['image-core.js', 100], ['index.html', 100], ['style.css', 150], ['app.js', 300]];
 for (const [file, minimum] of minimums) {
   test(`Format: ${file} has at least ${minimum} lines`, () => {
     const lines = fs.readFileSync(path.join(root, file), 'utf8').trimEnd().split(/\r?\n/);

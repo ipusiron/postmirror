@@ -250,6 +250,7 @@ postmirror/                         # Tool root
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
+├── image-core.js                   # Synthetic images and image processing
 ├── samples.js                      # Versioned public examples and extraction examples
 ├── messages.js                     # Japanese and English messages
 ├── app.js                          # UI, input, rendering, languages, and tabs
@@ -266,6 +267,7 @@ postmirror/                         # Tool root
     ├── official-vectors.json       # Independent expectations for 21 examples and nine complete bar sequences
     ├── core.test.js                # Tables, known answers, restoration, candidates, orientation, and properties
     ├── extract.test.js             # Extraction stages and 17 public examples
+    ├── image.test.js               # Independent image-processing tests
     ├── readme.test.js              # README numbers, structure, images, and language
     ├── html.test.js                # HTML, CSP, storage, and lesson checks
     ├── i18n.test.js                # Message consistency and Japanese literal checks

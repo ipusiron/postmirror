@@ -294,6 +294,7 @@ postmirror/                         # ツールのルート
 ├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
 ├── extract-core.js                 # 住所表示番号の抜き出し規則
+├── image-core.js                   # 合成画像の描画と画像処理
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
 ├── app.js                          # 画面、入力と描画、言語とタブの切り替え
@@ -310,6 +311,7 @@ postmirror/                         # ツールのルート
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
+    ├── image.test.js               # 独立した画像処理のテスト
     ├── readme.test.js              # 日英READMEの数値、構成と表記
     ├── html.test.js                # HTML、CSP、保存先、座学の静的検査
     ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
