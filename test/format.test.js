@@ -16,7 +16,7 @@ for (const file of [...sourceFiles, ...testFiles]) {
 }
 
 const minimums = [['barcode-core.js', 200], ['extract-core.js', 60], ['samples.js', 40], ['messages.js', 100],
-  ['image-core.js', 100], ['index.html', 100], ['style.css', 150], ['app.js', 300]];
+  ['image-core.js', 200], ['index.html', 100], ['style.css', 150], ['app.js', 300]];
 for (const [file, minimum] of minimums) {
   test(`Format: ${file} has at least ${minimum} lines`, () => {
     const lines = fs.readFileSync(path.join(root, file), 'utf8').trimEnd().split(/\r?\n/);

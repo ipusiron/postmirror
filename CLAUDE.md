@@ -52,7 +52,7 @@ postmirror/                         # ツールのルート
 |---|---|---|
 | barcode-core.js | PostMirrorCore | 解読、符号化、向きの変換、文字の遮蔽、検算式の部品 |
 | extract-core.js | PostMirrorExtract | 住所Bから住所表示番号を抜き出し、8段階の中間結果を返す |
-| image-core.js | PostMirrorImage | 合成画像の描画と隠し方の加工 |
+| image-core.js | PostMirrorImage | 合成画像の描画、隠し方の加工、指定範囲の67本の読み取り |
 | samples.js | PostMirrorSamples | 公開例のデータ |
 | messages.js | PostMirrorMessages | 日英の文言 |
 
@@ -62,6 +62,9 @@ postmirror/                         # ツールのルート
 `image-core.js`もDOM、canvas、Date、ストレージ、通信に触れず、シード付きの自作の乱数だけを使います（Math.randomは使いません）。
 画像はRGBAのUint8ClampedArrayです。renderBarcodeは4×4の超標本化、applyMaskは元画像を保つ加工を行います。
 矩形はmask.rect、直線はmask.start、mask.end、thicknessPxで指定し、blurはsigmaPxを使います。
+readBarsInRegionはstartからendの順で67本を返し、上はその向きの左の法線です。
+confidenceは67個の配列で、信頼度0.2未満と位置不明のバーをnullにします。
+タイミング帯からピッチと位相を測り直し、スペースの明るさを確認します。チェックデジットは参照しません。
 画像コアは画面への組み込み前で、通常スクリプトではbarcode-core.jsの後に読み込みます。
 `extract-core.js`は`barcode-core.js`に依存しません。
 画面は`barcode-core.js`、`extract-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。
