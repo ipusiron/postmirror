@@ -34,7 +34,7 @@ test('I18n: Japanese and English keys and parameters match exactly', () => {
 });
 
 test('I18n: application and barcode core contain no Japanese literals or punctuation', () => {
-  for (const file of ['app.js', 'barcode-core.js']) {
+  for (const file of ['app.js', 'barcode-core.js', 'image-core.js']) {
     const text = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
     assert.doesNotMatch(text, /[\u3000-\u303f\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/u, file);
   }
@@ -48,7 +48,7 @@ test('I18n: Japanese wording follows the shared forbidden list', () => {
 
 test('I18n: every static HTML message has a dictionary entry', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const keys = [...html.matchAll(/data-i18n="([^"]+)"/g)].map(match => match[1]);
+  const keys = [...html.matchAll(/data-i18n(?:-label)?="([^"]+)"/g)].map(match => match[1]);
   assert.ok(keys.length >= 5);
   for (const key of keys) assert.ok(Object.hasOwn(messages.ja, key), key);
 });

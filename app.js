@@ -4,9 +4,13 @@
   const core = globalThis.PostMirrorCore;
   const samples = globalThis.PostMirrorSamples;
   const messages = globalThis.PostMirrorMessages;
+  const imaging = globalThis.PostMirrorImage;
+  const lab = { sample: 0, mask: 'none', character: 8, image: null, read: null, decoded: null };
+  const labMasks = ['none', 'fill', 'character', 'upper', 'line-1', 'line-0.25', 'translucent-black', 'translucent-white',
+    'mosaic-0.5', 'mosaic-1', 'mosaic-2', 'blur-0.5', 'blur-1', 'blur-2'];
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
-    lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
+    origins: Array(67).fill(null), lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
     language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
   const element = id => document.getElementById(id);
@@ -111,9 +115,10 @@
         buttons.push(button);
       }
       const symbol = node('p', undefined, 'card-symbol');
-      card.append(row, symbol);
+      const origins = node('div', undefined, 'card-origins');
+      card.append(row, origins, symbol);
       element('bar-grid').append(card);
-      cards.push({ group, symbol, card });
+      cards.push({ group, symbol, card, origins });
     }
     for (const value of [1, 2, 3, 4, null]) {
       const button = node('button', undefined, 'palette-button');
@@ -223,7 +228,8 @@
       button.setAttribute('aria-label', message(barLabel(index)));
       button.replaceChildren(shapeSvg(state.bars[index]));
     });
-    cards.forEach(({ group, symbol }) => {
+    cards.forEach(({ group, symbol, origins }) => {
+      renderOrigins(origins, group);
       const char = state.result?.chars[group.index];
       symbol.textContent = group.length === 2 ? translate('symbol.marker')
         : char ? char.symbol ?? translate('symbol.unknown') : localSymbol(group);
@@ -284,6 +290,7 @@
 
   function setBar(value, advance, focus) {
     state.undo = null;
+    if (state.bars[state.selected] !== value) state.origins[state.selected] = { kind: 'manual' };
     state.bars[state.selected] = value;
     state.announcement = barLabel(state.selected);
     if (advance) state.selected = Math.min(66, state.selected + 1);
@@ -293,7 +300,7 @@
   }
 
   function remember() {
-    state.undo = { bars: state.bars.slice(), selected: state.selected, lastSample: state.lastSample };
+    state.undo = { bars: state.bars.slice(), origins: state.origins.slice(), selected: state.selected, lastSample: state.lastSample };
   }
 
   function rangeValues() {
@@ -403,10 +410,10 @@
     return description;
   }
 
-  function inspectionSummaries() {
+  function inspectionSummaries(result = state.result) {
     const leaked = chars => chars.filter(char => char.status === 'read' || char.status === 'recovered').length;
-    return [plural('inspection.postalSummary', leaked(state.result.chars.slice(0, 7))),
-      plural('inspection.summary', leaked(state.result.chars.slice(7, 20)), {
+    return [plural('inspection.postalSummary', leaked(result.chars.slice(0, 7))),
+      plural('inspection.summary', leaked(result.chars.slice(7, 20)), {
         section: translate('inspection.sectionAddress'), total: 13
       })];
   }
@@ -569,6 +576,7 @@
       button.addEventListener('click', () => {
         remember();
         state.bars = core.transformBars(state.bars, alternative.transform);
+        if (alternative.transform !== 'flip') state.origins.reverse();
         state.announcement = record('transform.applied');
         changed();
         element('result-title').focus();
@@ -613,6 +621,7 @@
     const sample = samples.barcodes[index];
     remember();
     state.bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
+    state.origins.fill(null);
     state.lastSample = index;
     element('sample-select').value = String(index);
     state.selected = 0;
@@ -632,7 +641,7 @@
   element('fill-unknown').addEventListener('click', () => {
     if (element('fill-unknown').disabled) return;
     remember();
-    state.bars = state.bars.map(value => value === undefined ? null : value);
+    replaceManualBars(state.bars.map(value => value === undefined ? null : value));
     state.announcement = record('actions.filledUnknown');
     changed();
     element('result-title').focus();
@@ -648,7 +657,7 @@
       })];
     }
     if (parsed.bars?.length === 67) {
-      state.bars = parsed.bars;
+      replaceManualBars(parsed.bars);
       state.errors = [record('text.accepted')];
       state.announcement = record('text.accepted');
       changed(true);
@@ -664,6 +673,7 @@
     if (element('clear').disabled) return;
     remember();
     state.bars = Array(67).fill(undefined);
+    state.origins.fill(null);
     state.selected = 0;
     state.announcement = record('actions.cleared');
     changed();
@@ -687,6 +697,7 @@
     if (preset === 'latter') bars.fill(null, 44);
     if (preset === 'all') bars.fill(null);
     state.bars = bars;
+    state.origins.fill(null);
     state.announcement = record('mask.applied', { preset: record(`mask.${preset}`) });
     changed(false, 'mask-summary');
   });
@@ -696,8 +707,7 @@
     if (range === null) return;
     remember();
     const [start, end] = range;
-    state.bars = state.bars.slice();
-    state.bars.fill(null, start - 1, end);
+    replaceManualBars(state.bars.map((value, index) => index >= start - 1 && index < end ? null : value));
     state.announcement = plural('range.applied', end - start + 1, { start, end });
     changed(false, 'range-summary');
   });
@@ -718,7 +728,7 @@
     button.dataset[attribute] = index;
     button.addEventListener('click', () => {
       remember();
-      state.bars = core.maskChars(state.bars, [index]);
+      replaceManualBars(core.maskChars(state.bars, [index]));
       state.announcement = record('character.masked', { position: index + 1 });
       changed();
       element('result-title').focus();
@@ -726,9 +736,416 @@
     return button;
   }
 
+  const photo = {
+    version: 0, bitmap: null, pixels: null, region: null, crop: null, zoom: null,
+    rough: [], precise: [], pitch: 0, step: 'empty', resized: false, read: null, decoded: null
+  };
+  const photoCanvases = ['photo-overview', 'photo-zoom', 'photo-result'];
+
+  function releasePhoto(clearInput = true) {
+    photo.version++;
+    if (photo.bitmap) photo.bitmap.close();
+    Object.assign(photo, { bitmap: null, pixels: null, region: null, crop: null, zoom: null,
+      rough: [], precise: [], pitch: 0, step: 'empty', resized: false, read: null, decoded: null });
+    for (const id of photoCanvases) {
+      element(id).width = 0;
+      element(id).height = 0;
+    }
+    if (clearInput) element('photo-file').value = '';
+    renderPhoto();
+  }
+
+  function photoFailure() {
+    releasePhoto(false);
+    photo.step = 'error';
+    renderPhoto();
+  }
+
+  async function loadPhoto(file) {
+    releasePhoto(false);
+    if (!file) return;
+    const version = photo.version;
+    photo.step = 'loading';
+    renderPhoto();
+    let bitmap = null;
+    try {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Unsupported image');
+      bitmap = await createImageBitmap(file);
+      if (version !== photo.version) return;
+      const limit = 16777216;
+      if (bitmap.width * bitmap.height > limit) {
+        const scale = Math.sqrt(limit / (bitmap.width * bitmap.height));
+        const resized = await createImageBitmap(bitmap, {
+          resizeWidth: Math.max(1, Math.floor(bitmap.width * scale)),
+          resizeHeight: Math.max(1, Math.floor(bitmap.height * scale))
+        });
+        bitmap.close();
+        bitmap = resized;
+        if (version !== photo.version) return;
+        photo.resized = true;
+      }
+      photo.bitmap = bitmap;
+      bitmap = null;
+      resetPhotoRegion();
+    } catch (_) {
+      if (version === photo.version) photoFailure();
+    } finally {
+      if (bitmap) bitmap.close();
+    }
+  }
+
+  function photoRect(left, top, right, bottom) {
+    const x = Math.max(0, Math.floor(left)), y = Math.max(0, Math.floor(top));
+    const width = Math.min(photo.bitmap.width, Math.ceil(right)) - x;
+    const height = Math.min(photo.bitmap.height, Math.ceil(bottom)) - y;
+    if (width < 1 || height < 1) throw new Error('Empty image region');
+    return { x, y, width, height };
+  }
+
+  function drawPhotoCrop(canvas, rect, width = rect.width, height = rect.height) {
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) throw new Error('Canvas unavailable');
+    context.drawImage(photo.bitmap, rect.x, rect.y, rect.width, rect.height, 0, 0, width, height);
+    return context;
+  }
+
+  function resetPhotoRegion() {
+    if (!photo.bitmap) return;
+    photo.rough = [];
+    photo.precise = [];
+    photo.pixels = photo.region = photo.crop = photo.zoom = photo.read = photo.decoded = null;
+    photo.step = 'rough';
+    for (const id of ['photo-zoom', 'photo-result']) {
+      element(id).width = 0;
+      element(id).height = 0;
+    }
+    const scale = Math.min(1, 1600 / Math.max(photo.bitmap.width, photo.bitmap.height));
+    drawPhotoCrop(element('photo-overview'), photoRect(0, 0, photo.bitmap.width, photo.bitmap.height),
+      Math.max(1, Math.round(photo.bitmap.width * scale)), Math.max(1, Math.round(photo.bitmap.height * scale)));
+    renderPhoto();
+  }
+
+  function canvasPoint(event, rect) {
+    const canvas = event.currentTarget;
+    const bounds = canvas.getBoundingClientRect();
+    return { x: rect.x + (event.clientX - bounds.left - canvas.clientLeft) * rect.width / canvas.clientWidth,
+      y: rect.y + (event.clientY - bounds.top - canvas.clientTop) * rect.height / canvas.clientHeight };
+  }
+
+  function showPhotoZoom() {
+    const point = photo.rough[photo.precise.length];
+    photo.zoom = photoRect(point.x - 8 * photo.pitch, point.y - 4 * photo.pitch,
+      point.x + 8 * photo.pitch, point.y + 4 * photo.pitch);
+    drawPhotoCrop(element('photo-zoom'), photo.zoom);
+    photo.step = photo.precise.length ? 'right' : 'left';
+    renderPhoto();
+    element('photo-step').scrollIntoView({ block: 'nearest', behavior: 'auto' });
+  }
+
+  function readPhoto() {
+    photo.read = imaging.readBarsInRegion(photo.pixels, photo.region);
+    photo.decoded = core.decodeBars(photo.read.bars);
+    photo.step = 'result';
+    renderPhoto();
+    paintPhotoResult();
+    element('photo-result-title').focus();
+  }
+
+  function finishPhotoRegion() {
+    const [start, end] = photo.precise;
+    const margin = Math.max(4 * photo.pitch, 32);
+    photo.crop = photoRect(Math.min(start.x, end.x) - margin, Math.min(start.y, end.y) - margin,
+      Math.max(start.x, end.x) + margin, Math.max(start.y, end.y) + margin);
+    photo.region = { start: { x: start.x - photo.crop.x, y: start.y - photo.crop.y },
+      end: { x: end.x - photo.crop.x, y: end.y - photo.crop.y } };
+    const canvas = element('photo-result');
+    const context = drawPhotoCrop(canvas, photo.crop);
+    photo.pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    readPhoto();
+  }
+
+  function photoMarks() {
+    return photo.read.bars.map((bar, index) => bar !== null ? 'read'
+      : photo.read.confidence[index] !== null ? 'uncertain' : 'missing');
+  }
+
+  function photoMarkSummary() {
+    const marks = photoMarks().filter((_, index) => photo.read.centers[index]);
+    return translate('photo.marks', {
+      solid: marks.filter(mark => mark === 'read').length,
+      hollow: marks.filter(mark => mark === 'uncertain').length,
+      cross: marks.filter(mark => mark === 'missing').length
+    });
+  }
+
+  function paintPhotoResult() {
+    if (photo.step !== 'result' || !photo.pixels || state.tab !== 'lab') return;
+    const canvas = element('photo-result');
+    const pitch = photo.read.pitchPx || photo.pitch;
+    const width = Math.ceil(Math.max(element('photo-result-wrap').clientWidth, photo.pixels.width * 8 / pitch));
+    canvas.style.width = `${width}px`;
+    canvas.width = photo.pixels.width;
+    canvas.height = photo.pixels.height;
+    const context = canvas.getContext('2d');
+    context.putImageData(photo.pixels, 0, 0);
+    const scale = canvas.width / width;
+    const radius = 3 * scale;
+    const colors = getComputedStyle(document.documentElement);
+    const marks = photoMarks();
+    photo.read.centers.forEach((center, index) => {
+      if (!center) return;
+      const kind = marks[index];
+      context.beginPath();
+      if (kind === 'missing') {
+        context.moveTo(center.x - radius, center.y - radius);
+        context.lineTo(center.x + radius, center.y + radius);
+        context.moveTo(center.x + radius, center.y - radius);
+        context.lineTo(center.x - radius, center.y + radius);
+      } else context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      context.lineWidth = 4 * scale;
+      context.strokeStyle = colors.getPropertyValue('--bg');
+      context.stroke();
+      context.lineWidth = 2 * scale;
+      context.strokeStyle = colors.getPropertyValue(kind === 'read' ? '--accent' : kind === 'uncertain' ? '--warn-fg' : '--fg');
+      context.fillStyle = context.strokeStyle;
+      if (kind === 'read') context.fill();
+      context.stroke();
+    });
+  }
+
+  function renderPhoto() {
+    const loaded = photo.bitmap !== null;
+    element('photo-work').hidden = !loaded;
+    element('photo-step').textContent = ['rough', 'left', 'right'].includes(photo.step) ? translate(`photo.step.${photo.step}`) : '';
+    element('photo-step').dataset.step = photo.step;
+    element('photo-notice').textContent = photo.step === 'error' ? translate('photo.error')
+      : photo.step === 'loading' ? translate('photo.loading') : photo.resized ? translate('photo.resized') : '';
+    element('photo-overview').hidden = photo.step !== 'rough';
+    element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
+    element('photo-output').hidden = photo.step !== 'result';
+    element('photo-transfer').disabled = !photo.read;
+    element('photo-reselect').disabled = !loaded;
+    element('photo-clear').disabled = photo.step === 'empty';
+    element('photo-overview').setAttribute('aria-label', translate('photo.overview'));
+    element('photo-zoom').setAttribute('aria-label', translate(photo.step === 'right' ? 'photo.zoomRight' : 'photo.zoomLeft'));
+    element('photo-result').setAttribute('aria-label', photo.read ? photoMarkSummary() : translate('photo.resultImage'));
+    if (!photo.read) {
+      for (const id of ['photo-status', 'photo-known', 'photo-judgment', 'photo-marks', 'photo-summary']) {
+        element(id).replaceChildren();
+        delete element(id).dataset.status;
+        delete element(id).dataset.known;
+      }
+      return;
+    }
+    element('photo-status').dataset.status = photo.read.status;
+    element('photo-status').textContent = translate(`lab.status.${photo.read.status}`);
+    const known = photo.read.bars.filter(value => value !== null).length;
+    element('photo-known').dataset.known = String(known);
+    element('photo-known').textContent = message(plural('lab.known', known));
+    element('photo-judgment').dataset.status = photo.decoded.status;
+    element('photo-judgment').textContent = message(judgment(photo.decoded));
+    element('photo-marks').textContent = photoMarkSummary();
+    const summary = element('photo-summary');
+    summary.replaceChildren();
+    inspectionSummaries(photo.decoded).forEach(item => appendMessage(summary, item));
+    appendMessage(summary, record('inspection.cover'));
+    if (photo.read.status !== 'read') {
+      appendMessage(summary, record('photo.retry'));
+      appendMessage(summary, record('image.otherMethods'));
+    }
+  }
+
+  function buildPhoto() {
+    element('photo-file').addEventListener('change', event => loadPhoto(event.target.files[0]));
+    element('photo-clear').addEventListener('click', () => releasePhoto());
+    element('photo-reselect').addEventListener('click', () => {
+      try { resetPhotoRegion(); } catch (_) { photoFailure(); }
+    });
+    element('photo-transfer').addEventListener('click', () => transferImage(photo.read));
+    element('photo-overview').addEventListener('click', event => {
+      if (photo.step !== 'rough') return;
+      try {
+        photo.rough.push(canvasPoint(event, { x: 0, y: 0, width: photo.bitmap.width, height: photo.bitmap.height }));
+        if (photo.rough.length === 1) {
+          const canvas = element('photo-overview');
+          const context = canvas.getContext('2d');
+          const point = photo.rough[0];
+          const scale = canvas.width / photo.bitmap.width;
+          context.beginPath();
+          context.arc(point.x * scale, point.y * scale, 5 * canvas.width / canvas.clientWidth, 0, Math.PI * 2);
+          context.lineWidth = 2 * canvas.width / canvas.clientWidth;
+          context.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+          context.stroke();
+        }
+        if (photo.rough.length === 2) {
+          photo.pitch = Math.hypot(photo.rough[1].x - photo.rough[0].x, photo.rough[1].y - photo.rough[0].y) / 66;
+          if (photo.pitch < 1) {
+            resetPhotoRegion();
+            element('photo-notice').textContent = translate('photo.retry');
+          } else showPhotoZoom();
+        }
+      } catch (_) { photoFailure(); }
+    });
+    element('photo-zoom').addEventListener('click', event => {
+      if (!['left', 'right'].includes(photo.step)) return;
+      try {
+        photo.precise.push(canvasPoint(event, photo.zoom));
+        if (photo.precise.length === 1) showPhotoZoom();
+        else finishPhotoRegion();
+      } catch (_) { photoFailure(); }
+    });
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(paintPhotoResult).observe(element('photo-result-wrap'));
+    } else addEventListener('resize', paintPhotoResult);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintPhotoResult);
+  }
+
+  function transferImage(read) {
+    if (!read) return;
+    remember();
+    state.bars = read.bars.slice();
+    state.origins = read.bars.map((bar, index) => ({ kind: 'image', unknown: bar === null, confidence: read.confidence[index] }));
+    state.lastSample = null;
+    element('sample-select').value = '';
+    state.selected = 0;
+    state.announcement = record('lab.transferred');
+    changed();
+    showTab('decode');
+    element('result-title').focus();
+  }
+
+  function replaceManualBars(bars) {
+    state.origins = bars.map((value, index) => value === state.bars[index] ? state.origins[index] : { kind: 'manual' });
+    state.bars = bars;
+  }
+
+  function renderOrigins(container, group) {
+    container.replaceChildren();
+    for (let index = group.start; index < group.start + group.length; index++) {
+      const origin = state.origins[index];
+      const key = origin?.kind === 'image' && origin.unknown ? 'unknown' : origin?.kind;
+      const mark = node('span', key ? translate(`origin.${key === 'unknown' ? 'image' : key}`) : '');
+      mark.dataset.originIndex = index;
+      mark.dataset.origin = key || '';
+      if (key) {
+        mark.setAttribute('role', 'img');
+        mark.setAttribute('aria-label', translate('origin.label', { number: index + 1, source: translate(`origin.${key}`) }));
+      }
+      container.append(mark);
+    }
+    container.hidden = !state.origins.slice(group.start, group.start + group.length).some(Boolean);
+  }
+
+
+  function buildLab() {
+    for (const [index, sample] of samples.barcodes.entries()) {
+      const option = node('option');
+      option.value = String(index);
+      option.dataset.i18n = sample.labelKey;
+      element('lab-sample').append(option);
+    }
+    for (const kind of labMasks) {
+      const option = node('option');
+      option.value = kind;
+      option.dataset.i18n = `lab.mask.${kind}`;
+      element('lab-mask').append(option);
+    }
+    for (let number = 1; number <= 21; number++) {
+      const option = node('option');
+      option.value = String(number);
+      element('lab-character').append(option);
+    }
+    element('lab-character').value = String(lab.character);
+    for (const [id, field] of [['lab-sample', 'sample'], ['lab-mask', 'mask'], ['lab-character', 'character']]) {
+      element(id).addEventListener('change', event => {
+        lab[field] = field === 'mask' ? event.target.value : Number(event.target.value);
+        readLab();
+      });
+    }
+    element('lab-transfer').addEventListener('click', () => transferImage(lab.read));
+  }
+
+  function labMask(region) {
+    const p = 8, mid = region.start.y;
+    const rect = { x: region.start.x - 0.75 * p, y: mid - 2 * p,
+      width: region.end.x - region.start.x + 1.5 * p, height: 4 * p };
+    const kind = lab.mask;
+    if (kind === 'none') return null;
+    if (kind === 'character') {
+      return { kind: 'fill', rect: { x: region.start.x + (1.5 + 3 * (lab.character - 1)) * p,
+        y: mid - 1.5 * p, width: 3 * p, height: 3 * p } };
+    }
+    if (kind === 'upper') return { kind: 'fill', rect: { ...rect, height: 2 * p } };
+    if (kind.startsWith('line-')) {
+      return { kind: 'line', start: { x: rect.x, y: mid }, end: { x: rect.x + rect.width, y: mid },
+        thicknessPx: Number(kind.split('-')[1]) * p };
+    }
+    if (kind.startsWith('translucent-')) return { kind: 'translucent', rect, alpha: 0.5, color: kind.endsWith('white') ? 255 : 0 };
+    if (kind.startsWith('mosaic-')) return { kind: 'mosaic', rect, blockPx: Number(kind.split('-')[1]) * p };
+    if (kind.startsWith('blur-')) return { kind: 'blur', rect, sigmaPx: Number(kind.split('-')[1]) * p };
+    return { kind: 'fill', rect };
+  }
+
+  function paintLab() {
+    if (!lab.image) return;
+    const canvas = element('lab-canvas');
+    canvas.width = lab.image.width;
+    canvas.height = lab.image.height;
+    canvas.getContext('2d').putImageData(new ImageData(lab.image.data, lab.image.width, lab.image.height), 0, 0);
+  }
+
+  function readLab() {
+    const sample = samples.barcodes[lab.sample];
+    const bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
+    const rendered = imaging.renderBarcode(bars, { pxPerPitch: 8, angleDeg: 0 });
+    const mask = labMask(rendered.region);
+    lab.image = mask ? imaging.applyMask(rendered.image, mask) : rendered.image;
+    lab.read = imaging.readBarsInRegion(lab.image, rendered.region);
+    lab.decoded = core.decodeBars(lab.read.bars);
+    paintLab();
+    renderLab();
+  }
+
+  function renderLab() {
+    element('lab-character-field').hidden = lab.mask !== 'character';
+    for (const option of element('lab-character').options) {
+      option.textContent = translate('lab.characterNumber', { number: option.value });
+    }
+    const mask = lab.mask === 'character' ? translate('lab.characterMask', { number: lab.character }) : translate(`lab.mask.${lab.mask}`);
+    element('lab-canvas').setAttribute('aria-label', translate('lab.canvas', {
+      sample: translate(samples.barcodes[lab.sample].labelKey), mask
+    }));
+    if (!lab.read) return;
+    const status = element('lab-status');
+    status.dataset.status = lab.read.status;
+    status.textContent = translate(`lab.status.${lab.read.status}`);
+    const known = lab.read.bars.filter(value => value !== null).length;
+    element('lab-known').textContent = message(plural('lab.known', known));
+    element('lab-known').dataset.known = String(known);
+    const decoded = element('lab-judgment');
+    decoded.dataset.status = lab.decoded.status;
+    decoded.textContent = message(judgment(lab.decoded));
+    const summary = element('lab-summary');
+    summary.replaceChildren();
+    inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
+    appendMessage(summary, record('inspection.cover'));
+    if (lab.read.status === 'unreadable') appendMessage(summary, record('image.otherMethods'));
+  }
+
   function showTab(name, focus = false) {
+    if (state.tab === 'lab' && name !== 'lab') {
+      element('lab-canvas').width = 0;
+      element('lab-canvas').height = 0;
+      releasePhoto();
+    }
     state.tab = name;
-    for (const tab of ['decode', 'learn', 'quiz']) {
+    if (name === 'lab') {
+      if (!lab.read) readLab();
+      else paintLab();
+    }
+    for (const tab of ['decode', 'lab', 'learn', 'quiz']) {
       const selected = tab === name;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
@@ -774,6 +1191,8 @@
     renderControls();
     renderResult();
     renderLearn();
+    renderLab();
+    renderPhoto();
   }
 
   function renderLearn() {
@@ -974,6 +1393,7 @@
     button.addEventListener('click', () => {
       remember();
       state.bars = lessonBars[0].bars.slice();
+      state.origins.fill(null);
       if (button.dataset.learnTry === 'cd') state.bars.fill(null, 62, 65);
       else for (let index = 0; index < 21; index += 1) state.bars[3 + index * 3] = null;
       state.lastSample = 0;
@@ -986,7 +1406,7 @@
     });
   });
 
-  const tabNames = ['decode', 'learn', 'quiz'];
+  const tabNames = ['decode', 'lab', 'learn', 'quiz'];
   for (const name of tabNames) {
     const tab = element(`tab-${name}`);
     tab.addEventListener('click', () => showTab(name));
@@ -1016,6 +1436,8 @@
   });
   element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();
+  buildLab();
+  buildPhoto();
   if (typeof ResizeObserver === 'function') new ResizeObserver(updatePaletteSpace).observe(paletteDock);
   else {
     addEventListener('resize', updatePaletteSpace);

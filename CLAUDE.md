@@ -1,12 +1,12 @@
 # PostMirrorの開発ガイド
 
-PostMirror（ポストミラー）は、日本郵便のカスタマバーコードを手入力で解読し、郵便物の写真から読める情報を確かめる防犯のための自己点検ツールです。
+PostMirror（ポストミラー）は、日本郵便のカスタマバーコードをバーの入力や画像から解読し、郵便物の写真から読める情報を確かめる防犯のための自己点検ツールです。
 自分宛ての郵便物で試すことを勧め、作者は悪用を勧めない旨を画面とREADMEに記載します。
-第1.1弾は解読・座学・確認問題の3タブ、日英の座学12節と確認問題7問、ダーク表示に対応しています。
+解読・実験・座学・確認問題の4タブ、日英の座学12節と確認問題7問、ダーク表示に対応しています。
 
 ## 構成
 
-第1弾の構成は次のとおりです。
+現在の構成は次のとおりです。
 
 ```text
 postmirror/                         # ツールのルート
@@ -19,26 +19,30 @@ postmirror/                         # ツールのルート
 ├── README.md                       # YAMLメタデータ付きの日本語版
 ├── README.en.md                    # 英語版
 ├── package.json                    # 依存なし、scripts.testはnode --test
-├── index.html                      # 解読・座学・確認問題の3タブとCSP
+├── index.html                      # 解読・実験・座学・確認問題の4タブとCSP
 ├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
 ├── extract-core.js                 # 住所表示番号の抜き出し規則
+├── image-core.js                   # 合成画像の描画と画像処理
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
-├── app.js                          # 画面、入力と描画、言語とタブの切り替え
+├── app.js                          # 画面、画像の読み込み、入力と描画、言語とタブの切り替え
 ├── assets/                         # READMEの日本語画面例
 │   ├── screenshot.png              # 解読タブ
 │   ├── screenshot2.png             # 座学タブ
 │   ├── screenshot3.png             # 隠したバーの点検
 │   ├── screenshot4.png             # 解読タブのダーク表示
+│   ├── screenshot5.png             # 半透明の黒をかけたサンプル画像の実験
 │   └── en/                         # READMEの英語画面例
 │       ├── screenshot.png          # 英語表示の解読タブ
 │       ├── screenshot2.png         # 英語表示の座学タブ
-│       └── screenshot3.png         # 英語表示の隠したバーの点検
+│       ├── screenshot3.png         # 英語表示の隠したバーの点検
+│       └── screenshot4.png         # 英語表示のサンプル画像の実験
 └── test/                           # node:testのテスト
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
     ├── extract.test.js             # 抜き出しの段階と公式17例
+    ├── image.test.js               # 独立した画像処理のテスト
     ├── readme.test.js              # 日英READMEの数値、構成と表記
     ├── html.test.js                # HTML、CSP、保存先、座学の静的検査
     ├── i18n.test.js                # 日英辞書と日本語リテラルの検査
@@ -50,14 +54,27 @@ postmirror/                         # ツールのルート
 |---|---|---|
 | barcode-core.js | PostMirrorCore | 解読、符号化、向きの変換、文字の遮蔽、検算式の部品 |
 | extract-core.js | PostMirrorExtract | 住所Bから住所表示番号を抜き出し、8段階の中間結果を返す |
+| image-core.js | PostMirrorImage | 合成画像の描画、隠し方の加工、指定範囲の67本の読み取り |
 | samples.js | PostMirrorSamples | 公開例のデータ |
 | messages.js | PostMirrorMessages | 日英の文言 |
 
 コアはUMD形式の通常スクリプトです。
 `globalThis`へ公開し、CommonJSでは`module.exports`から同じAPIを返します。
-コアはDOM、Date、乱数、ストレージ、通信に触れず、公開する定数を`Object.freeze`で固定します。
+`barcode-core.js`と`extract-core.js`はDOM、Date、乱数、ストレージ、通信に触れず、公開する定数を`Object.freeze`で固定します。
+`image-core.js`もDOM、canvas、Date、ストレージ、通信に触れず、シード付きの自作の乱数だけを使います（Math.randomは使いません）。
+画像はRGBAのUint8ClampedArrayです。renderBarcodeは4×4の超標本化、applyMaskは元画像を保つ加工を行います。
+矩形はmask.rect、直線はmask.start、mask.end、thicknessPxで指定し、blurはsigmaPxを使います。
+readBarsInRegionはstartからendの順で67本を返し、上はその向きの左の法線です。
+confidenceは67個の配列で、信頼度0.2未満と位置不明のバーをnullにします。
+両端をそれぞれ直交方向へ±2ピッチ、1/8ピッチ刻みで探し、タイミング帯へ線を合わせます。
+線方向は両端付近の±4ピッチを調べ、ピッチと位相を測り直し、スペースの明るさを確認します。
+補正後に全67本を読めない場合は元の線も調べ、全67本が読めた場合だけ採用します。
+灰色化とチャンネルの選択は1回だけ行い、チェックデジットは参照しません。
+両端を含む67位置の格子が決まれば、読めたバーに応じてreadかpartialを返します。
+山が欠けた位置のcentersは格子から補い、barsとconfidenceはnullにします。格子が決まらなければunreadableです。
+画像コアは実験タブで使い、通常スクリプトではbarcode-core.jsの後に読み込みます。
 `extract-core.js`は`barcode-core.js`に依存しません。
-画面は`barcode-core.js`、`extract-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。
+画面は`barcode-core.js`、`extract-core.js`、`image-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。
 
 ## コマンド
 
@@ -68,6 +85,7 @@ Node.js 22以上で、リポジトリーのルートから実行します。
 npm test
 node --check barcode-core.js
 node --check extract-core.js
+node --check image-core.js
 node --check samples.js
 node --check messages.js
 node --check app.js
@@ -101,7 +119,7 @@ python -m http.server
 独立した19行の対応表を`core.test.js`に持ち、`official-vectors.json`は改変しません。
 期待値の書き換えでテストを通さず、実装を仕様に合わせます。
 
-## 第1.1弾の操作と表示
+## 解読・座学・確認問題の操作と表示
 
 - 入口の3手順は計算例の読み込み、隠し方の見出し、点検の見出しへ進む。結果がない間は点検への移動を無効にする。
 - サンプルを読み直す操作と残りの未入力を不明にする操作は、一括の元に戻すに対応する。後者は入力済みの値を保ち、結果の見出しへ移る。消去は1本目へ移る。
@@ -113,16 +131,31 @@ python -m http.server
 - 「住所表示番号の後半」は45〜67本目で、チェックデジットとストップを含む。全体を不透明に塗る案内は点検の要約2文の直後に置く。
 - 座学の要点3行と目次12件は日英のHTMLに置く。節3・5の表は初回48remを境に開閉し、以後は日英で状態を共有する。確認問題から関連節へ移り、元の問題へ戻れる。
 
+## 画像の実験
+
+- 8サンプルをピッチ8px、回転0で描き、隠し方の14種類を選んで読み取り直す。1文字の黒塗りは1〜21文字目を選べる。
+- canvasは原寸で描き、本文の幅いっぱいに拡大して表示する。画像の状態、既知バーの本数、解読の判定、点検の要約2文と全体を塗る案内を示す。
+- 「解読タブで詳しく見る」は不明をnullとして渡し、一括の元に戻すの控えを作る。サンプルの選択を空にし、結果の見出しへフォーカスを移す。
+- 日英の静的・動的な文言は辞書に持つ。言語を変えたときは保存している読み取り結果を描き直し、読み取りと解読を計算し直さない。
+- タブを離れるとcanvasを空にし、戻ると合成画像を描き直す。画像や結果はURL、保存先、端末外へ書き出さない。
+- 自分の画像はJPEG・PNG・WebPを受け付け、createImageBitmapで開く。16,777,216画素を超えた画像は比率を保って縮小する。画像はcanvasで描き、blobのURLとimg要素は使わない。
+- 全体で両端のあたりを2回、両端の拡大表示でいちばん左と右のバーを各1回タップして範囲を指定する。画像内へ切り詰めた整数座標をdrawImageへ渡す。クリック位置はcanvasの枠の内側を基準にする。
+- 読み取りの印は塗りつぶしの丸が読めたバー、中抜きの丸が形を見分けられないバー、×がバーの見えない位置を示す。同じ意味を文とアクセシブル名にも示す。
+- 範囲の再指定は同じ画像で両端を選び直す。画像の消去、画像の選び直し、実験タブからの移動でImageBitmapを閉じ、画素と結果を解放してcanvasを0×0にする。読み込み中の古い結果は世代番号で破棄する。
+- 自分の画像を「解読タブへ送る」で渡すと、67本の値と出どころを保つ。既知バーはimage、不明はunknown、手で変更したバーはmanualとし、一括操作の控えにも出どころを保持する。
+- 出どころの短い表示は「画像」「手入力」とし、unknownも画面では「画像」とする。data-originとアクセシブル名では「画像（不明として渡した）」を区別する。言語だけを変えても値と出どころは変えない。
+- 写真全体からの自動検出、遠近の補正、HEICの解読、画像と結果の保存・共有は実装しない。実写の読める割合と実機でのタップ精度は未検証である。
+
 ## 守ること
 
-- 入力したバー、郵便番号、住所表示番号、解読結果を端末外へ送らず、URLやストレージに入れない
+- 入力したバー、選んだ画像、郵便番号、住所表示番号、解読結果を端末外へ送らず、URLやストレージに入れない
 - localStorageは言語設定の`postmirror.lang`（jaまたはen）だけに使い、読み書きをtry/catchで包む。sessionStorage、IndexedDB、Cookieは使わない
 - URLから読むのは`?lang=ja|en`と読み込み時の`#learn`だけ。入力の共有リンク、解読結果のコピーボタン、郵便番号検索への値の受け渡しを作らない
 - 動的な文言は`messages.js`に集め、座学の本文は日英のHTMLブロックに置く。コアはコードと数値を返す。`barcode-core.js`にはコメントを含めて日本語を置かない
 - 描画はtextContent、createElement、createElementNS、setAttributeを使う。innerHTML、インラインのイベントハンドラー、style属性を使わない
 - CSPでconnect-srcをnoneにする。依存パッケージ、CDN、外部フォント、バンドラー、TypeScript、フレームワークを足さない
 - file://での動作を保ち、type="module"、fetch、Workerを使わない。package.jsonにtype: moduleを追加しない
-- 郵便番号データを同梱せず、地名を表示しない。第1弾に画像からの読み取りを足さない
+- 郵便番号データを同梱せず、地名を表示しない。CSPのimg-srcにblob:を追加しない
 - `test/`にブラウザー操作のスクリプトや補助のJavaScriptを置かない。node --testが自動実行するため、補助データはJSONで持つ
 - 最長行はJavaScriptとCSSが160文字、HTMLが250文字。行数の下限はbarcode-core.jsが200行、extract-core.jsが60行、samples.jsが40行、messages.jsとindex.htmlが100行、style.cssが150行、app.jsが300行
 - 読めない文字の復元は、ほかの文字が正しく読めていることを前提とする。チェックデジットを誤り訂正や住所の実在確認として説明しない

@@ -8,11 +8,11 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 const app = read('app.js');
 
-test('HTML: five local deferred classic scripts in dependency order', () => {
+test('HTML: six local deferred classic scripts in dependency order', () => {
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
-  assert.equal(scripts.length, 5);
+  assert.equal(scripts.length, 6);
   assert.deepStrictEqual(scripts.map(match => /src="([^"]+)"/.exec(match[1])?.[1]), [
-    'barcode-core.js', 'extract-core.js', 'samples.js', 'messages.js', 'app.js'
+    'barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js'
   ]);
   for (const [, attributes, body] of scripts) {
     assert.match(attributes, /\bdefer\b/);
@@ -63,11 +63,11 @@ test('HTML: exact restrictive CSP, referrer, bilingual noscript and empty favico
 });
 
 test('HTML: accessible tabs and the breakdown within details', () => {
-  for (const id of ['tab-decode', 'tab-learn', 'tab-quiz', 'panel-decode', 'panel-learn', 'panel-quiz', 'lang-toggle']) {
+  for (const id of ['tab-decode', 'tab-lab', 'tab-learn', 'tab-quiz', 'panel-decode', 'panel-lab', 'panel-learn', 'panel-quiz', 'lang-toggle']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   assert.match(html, /role="tablist"/);
-  for (const name of ['decode', 'learn', 'quiz']) {
+  for (const name of ['decode', 'lab', 'learn', 'quiz']) {
     assert.match(html, new RegExp(`id="tab-${name}"[^>]+role="tab"[^>]+aria-controls="panel-${name}"`));
     assert.match(html, new RegExp(`id="panel-${name}"[^>]+role="tabpanel"[^>]+aria-labelledby="tab-${name}"`));
   }
@@ -119,4 +119,24 @@ test('HTML: external links use the approved URLs and isolated new tabs', () => {
     assert.match(attributes, /rel="noopener noreferrer"/);
   }
   assert.deepStrictEqual(actual, allowed);
+});
+
+test('HTML: image experiments use accessible canvases and one local file input', () => {
+  for (const id of ['lab-sample', 'lab-mask', 'lab-character', 'lab-canvas', 'lab-status', 'lab-known', 'lab-judgment', 'lab-transfer']) {
+    assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
+  }
+  assert.match(html, /<canvas[^>]+id="lab-canvas"[^>]+role="img"/);
+  assert.match(app, /setAttribute\('aria-label', translate\('lab\.canvas'/);
+  const files = [...html.matchAll(/<input\b[^>]*type="file"[^>]*>/g)];
+  assert.equal(files.length, 1);
+  assert.match(files[0][0], /accept="image\/jpeg,image\/png,image\/webp"/);
+  assert.doesNotMatch(files[0][0], /\s(?:capture|multiple)(?:\s|=|>)/i);
+  assert.doesNotMatch(html, /<img[^>]+src="blob:/);
+  for (const id of ['photo-overview', 'photo-zoom', 'photo-result']) {
+    assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
+    assert.match(html, new RegExp(`<canvas[^>]+id="${id}"[^>]+role="img"`));
+  }
+  assert.doesNotMatch(app, /\.(?:capture|multiple)\s*=/);
+  assert.doesNotMatch(app, /setAttribute\(\s*['"](?:capture|multiple)['"]/);
+  assert.doesNotMatch(app, /createObjectURL|toDataURL|toBlob|getUserMedia/);
 });

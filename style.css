@@ -515,12 +515,23 @@ svg {
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-block: 1rem;
 }
 
 [role="tab"] {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 44px;
+  padding-inline: 0.25rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  [role="tab"] {
+    font-size: 1rem;
+    padding-inline: 0.75rem;
+  }
 }
 
 [role="tab"][aria-selected="true"] {
@@ -681,4 +692,77 @@ input[type="radio"] {
 .structure-start, .structure-cd, .structure-stop {
   background: var(--accent);
   color: var(--bg);
+}
+
+.lab-controls {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lab-controls select {
+  width: 100%;
+  min-width: 44px;
+  padding: 0.5rem;
+}
+
+.lab-canvas {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  max-width: 100%;
+  height: auto;
+  margin-block: 1rem;
+}
+
+#photo-file {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.photo-canvas {
+  display: block;
+  border: 1px solid var(--border);
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+  touch-action: manipulation;
+  margin-block: 1rem;
+}
+
+#photo-zoom, #photo-result {
+  image-rendering: pixelated;
+}
+
+.photo-result-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border-block: 1px solid var(--border);
+}
+
+#photo-result {
+  display: block;
+  max-width: none;
+  height: auto;
+}
+
+#photo-clear, #photo-reselect {
+  margin-block: 0.75rem;
+}
+
+#photo-notice:empty, #photo-step:empty {
+  display: none;
+}
+
+.card-origins {
+  display: flex;
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.card-origins > span {
+  flex: 0 0 44px;
+  width: 44px;
+  padding-inline: 2px;
 }
