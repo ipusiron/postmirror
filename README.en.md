@@ -191,6 +191,8 @@ The primary source is Japan Post's postal code and barcode manual (in Japanese).
 - [p23: bulk postal codes for business reply mail](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html)
 - [p25: official verification examples](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html)
 
+When Your image locates the bars, it displays the postal code and address number directly, including partial results. `?` marks undetermined content; Calculated marks characters restored using the check digit. Checksum and orientation notes remain visible. No values appear when bar positions cannot be located.
+
 ## 🔒 Security
 
 Entered bars, selected images, and decoded results are processed on your device and are not sent anywhere. The page has no code to store results in the URL, localStorage, sessionStorage, IndexedDB, or cookies. Only the language setting `postmirror.lang` is saved in localStorage.

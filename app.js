@@ -374,29 +374,33 @@
     return child;
   }
 
-  function valueToken(text, indexes) {
+  function valueToken(text, indexes, result) {
     const token = node('span', undefined, 'value-token');
     token.append(node('bdi', text));
-    if (indexes.some(index => state.result.chars[index].status === 'recovered')) {
+    if (indexes.some(index => result.chars[index].status === 'recovered')) {
       token.append(node('span', translate('result.calculated'), 'calculated-mark'));
     }
     return token;
   }
 
-  function renderReadable() {
-    const result = state.result;
-    const postal = element('postal-result');
+  function renderReadable(result = state.result, prefix = '') {
+    for (const id of ['postal-result', 'address-result', 'postal-notes']) {
+      element(prefix + id).replaceChildren();
+      delete element(prefix + id).dataset.value;
+    }
+    if (!result) return;
+    const postal = element(prefix + 'postal-result');
     postal.dataset.value = result.postalCode.display;
     [...result.postalCode.digits].forEach((digit, index) => {
       if (index === 3) postal.append(document.createTextNode('-'));
-      postal.append(valueToken(digit, [index]));
+      postal.append(valueToken(digit, [index], result));
     });
     for (const issue of result.issues.filter(item => item.code === 'postal-not-digit')) {
-      appendMessage(element('postal-notes'), record('result.nonDigit', { position: issue.charIndex + 1 }));
+      appendMessage(element(prefix + 'postal-notes'), record('result.nonDigit', { position: issue.charIndex + 1 }));
     }
-    const address = element('address-result');
+    const address = element(prefix + 'address-result');
     address.dataset.value = result.addressNumber.text;
-    result.addressNumber.tokens.forEach(token => address.append(valueToken(token.text, token.charIndexes)));
+    result.addressNumber.tokens.forEach(token => address.append(valueToken(token.text, token.charIndexes, result)));
     if (result.addressNumber.text === '') address.textContent = translate('result.emptyAddress');
   }
 
@@ -987,6 +991,10 @@
     element('photo-marks').hidden = linear || !located;
     element('photo-known').hidden = linear || !located;
     element('photo-decoding').hidden = linear || !located;
+    renderReadable(linear || !located ? null : photo.decoded, 'photo-');
+    const issues = element('photo-issues');
+    issues.replaceChildren();
+    if (!linear && located) photo.decoded.issues.forEach(issue => appendMessage(issues, issueMessage(issue), 'li'));
     element('photo-nw7-output').hidden = !linear || !located;
     element('photo-nw7-value').textContent = linear && located ? photo.read.text : '';
     element('photo-nw7-guards').textContent = linear && located

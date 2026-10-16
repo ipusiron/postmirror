@@ -234,6 +234,8 @@ NW-7の構成と記号は[BarTenderのCodabar資料](https://barcodeguide.seagul
 - [p23：料金受取人払の包括番号](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html)
 - [p25：公式の検証例](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html)
 
+画像点検でバーの位置を特定できた場合は、その場に郵便番号・住所表示番号を表示します。一部だけ読めた場合も、決まらない部分を`?`、チェックデジットで復元した文字を「計算」として区別します。検算や向きの注記も表示し、位置を特定できない場合は値を出しません。
+
 ## 🔒 セキュリティ
 
 入力したバー、選んだ画像、解読結果は端末内で処理し、外部へ送信しません。URL、localStorage、sessionStorage、IndexedDB、Cookieへ結果を保存する処理はありません。保存するのはlocalStorageの言語設定`postmirror.lang`だけです。

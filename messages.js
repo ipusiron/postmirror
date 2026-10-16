@@ -7,6 +7,7 @@
   'use strict';
 
   const ja = {
+    "photo.valueLegend": "?は決まらない部分です。「計算」は、ほかの文字が正しく読めたことを前提にチェックデジットで復元した文字です。",
     "mode.title": "バーコードのモードを選ぶ",
     "mode.customer.title": "日本郵便（カスタマバーコード）",
     "mode.customer.detail": "高さと位置が変わる4つの形。郵便番号と住所表示番号を解読します。",
@@ -385,6 +386,8 @@
   };
 
   const en = {
+    "photo.valueLegend": "? marks an undetermined part. Calculated marks a character restored using the check digit, "
+      + "assuming the other characters were read correctly.",
     "mode.title": "Choose a barcode mode",
     "mode.customer.title": "Japan Post customer barcode",
     "mode.customer.detail": "Four shapes with varying height and position. Decode a postal code and address number.",
