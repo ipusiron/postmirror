@@ -121,14 +121,14 @@ for (const [language, text] of Object.entries(docs)) {
     const refs = [...text.matchAll(/!\[[^\]]*\]\((assets\/[^)]+\.png)\)/g)].map(m => m[1]);
     const files = fs.readdirSync(path.join(root, dir)).filter(f => f.endsWith('.png')).map(f => `${dir}/${f}`);
     assert.deepEqual(refs.slice().sort(), files.sort());
-    assert.equal(refs.length, language === 'ja' ? 4 : 3);
+    assert.equal(refs.length, language === 'ja' ? 5 : 4);
     for (const ref of refs) {
       assert.ok(fs.existsSync(path.join(root, ref)));
       assert.ok(fs.statSync(path.join(root, ref)).size <= 300 * 1024);
     }
     const section = text.split(language === 'ja' ? '## 📸 スクリーンショット' : '## 📸 Screenshots')[1].split('\n## ')[0];
     assert.equal((section.match(/^> \*[^\n]+\*$/gm) || []).length, refs.length);
-    if (language === 'en') assert.ok(refs.every(ref => !ref.endsWith('/screenshot4.png')));
+    if (language === 'en') assert.ok(refs.every(ref => ref !== 'assets/screenshot4.png'));
   });
 
   test(`README ${language}: directory tree lists every file and directory with descriptions`, () => {

@@ -37,9 +37,15 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 > *Bars 24–26 marked unknown. The first address character is distinguished by “△ Restored by calculation”.*
 
+![Experiment with translucent black over a sample image](assets/en/screenshot4.png)
+
+> *All 67 bars in the calculation example (p17, p21) remain readable under translucent black.*
+
 ## ✨ Features
 
-- Decode, Learn, and Quiz tabs
+- Four tabs: Decode, Experiment, Learn, and Quiz
+- Apply 14 covering methods to sample images in Experiment and check what can be read
+- Open your own image on your device and read a region selected in two stages
 - Three getting-started steps and buttons that jump to results or inspection
 - Enter 67 bars using character cards and a shape palette that keeps the selected bar in view
 - See the symbol for a completed three-bar card before entering all 67 bars
@@ -64,6 +70,9 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 8. Mark covered bars unknown. “Mark range unknown” accepts positions from 1 to 67. “Second half of the address number” means bars 45–67, including the check digit and stop. Each masking example starts from the last selected sample. Its contextual summary disappears when the bars change. Undo restores the previous bulk operation once; editing a single bar or the text discards that undo state.
 9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
 10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves input, inspection, and answers.
+
+11. In Experiment, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
+12. Under “Check your own image”, choose an image and tap near the two ends of the barcode. In the enlarged views, tap the leftmost and rightmost bars. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
 
@@ -150,6 +159,11 @@ Address numbers shorter than 13 characters are padded with CC4. After expanding 
 The sum of all 21 check values must be divisible by 19, so one unreadable character is uniquely recoverable from the other 20.
 However, when a character is unreadable, mistakes in other characters may go undetected. A restored character assumes that the others were read correctly. Swapping two characters also leaves the sum unchanged and is not detected. The check digit is neither error correction nor confirmation that an address exists.
 
+The Experiment tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
+The image core estimates a grid of bar positions, corrects the endpoints, and classifies extensions above and below the central band. Confidence below 0.2 is treated as unknown. Neither reading nor endpoint selection uses the check digit. If no grid can be established, the result is unreadable.
+For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
+All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
+
 The primary source is Japan Post's postal code and barcode manual (in Japanese).
 
 - [p11: shapes and character table](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p11.html)
@@ -165,8 +179,12 @@ The primary source is Japan Post's postal code and barcode manual (in Japanese).
 
 ## 🔒 Security
 
-Entered bars and decoded results are processed on your device and are not sent anywhere. The page has no code to store results in the URL, localStorage, sessionStorage, IndexedDB, or cookies. Only the language setting `postmirror.lang` is saved in localStorage.
+Entered bars, selected images, and decoded results are processed on your device and are not sent anywhere. The page has no code to store results in the URL, localStorage, sessionStorage, IndexedDB, or cookies. Only the language setting `postmirror.lang` is saved in localStorage.
 
+- Images are opened only on the device, without sending or saving them
+- Images are drawn on canvas without blob URLs or img elements
+- “Clear the image” also releases the image held in memory
+- CSP remains unchanged; `blob:` is not added to `img-src`
 - CSP `connect-src 'none'` blocks script-initiated connections
 - No dependencies, CDN resources, or external fonts
 - Rendering uses `textContent` and similar DOM operations; input is not interpreted as HTML
@@ -195,7 +213,7 @@ A. No. It is an independent personal project and is not affiliated with Japan Po
 
 Q. Can it read an image?
 
-A. This version uses manual bar entry. It does not import images.
+A. Use “Check your own image” in the Experiment tab. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
 
 Q. Does it show place names?
 
@@ -203,7 +221,7 @@ A. No. It displays the postal code and address number. Anyone can look up a post
 
 Q. Is data sent anywhere?
 
-A. Entered bars and decoded results are not sent off your device. Only the language setting is saved.
+A. Entered bars, selected images, and decoded results are not sent off your device. Only the language setting is saved.
 
 Q. Which mail carries it?
 
@@ -218,6 +236,7 @@ A. They are not recommended. Images treated with mosaic or blur retain values ca
 - [Day007 Image Exif Checker](https://ipusiron.github.io/image-exif-checker/): check and remove location data embedded in a photo; PostMirror covers the barcode visible in the photo
 - [Day013 WhereShot](https://ipusiron.github.io/whereshot/): see how capture time and place can be inferred from a photo
 - [Day021 ImageDiffSec](https://ipusiron.github.io/image-diff-sec/): compare images before and after masking to find what was left
+- [Day022 DancingMen CipherLab](https://ipusiron.github.io/dancingmen-cipherlab/): practice decoding pictorial cipher symbols with a table; PostMirror reads the bars in a photo
 - [Day039 URLPurifier](https://ipusiron.github.io/urlpurifier/): the same idea of removing extra information before sharing
 - [Day061 Seal Tamper Lab](https://ipusiron.github.io/seal-tamper-lab/): learn the physical security of envelopes and seals
 - [Day074 QR Risk Radar](https://ipusiron.github.io/qr-risk-radar/): assess a different code printed on mail (QR codes) before following the link it contains
@@ -233,6 +252,20 @@ Tests cover 21 official examples, 17 extraction examples, known bar sequences, r
 npm test
 ```
 
+Image tests cover synthetic rendering, covering operations, grid-based reading, endpoint correction, and treating confidence below 0.2 as unknown. Browser checks cover two-stage selection, cropping with integer coordinates clamped to image bounds, and releasing image resources.
+
+The synthetic-image evaluation contains 23,693 cases. The normal range uses nine official and 20 fictional examples, pitches of 6, 7.5, 9, and 12 px, rotations of 0, ±5, and ±10 degrees, blur of 0 or 0.25 pitch, and noise standard deviation of 0 or 8. Each selected endpoint is offset by up to ±1 pitch along the line and ±1.5 pitches perpendicular to it.
+
+| Evaluation condition | Cases | All 67 bars match | Incorrect bars | Falsely confirmed results |
+|---|---:|---:|---:|---:|
+| Normal range with endpoint offsets | 2,320 | 2,320 | 0 | 0 |
+| Worst endpoint combinations within range | 3,712 | 3,712 | 0 | 0 |
+| Outside range: translucent black, blur of 0.25 pitch, and endpoint offsets | 1,160 | 997 | 532 | 0 |
+| Outside range: strong noise (standard deviation 25) | 29 | 10 | 1 | 0 |
+
+The worst endpoint combinations use 29 examples, pitches of 6 and 12 px, rotations of 0 and 10 degrees, blur of 0 and 0.25 pitch, noise standard deviation of 8, and 16 endpoint combinations. There were no falsely confirmed results across all 23,693 cases. A falsely confirmed result has decoder status ok or recovered but a postal code or address number different from the original. The 533 incorrect bars outside the range show that these results do not guarantee correct reading of arbitrary photos. An additional evaluation at ±2 pitches along the line contained one unreadable case, so uniform tolerance out to ±3 pitches has not been established.
+
+
 ## 📁 Directory structure
 
 ```text
@@ -246,23 +279,25 @@ postmirror/                         # Tool root
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
 ├── package.json                    # Dependency-free node --test command
-├── index.html                      # Decode, Learn, and Quiz tabs, plus CSP
+├── index.html                      # Decode, Experiment, Learn, and Quiz tabs, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
 ├── image-core.js                   # Synthetic images and image processing
 ├── samples.js                      # Versioned public examples and extraction examples
 ├── messages.js                     # Japanese and English messages
-├── app.js                          # UI, input, rendering, languages, and tabs
+├── app.js                          # UI, image loading, input, rendering, languages, and tabs
 ├── assets/                         # Japanese README screenshots
 │   ├── screenshot.png              # Decoded result
 │   ├── screenshot2.png             # Bar shapes and character table
 │   ├── screenshot3.png             # Masking inspection
 │   ├── screenshot4.png             # Decoded result in dark colors
+│   ├── screenshot5.png             # Experiment with translucent black over a sample
 │   └── en/                         # English README screenshots
 │       ├── screenshot.png          # Decoded result in English
 │       ├── screenshot2.png         # Bar shapes and table in English
-│       └── screenshot3.png         # Masking inspection in English
+│       ├── screenshot3.png         # Masking inspection in English
+│       └── screenshot4.png         # Sample image experiment in English
 └── test/                           # node:test tests
     ├── official-vectors.json       # Independent expectations for 21 examples and nine complete bar sequences
     ├── core.test.js                # Tables, known answers, restoration, candidates, orientation, and properties
@@ -280,6 +315,8 @@ postmirror/                         # Tool root
 - Chromium: input, decoding, masking, learning, and language switching checked over HTTP and `file://`, at widths 320, 390, 768, and 1280 px, in Japanese and English
 - Firefox: display and interactions with tabs, languages, samples, masks, inspection, and quizzes checked over HTTP and `file://` at 320 px in both languages and at 390 px in Japanese
 - Windows WebKit (webkit-2191): decoding, horizontal overflow, console errors, page errors, and CSP violations checked over HTTP and `file://` at 390 px in both languages. This does not replace testing on iOS Safari
+- Image reading checked in Chromium, Firefox, and Windows WebKit (webkit-2191) with synthetic PNG, JPEG, JPEG with EXIF orientation, and downscaling of 5000×4000 images
+- Reading rates for real photos, accuracy of finger taps on physical devices, and image loading in iOS Safari (HEIC conversion and downscaling of large photos) remain untested
 - Safari, physical smartphones, actual screen-reader speech, and reopening closed tabs remain untested
 - JavaScript is required. Back/forward checks confirmed in-memory page restoration in Chromium over HTTP; `file://` and Firefox history behavior was recorded only
 
