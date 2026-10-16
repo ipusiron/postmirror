@@ -7,6 +7,8 @@
   'use strict';
 
   const ja = {
+    "summary.title": "解読結果の要約",
+    "summary.details": "判定の理由・内訳を見る",
     "photo.valueLegend": "?は決まらない部分です。「計算」は、ほかの文字が正しく読めたことを前提にチェックデジットで復元した文字です。",
     "photo.nw7Moved": "高さがそろい、線と隙間の幅で表すNW-7（Codabar）は、別ツールへ移しました。",
     "photo.codabarLink": "Codabar Lens：NW-7の画像点検",
@@ -15,6 +17,7 @@
     "lab.maskHelp": "モザイクの目の大きさとぼかしの強さは、バーの間隔の0.5倍・1倍・2倍です。",
     "image.otherMethods": "このツールで読めなくても、ほかの方法で読める場合があります。",
     "photo.title": "自分の画像で点検",
+    "photo.entry": "自分宛てのカスタマバーコードの写真を選びます。画像は端末内だけで処理します。",
     "photo.own": "自分宛ての郵便物の写真で試してください。",
     "photo.privacy": "画像は端末の中で開くだけで、外へ送らず、保存もしません。ほかのタブへ移ると、画像と読み取り結果を消します。",
     "photo.helpTitle": "対応するバーコードとタップ位置",
@@ -349,6 +352,8 @@
   };
 
   const en = {
+    "summary.title": "Decoded result summary",
+    "summary.details": "View checks and character details",
     "photo.valueLegend": "? marks an undetermined part. Calculated marks a character restored using the check digit, assuming "
       + "the other characters were read correctly.",
     "photo.nw7Moved": "NW-7 (Codabar), which uses equal-height bars and different bar/space widths, is now a separate tool.",
@@ -358,6 +363,7 @@
     "lab.maskHelp": "Mosaic block sizes and blur strengths are 0.5, 1, and 2 times the spacing between bars.",
     "image.otherMethods": "Even if this tool cannot read it, other methods may still be able to.",
     "photo.title": "Check your own image",
+    "photo.entry": "Choose a photo of a customer barcode on your own mail. Images are processed only on this device.",
     "photo.own": "Try a photo of mail addressed to you.",
     "photo.privacy": "Images stay on this device and are never sent anywhere or saved. Leaving this tab clears the image and its reading result.",
     "photo.helpTitle": "Supported barcode and where to tap",
