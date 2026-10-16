@@ -30,6 +30,7 @@
     <div class="tabs" role="tablist" data-i18n-label="tabs.label">
       <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
       <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
+      <button id="tab-photo" type="button" role="tab" aria-selected="false" aria-controls="panel-photo" tabindex="-1" data-i18n="tab.photo"></button>
       <button id="tab-learn" type="button" role="tab" aria-selected="false" aria-controls="panel-learn" tabindex="-1" data-i18n="tab.learn"></button>
       <button id="tab-quiz" type="button" role="tab" aria-selected="false" aria-controls="panel-quiz" tabindex="-1" data-i18n="tab.quiz"></button>
     </div>
@@ -169,12 +170,15 @@
         </div>
         <button id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
       </section>
+    </div>
+    <div id="panel-photo" role="tabpanel" aria-labelledby="tab-photo" hidden>
       <section aria-labelledby="photo-title">
         <h2 id="photo-title" data-i18n="photo.title"></h2>
         <p id="photo-own" data-i18n="photo.own"></p>
+        <p id="photo-format" data-i18n="photo.format"></p>
+        <p class="privacy" data-i18n="photo.privacy"></p>
         <details class="photo-help" open>
           <summary data-i18n="photo.helpTitle"></summary>
-          <p id="photo-format" data-i18n="photo.format"></p>
           <figure class="photo-example">
             <div class="photo-example-bars" role="img" data-i18n-label="photo.exampleLabel">
               <span class="photo-example-bar"></span><span class="photo-example-bar lower"></span>

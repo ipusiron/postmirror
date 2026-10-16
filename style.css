@@ -514,17 +514,32 @@ svg {
 }
 
 .tabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 4px;
   margin-block: 1rem;
 }
 
 [role="tab"] {
-  flex: 1 1 auto;
+  grid-column: span 2;
   min-width: 44px;
   padding-inline: 0.25rem;
   font-size: 0.875rem;
   white-space: nowrap;
+}
+
+[role="tab"]:nth-last-child(-n + 2) {
+  grid-column: span 3;
+}
+
+@media (min-width: 30rem) {
+  .tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  [role="tab"], [role="tab"]:nth-last-child(-n + 2) {
+    grid-column: auto;
+  }
 }
 
 @media (min-width: 48rem) {

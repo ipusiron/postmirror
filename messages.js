@@ -7,11 +7,13 @@
   'use strict';
 
   const ja = {
-    "tab.lab": "実験",
+    "tab.lab": "サンプル",
+    "tab.photo": "画像点検",
     "lab.maskHelp": "モザイクの目の大きさとぼかしの強さは、バーの間隔の0.5倍・1倍・2倍です。",
     "image.otherMethods": "このツールで読めなくても、ほかの方法で読める場合があります。",
     "photo.title": "自分の画像で点検",
     "photo.own": "自分宛ての郵便物の写真で試してください。",
+    "photo.privacy": "画像は端末の中で開くだけで、外へ送らず、保存もしません。ほかのタブへ移ると、画像と読み取り結果を消します。",
     "photo.helpTitle": "対応するバーコードとタップ位置",
     "photo.format": "対象は日本郵便のカスタマバーコードです。同じ太さのバーが、上下に長さを変えて並びます。線の太さで区別するバーコードやQRコードは読めません。",
     "photo.exampleLabel": "形とタップ位置の見本。4形状のバーの中央を横切る点線と、左右の端のバーに丸を示しています。",
@@ -341,11 +343,13 @@
   };
 
   const en = {
-    "tab.lab": "Experiment",
+    "tab.lab": "Samples",
+    "tab.photo": "Your image",
     "lab.maskHelp": "Mosaic block sizes and blur strengths are 0.5, 1, and 2 times the spacing between bars.",
     "image.otherMethods": "Even if this tool cannot read it, other methods may still be able to.",
     "photo.title": "Check your own image",
     "photo.own": "Try a photo of mail addressed to you.",
+    "photo.privacy": "Images stay on this device and are never sent anywhere or saved. Leaving this tab clears the image and its reading result.",
     "photo.helpTitle": "Supported barcode and where to tap",
     "photo.format": "Use a Japan Post customer barcode: equally thin bars extend above and below a central band. "
       + "Barcodes that use different line widths and QR codes are not supported.",

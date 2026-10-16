@@ -43,8 +43,8 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- Four tabs: Decode, Experiment, Learn, and Quiz
-- Apply 14 covering methods to sample images in Experiment and check what can be read
+- Five tabs: Decode, Samples, Your image, Learn, and Quiz
+- Apply 14 covering methods to sample images in Samples and check what can be read
 - Open your own image on your device and read a region selected in two stages
 - Three getting-started steps and buttons that jump to results or inspection
 - Enter 67 bars using character cards and a shape palette that keeps the selected bar in view
@@ -69,10 +69,10 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 7. Use “Go to results” beside the progress count to read the postal code, address number, notes, and calculation. Open the character-by-character breakdown to compare each character. The breakdown starts closed on narrow screens. Rereading an orientation moves focus to the result heading.
 8. Mark covered bars unknown. “Mark range unknown” accepts positions from 1 to 67. “Second half of the address number” means bars 45–67, including the check digit and stop. Each masking example starts from the last selected sample. Its contextual summary disappears when the bars change. Undo restores the previous bulk operation once; editing a single bar or the text discards that undo state.
 9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
-10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves input, inspection, and answers.
+10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves the Decode input and inspection, and the Quiz answers.
 
-11. In Experiment, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
-12. Under “Check your own image”, check the supported-shape example and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
+11. In Samples, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
+12. In the “Your image” tab, check the supported-shape example and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
 
@@ -159,7 +159,7 @@ Address numbers shorter than 13 characters are padded with CC4. After expanding 
 The sum of all 21 check values must be divisible by 19, so one unreadable character is uniquely recoverable from the other 20.
 However, when a character is unreadable, mistakes in other characters may go undetected. A restored character assumes that the others were read correctly. Swapping two characters also leaves the sum unchanged and is not detected. The check digit is neither error correction nor confirmation that an address exists.
 
-The Experiment tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
+The Samples tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
 The image core estimates a grid of bar positions, corrects the endpoints, and classifies extensions above and below the central band. Confidence below 0.2 is treated as unknown. Neither reading nor endpoint selection uses the check digit. If no grid can be established, the result is unreadable.
 For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
 All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
@@ -213,7 +213,7 @@ A. No. It is an independent personal project and is not affiliated with Japan Po
 
 Q. Can it read an image?
 
-A. Use “Check your own image” in the Experiment tab. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
+A. Open the “Your image” tab and check the supported format first. Equal-height, varying-width barcodes and QR codes are not supported. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
 
 Q. Does it show place names?
 
@@ -279,7 +279,7 @@ postmirror/                         # Tool root
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
 ├── package.json                    # Dependency-free node --test command
-├── index.html                      # Decode, Experiment, Learn, and Quiz tabs, plus CSP
+├── index.html                      # Decode, Samples, Your image, Learn, and Quiz tabs, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
