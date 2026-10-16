@@ -7,7 +7,7 @@
   'use strict';
 
   const ja = {
-    "tab.lab": "サンプル",
+    "tab.lab": "画像実験",
     "tab.photo": "画像点検",
     "lab.maskHelp": "モザイクの目の大きさとぼかしの強さは、バーの間隔の0.5倍・1倍・2倍です。",
     "image.otherMethods": "このツールで読めなくても、ほかの方法で読める場合があります。",
@@ -138,8 +138,11 @@
     'learn.intro': "SNSやフリマアプリに郵便物の写真を載せる前に、何が写っているかを確かめるための知識をまとめました。",
     'learn.name': "PostMirror（ポストミラー）のPostは、郵便とSNSの投稿の両方を指します。投稿の前に自分の郵便物を映して確かめる鏡、という意味の名前です。",
     'header.description': 'カスタマバーコードのバーを1本ずつ読み、郵便物の写真から何が読めるかを確かめます。',
-    'intro.prompt': '手元にある自分宛ての郵便物で試してみてください。'
-      + '宛名を隠しても、バーコードから郵便番号と住所表示番号が読めるかを確かめられます。',
+    'decode.title': 'サンプルで解読を試す',
+    'intro.prompt': '日本郵便の公開サンプルを使って、バーの並びから郵便番号・住所表示番号を解読します。',
+    'decode.otherInputs': '手入力するときは、下の「バーを入力する」または「文字列で入力・貼り付け」を使います。'
+      + '自分の写真は「画像点検」タブで読み取れます。',
+    'decode.inputHelp': 'サンプルを読み込むと、ここにバーが入ります。解読結果には、この入力欄に反映したバー列を使います。',
     'privacy': '入力したバーと解読結果は、この端末の外へ送信しません。'
       + 'このページはそれらを保存する処理を持たず、保存するのは言語の設定だけです。',
     'footer.independent': 'PostMirrorは個人が作成したツールで、日本郵便株式会社とは関係がありません。'
@@ -147,7 +150,7 @@
     'footer.intent': '作者は悪用を勧めません。郵便物の写真やバーコードを扱ってよいかどうかは、国・地域の法令や状況によって異なります。',
     'footer.github': 'GitHubリポジトリー',
     'intro.title': 'はじめての方へ',
-    'intro.sample': '計算例を読み込む',
+    'intro.sample': 'サンプルを読み込んで解読',
     'intro.mask': '隠し方の例へ移る',
     'actions.inspection': '点検へ移る',
     'actions.result': '結果へ移る',
@@ -158,7 +161,7 @@
     'symbol.notListed': '表にない並び',
     'text.pending': '編集中の文字列は未反映です。以下は直前に反映したバー列の結果です。',
     'judgment.pending': '直前に反映したバー列の判定です。',
-    'sample.label': '日本郵便の公開例を読み込む',
+    'sample.label': '解読するサンプル（日本郵便の公開例）',
     'sample.choose': 'サンプルを選んでください',
     'sample.calculation': '計算例（p17・p21）',
     'sample.letterA': '英字を含む例（p06）',
@@ -343,7 +346,7 @@
   };
 
   const en = {
-    "tab.lab": "Samples",
+    "tab.lab": "Image lab",
     "tab.photo": "Your image",
     "lab.maskHelp": "Mosaic block sizes and blur strengths are 0.5, 1, and 2 times the spacing between bars.",
     "image.otherMethods": "Even if this tool cannot read it, other methods may still be able to.",
@@ -479,8 +482,11 @@
     'learn.intro': "This tab explains what to check before posting a photo of your mail on social media or marketplace apps.",
     'learn.name': "The \"Post\" in PostMirror means both mail and a social media post. It is a mirror for checking your own mail before you post.",
     'header.description': 'Read a Japan Post customer barcode bar by bar and see what a photo of your mail can reveal.',
-    'intro.prompt': 'Try it with mail addressed to you. You can check whether the postal code and address number can be read'
-      + ' from the barcode even when the name and address are covered.',
+    'decode.title': 'Try decoding a sample',
+    'intro.prompt': 'Use a Japan Post published sample to decode the postal code and address number from its bar pattern.',
+    'decode.otherInputs': 'To enter bars yourself, use Enter the bars or Enter or paste a bar string below.'
+      + ' To read your own photo, open the Your image tab.',
+    'decode.inputHelp': 'Loading a sample fills these bars. Decoding uses the bar pattern applied to this input.',
     'privacy': 'The bars you enter and the decoded result are never sent anywhere. This page has no code that stores them;'
       + ' only your language choice is saved.',
     'footer.independent': 'PostMirror is an independent personal project and is not affiliated with or endorsed by Japan Post Co., Ltd.'
@@ -489,7 +495,7 @@
       + ' and circumstances of your country or region.',
     'footer.github': 'GitHub repository',
     'intro.title': 'Getting started',
-    'intro.sample': 'Load the calculation example',
+    'intro.sample': 'Load and decode a sample',
     'intro.mask': 'Go to masking examples',
     'actions.inspection': 'Go to inspection',
     'actions.result': 'Go to results',
@@ -500,7 +506,7 @@
     'symbol.notListed': 'Pattern not listed',
     'text.pending': 'The text you are editing has not been applied. The results below are for the last applied bars.',
     'judgment.pending': 'This judgment is for the last applied bars.',
-    'sample.label': 'Load a Japan Post published example',
+    'sample.label': 'Sample to decode (Japan Post published examples)',
     'sample.choose': 'Choose a sample',
     'sample.calculation': 'Calculation example (p17, p21)',
     'sample.letterA': 'Example containing a letter (p06)',
