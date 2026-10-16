@@ -7,6 +7,21 @@
   'use strict';
 
   const ja = {
+    "photo.mode": "読み取る形式",
+    "photo.mode.customer": "日本郵便（4つの形）",
+    "photo.mode.nw7": "NW-7（線の太さ）",
+    "nw7.format": "NW-7（Codabar）を読み取ります。高さがそろい、線と隙間の幅が変わる形式です。同じ見た目でも、Code 128・JANなどの別形式には対応していません。",
+    "nw7.exampleLabel": "NW-7の形とタップ位置の見本。同じ高さの細いバーと太いバーの中央を点線が横切ります。",
+    "nw7.tapBand": "いちばん左と右のバーを、上下の中央付近で押します。白い余白や、下に印字された数字は押しません。",
+    "nw7.fourTaps": "画像を選んだら合計4回タップします。全体で左・右を選び、続く拡大表示で左・右を選び直します。すべてのバーを押す必要はありません。",
+    "nw7.keyboard": "範囲の指定にはタップまたはクリックを使います。NW-7のキーボードによる範囲指定には未対応です。",
+    "nw7.noGrid": "NW-7を読み取れませんでした。形式・両端の選択位置・画質を確認してください。",
+    "nw7.notDecoded": "番号を特定できていません。番号や住所を推測して表示することはありません。",
+    "nw7.failureHelp": "NW-7の写真なら、左右の端のバーを中央の高さで選び直してください。高さが4通りに変わる場合は「日本郵便」モードを選びます。Code 128・JAN・QRコードなどは対象外です。",
+    "nw7.resultTitle": "NW-7から読み取った内容",
+    "nw7.guards": "開始記号：{start} ／ 終了記号：{stop}（番号の前後の目印。小文字で印字されることもあります）",
+    "nw7.resultHelp": "印字された番号と照合してください。チェック用の文字が含まれる場合も、そのまま表示します。番号の正しさ・配達状況・宛先の住所は確認していません。",
+    "nw7.resultImage": "NW-7用に選んだ範囲の全体。",
     "tab.lab": "画像実験",
     "tab.photo": "画像点検",
     "lab.maskHelp": "モザイクの目の大きさとぼかしの強さは、バーの間隔の0.5倍・1倍・2倍です。",
@@ -15,7 +30,7 @@
     "photo.own": "自分宛ての郵便物の写真で試してください。",
     "photo.privacy": "画像は端末の中で開くだけで、外へ送らず、保存もしません。ほかのタブへ移ると、画像と読み取り結果を消します。",
     "photo.helpTitle": "対応するバーコードとタップ位置",
-    "photo.format": "対象は日本郵便のカスタマバーコードです。同じ太さのバーが、上下に長さを変えて並びます。線の太さで区別するバーコードやQRコードは読めません。",
+    "photo.format": "対象は日本郵便のカスタマバーコードです。同じ太さのバーが、上下に長さを変えて並びます。線の太さが変わるNW-7は、上の形式を切り替えてください。",
     "photo.exampleLabel": "形とタップ位置の見本。4形状のバーの中央を横切る点線と、左右の端のバーに丸を示しています。",
     "photo.leftEnd": "左端をタップ",
     "photo.rightEnd": "右端をタップ",
@@ -34,7 +49,7 @@
     "photo.back": "1つ前に戻る",
     "photo.noGrid": "カスタマバーコードを確認できませんでした。対応する形式・選んだ範囲・画質を確認してください。",
     "photo.notDecoded": "バーの位置を特定できていないため、郵便番号・住所表示番号の判定は行っていません。",
-    "photo.failureHelp": "高さがそろい、太さが変わるバーコードは対象外です。対応する4形状の写真なら、両端の選択位置や、ぼけ・隠れを確認してください。",
+    "photo.failureHelp": "高さがそろい、太さが変わるNW-7なら、上の形式を切り替えてください。対応する4形状の写真なら、両端の選択位置や、ぼけ・隠れを確認してください。",
     "photo.unreadableImage": "選んだ範囲の全体。バーの位置を特定できていないため、読み取りの印は付けていません。",
     "photo.retry": "範囲がずれていると、読めないバーが出ます。「範囲を指定し直す」を押して、左右の端のバーを中央の高さで選び直してください。",
     "photo.file": "画像を選ぶ（JPEG・PNG・WebP）",
@@ -346,6 +361,25 @@
   };
 
   const en = {
+    "photo.mode": "Barcode format",
+    "photo.mode.customer": "Japan Post (four shapes)",
+    "photo.mode.nw7": "NW-7 (varying widths)",
+    "nw7.format": "Read NW-7 (Codabar): equal-height bars and spaces of varying widths. Similar-looking formats such as Code 128 and "
+      + "EAN/JAN are not supported.",
+    "nw7.exampleLabel": "NW-7 shape and tap-position example: a dashed line crosses the middle of thin and thick bars of equal height.",
+    "nw7.tapBand": "Tap the leftmost and rightmost bars near their vertical middle, not the white margins or digits printed below.",
+    "nw7.fourTaps": "After choosing an image, tap four times: left then right in the overview, then left then right in enlarged views. "
+      + "You do not need to tap every bar.",
+    "nw7.keyboard": "Select the region by tapping or clicking. Keyboard-only region selection is not yet supported for NW-7.",
+    "nw7.noGrid": "Could not read NW-7. Check the format, selected endpoints and image quality.",
+    "nw7.notDecoded": "No number was identified. The tool does not guess numbers or addresses.",
+    "nw7.failureHelp": "For NW-7, select the end bars again at their vertical middle. Choose Japan Post mode for the four bar shapes. Code "
+      + "128, EAN/JAN and QR codes are not supported.",
+    "nw7.resultTitle": "Content read from NW-7",
+    "nw7.guards": "Start: {start} / Stop: {stop} (markers around the content; sometimes printed in lowercase)",
+    "nw7.resultHelp": "Compare this with the printed number. Any check character is kept in the displayed content. The number, delivery "
+      + "status and destination address have not been verified.",
+    "nw7.resultImage": "The entire region selected for NW-7.",
     "tab.lab": "Image lab",
     "tab.photo": "Your image",
     "lab.maskHelp": "Mosaic block sizes and blur strengths are 0.5, 1, and 2 times the spacing between bars.",
@@ -355,7 +389,7 @@
     "photo.privacy": "Images stay on this device and are never sent anywhere or saved. Leaving this tab clears the image and its reading result.",
     "photo.helpTitle": "Supported barcode and where to tap",
     "photo.format": "Use a Japan Post customer barcode: equally thin bars extend above and below a central band. "
-      + "Barcodes that use different line widths and QR codes are not supported.",
+      + "For NW-7 barcodes with varying widths, switch the format above.",
     "photo.exampleLabel": "Shape and tap-position example: a dashed line crosses the central band of four bar shapes, "
       + "with circles on the leftmost and rightmost bars.",
     "photo.leftEnd": "Tap the left end",
@@ -376,7 +410,7 @@
     "photo.back": "Go back one step",
     "photo.noGrid": "Could not locate a Japan Post customer barcode. Check the format, selected region and image quality.",
     "photo.notDecoded": "The bar positions could not be located, so the postal code and address number have not been evaluated.",
-    "photo.failureHelp": "Barcodes with equal-height bars of varying widths are not supported. For the supported four shapes, "
+    "photo.failureHelp": "For equal-height NW-7 bars, switch the format above. For the supported four shapes, "
       + "check the selected endpoints, blur and any covered areas.",
     "photo.unreadableImage": "The entire selected region. No reading marks are shown because the bar positions could not be located.",
     "photo.retry": "Misaligned endpoints can leave bars unreadable. Press “Select the region again” and tap the end bars along the central band.",

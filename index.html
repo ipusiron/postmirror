@@ -12,6 +12,7 @@
   <script src="barcode-core.js" defer></script>
   <script src="extract-core.js" defer></script>
   <script src="image-core.js" defer></script>
+  <script src="nw7-core.js" defer></script>
   <script src="samples.js" defer></script>
   <script src="messages.js" defer></script>
   <script src="app.js" defer></script>
@@ -177,11 +178,16 @@
       <section aria-labelledby="photo-title">
         <h2 id="photo-title" data-i18n="photo.title"></h2>
         <p id="photo-own" data-i18n="photo.own"></p>
+        <label for="photo-mode" data-i18n="photo.mode"></label>
+        <select id="photo-mode" aria-describedby="photo-format">
+          <option value="customer" data-i18n="photo.mode.customer"></option>
+          <option value="nw7" data-i18n="photo.mode.nw7"></option>
+        </select>
         <p id="photo-format" data-i18n="photo.format"></p>
         <p class="privacy" data-i18n="photo.privacy"></p>
         <details class="photo-help" open>
           <summary data-i18n="photo.helpTitle"></summary>
-          <figure class="photo-example">
+          <figure id="photo-customer-example" class="photo-example">
             <div class="photo-example-bars" role="img" data-i18n-label="photo.exampleLabel">
               <span class="photo-example-bar"></span><span class="photo-example-bar lower"></span>
               <span class="photo-example-bar upper"></span><span class="photo-example-bar timing"></span>
@@ -194,7 +200,17 @@
             </div>
             <figcaption data-i18n="photo.tapBand"></figcaption>
           </figure>
-          <p data-i18n="photo.fourTaps"></p>
+          <figure id="photo-nw7-example" class="photo-example" hidden>
+            <div class="photo-nw7-bars" role="img" data-i18n-label="nw7.exampleLabel">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="photo-example-ends" aria-hidden="true">
+              <span data-i18n="photo.leftEnd"></span><span data-i18n="photo.rightEnd"></span>
+            </div>
+            <figcaption data-i18n="nw7.tapBand"></figcaption>
+          </figure>
+          <p id="photo-taps" data-i18n="photo.fourTaps"></p>
         </details>
         <label for="photo-file" data-i18n="photo.file"></label>
         <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-own photo-format photo-keyboard">
@@ -220,9 +236,15 @@
             <div aria-live="polite">
               <p id="photo-status"></p>
               <div id="photo-failure" hidden>
-                <p data-i18n="photo.notDecoded"></p>
-                <p data-i18n="photo.failureHelp"></p>
+                <p id="photo-not-decoded" data-i18n="photo.notDecoded"></p>
+                <p id="photo-failure-help" data-i18n="photo.failureHelp"></p>
                 <p data-i18n="image.otherMethods"></p>
+              </div>
+              <div id="photo-nw7-output" hidden>
+                <h4 data-i18n="nw7.resultTitle"></h4>
+                <p id="photo-nw7-value" class="barcode-value" dir="ltr"></p>
+                <p id="photo-nw7-guards"></p>
+                <p data-i18n="nw7.resultHelp"></p>
               </div>
               <p id="photo-known"></p>
               <div id="photo-decoding">
@@ -518,7 +540,7 @@
             </tr>
             <tr>
               <td>宅配便の伝票のコード・追跡番号</td>
-              <td>本ツールでは読めない</td>
+              <td>NW-7は画像点検で内容を読める。追跡照会や住所の特定は行わない。Code 128・JANなどの別形式は対象外</td>
             </tr>
             <tr>
               <td>米国IMb・英国RM4SCC</td>
@@ -849,7 +871,7 @@
             </tr>
             <tr>
               <td>Parcel-label codes and tracking numbers</td>
-              <td>This tool cannot decode them</td>
+              <td>NW-7 content can be read in Your image. No tracking lookup or address identification. Other formats such as Code 128 and EAN/JAN are not supported</td>
             </tr>
             <tr>
               <td>US IMb and UK RM4SCC</td>
