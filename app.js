@@ -425,6 +425,7 @@
   function renderPending() {
     const pending = state.pendingText && state.result !== null;
     element('draft-note').hidden = !pending;
+    element('summary-pending').hidden = !pending;
     element('judgment-draft-note').hidden = !pending;
     for (const id of ['mask-summary', 'range-summary']) {
       const container = element(id);
@@ -559,7 +560,21 @@
     table.append(head, body);
   }
 
+  function renderDecodeSummary() {
+    element('decode-summary').hidden = state.result === null;
+    renderReadable(state.result, 'summary-');
+    const target = element('summary-judgment');
+    target.textContent = '';
+    delete target.dataset.messageKey;
+    if (state.result !== null) {
+      const status = judgment(state.result);
+      target.textContent = message(status);
+      target.dataset.messageKey = status.key;
+    }
+  }
+
   function renderResult() {
+    renderDecodeSummary();
     const ids = ['judgment', 'alternatives', 'postal-result', 'address-result', 'postal-notes', 'issues', 'inspection', 'checksum', 'breakdown'];
     ids.forEach(id => element(id).replaceChildren());
     element('result').hidden = state.result === null;
@@ -636,7 +651,12 @@
   element('sample-reload').addEventListener('click', () => {
     if (state.lastSample !== null) loadSample(state.lastSample);
   });
-  element('intro-sample').addEventListener('click', () => loadSample(0));
+  element('intro-sample').addEventListener('click', () => {
+    loadSample(0);
+    element('summary-title').focus();
+    element('summary-title').scrollIntoView({ block: 'start', behavior: 'auto' });
+  });
+  element('summary-details').addEventListener('click', () => element('result-title').focus());
   element('intro-mask').addEventListener('click', () => element('mask-title').focus());
   element('intro-inspection').addEventListener('click', () => {
     if (state.result !== null) element('inspection-title').focus();

@@ -44,6 +44,18 @@
         <li><button id="intro-inspection" type="button" data-i18n="actions.inspection" disabled></button></li>
       </ol>
     </section>
+    <section id="decode-summary" class="decode-summary" aria-labelledby="summary-title" hidden>
+      <h2 id="summary-title" tabindex="-1" data-i18n="summary.title"></h2>
+      <p id="summary-pending" class="privacy" data-i18n="text.pending" hidden></p>
+      <p id="summary-judgment" class="judgment"></p>
+      <dl class="readable">
+        <dt data-i18n="section.postal"></dt><dd id="summary-postal-result"></dd>
+        <dt data-i18n="section.address"></dt><dd id="summary-address-result"></dd>
+      </dl>
+      <div id="summary-postal-notes"></div>
+      <p class="muted" data-i18n="photo.valueLegend"></p>
+      <button id="summary-details" type="button" data-i18n="summary.details"></button>
+    </section>
     <p data-i18n="decode.otherInputs"></p>
     <p class="privacy" data-i18n="privacy"></p>
     <section aria-labelledby="sample-label">
@@ -176,12 +188,15 @@
     <div id="panel-photo" role="tabpanel" aria-labelledby="tab-photo" hidden>
       <section aria-labelledby="photo-title">
         <h2 id="photo-title" data-i18n="photo.title"></h2>
-        <p id="photo-own" data-i18n="photo.own"></p>
+        <p id="photo-own" data-i18n="photo.entry"></p>
+        <label for="photo-file" data-i18n="photo.file"></label>
+        <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-own photo-format photo-keyboard">
+        <p id="photo-keyboard" class="muted" data-i18n="photo.keyboard"></p>
         <p id="photo-format" data-i18n="photo.format"></p>
         <p data-i18n="photo.nw7Moved"></p>
         <a href="https://ipusiron.github.io/codabar-lens/" target="_blank" rel="noopener noreferrer" data-i18n="photo.codabarLink"></a>
         <p class="privacy" data-i18n="photo.privacy"></p>
-        <details class="photo-help" open>
+        <details class="photo-help">
           <summary data-i18n="photo.helpTitle"></summary>
           <figure class="photo-example">
             <div class="photo-example-bars" role="img" data-i18n-label="photo.exampleLabel">
@@ -198,9 +213,6 @@
           </figure>
           <p data-i18n="photo.fourTaps"></p>
         </details>
-        <label for="photo-file" data-i18n="photo.file"></label>
-        <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-own photo-format photo-keyboard">
-        <p id="photo-keyboard" class="muted" data-i18n="photo.keyboard"></p>
         <ol id="photo-progress" class="photo-progress" hidden>
           <li data-i18n="photo.progress.1"></li><li data-i18n="photo.progress.2"></li>
           <li data-i18n="photo.progress.3"></li><li data-i18n="photo.progress.4"></li>
