@@ -11,9 +11,13 @@
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     origins: Array(67).fill(null), lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
-    decodePane: 'sample', resultSource: null,
+    workspace: 'sample', resultSource: null, maskPreset: 'none',
     language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
+  const workspaceSnapshots = { sample: null, input: null };
+  const purposeTabs = { sample: ['decode', 'lab'], own: ['photo', 'input'], study: ['learn', 'quiz'] };
+  const purposeSelection = { sample: 'decode', own: 'photo', study: 'learn' };
+  const purposeFor = name => Object.keys(purposeTabs).find(purpose => purposeTabs[purpose].includes(name));
   const element = id => document.getElementById(id);
   const record = (key, params = {}) => ({ key, params });
   const plural = (key, count, params = {}) => record(`${key}.${count === 1 ? 'one' : 'other'}`, { count, ...params });
@@ -170,8 +174,8 @@
   function moveTo(target, anchor = target) {
     if (typeof target === 'string') target = element(target);
     if (typeof anchor === 'string') anchor = element(anchor);
-    const pane = target.closest('[id^="decode-panel-"]');
-    if (pane) showDecodePane(pane.id.slice('decode-panel-'.length));
+    const panel = target.closest('[role="tabpanel"][id^="panel-"]');
+    if (panel && state.tab !== panel.id.slice('panel-'.length)) showTab(panel.id.slice('panel-'.length));
     for (let parent = target.parentElement; parent; parent = parent.parentElement) {
       if (parent.tagName === 'DETAILS' && !(target.tagName === 'SUMMARY' && target.parentElement === parent)) {
         parent.open = true;
@@ -181,36 +185,22 @@
     anchor.scrollIntoView({ block: 'start', behavior: 'auto' });
   }
 
-  const decodePaneNames = ['sample', 'input', 'results'];
-  const decodeTabs = document.querySelector('.decode-tabs');
-  function updateDecodeSpace() {
-    const height = decodeTabs.getBoundingClientRect().height;
-    if (height > 0) document.documentElement.style.setProperty('--decode-tabs-space', `${height + 16}px`);
+  function visibleWorkspaceTabs() {
+    return element(`group-${purposeFor(state.tab)}`).querySelector('.workspace-tabs');
   }
-  function showDecodePane(name, focus = false) {
-    state.decodePane = name;
-    for (const pane of decodePaneNames) {
-      const selected = pane === name;
-      element(`decode-${pane}`).setAttribute('aria-selected', String(selected));
-      element(`decode-${pane}`).tabIndex = selected ? 0 : -1;
-      element(`decode-panel-${pane}`).hidden = !selected;
-    }
-    updateDecodeSpace();
-    if (focus) {
-      element(`decode-${name}`).focus({ preventScroll: true });
-      const top = element(`decode-panel-${name}`).getBoundingClientRect().top + scrollY;
-      window.scrollTo({ top: Math.max(0, top - decodeTabs.getBoundingClientRect().height), behavior: 'auto' });
-    }
+
+  function updateWorkspaceSpace() {
+    const purposeHeight = document.querySelector('.purpose-tabs').getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--purpose-tabs-height', `${purposeHeight}px`);
+    const height = visibleWorkspaceTabs().getBoundingClientRect().height;
+    if (height > 0) document.documentElement.style.setProperty('--workspace-tabs-space', `${purposeHeight + height + 16}px`);
   }
-  for (const [index, name] of decodePaneNames.entries()) {
-    const tab = element(`decode-${name}`);
-    tab.addEventListener('click', () => showDecodePane(name, true));
-    tab.addEventListener('keydown', event => {
-      const next = { ArrowLeft: (index + 2) % 3, ArrowRight: (index + 1) % 3, Home: 0, End: 2 }[event.key];
-      if (next === undefined) return;
-      event.preventDefault();
-      showDecodePane(decodePaneNames[next], true);
-    });
+
+  function alignPanelStart(name) {
+    const navigationHeight = document.querySelector('.purpose-tabs').getBoundingClientRect().height
+      + visibleWorkspaceTabs().getBoundingClientRect().height;
+    const panelTop = element(`panel-${name}`).getBoundingClientRect().top + scrollY;
+    window.scrollTo({ top: Math.max(0, panelTop - navigationHeight - 16), behavior: 'auto' });
   }
 
   document.querySelectorAll('[data-move-to]').forEach(button => {
@@ -223,7 +213,7 @@
       moveTo(details.querySelector('summary'));
     });
   });
-  for (const id of ['manual-input', 'breakdown-details']) {
+  for (const id of ['manual-input', 'result-details', 'breakdown-details']) {
     const details = element(id);
     const summary = details.querySelector('summary');
     summary.addEventListener('click', event => {
@@ -251,7 +241,7 @@
     const limit = Math.min(innerHeight, paletteDock.getBoundingClientRect().top) - 10;
     if (bottom > limit) window.scrollBy({ top: Math.ceil(bottom - limit), behavior: 'auto' });
     const top = button.getBoundingClientRect().top;
-    const topLimit = Math.max(0, decodeTabs.getBoundingClientRect().bottom) + 10;
+    const topLimit = Math.max(0, visibleWorkspaceTabs().getBoundingClientRect().bottom) + 10;
     if (top < topLimit) window.scrollBy({ top: Math.floor(top - topLimit), behavior: 'auto' });
   }
 
@@ -353,19 +343,70 @@
     element('bar-text').setAttribute('aria-invalid', String(state.errors.some(item => item.key !== 'text.accepted')));
   }
 
-  function changed(fromText = false, summaryTarget = null) {
-    state.pendingText = false;
-    state.summaryTarget = summaryTarget;
+  function renderWorkspace() {
     state.result = complete() ? core.decodeBars(state.bars) : null;
     state.checksum = state.result ? core.explainChecksum(state.result) : null;
-    if (!fromText) {
-      element('bar-text').value = complete() ? core.formatBarText(state.bars, { group: true }) : '';
-      state.errors = [];
-    }
     renderInput();
     renderErrors();
     renderControls();
     renderResult();
+  }
+
+  function changed(fromText = false, summaryTarget = null) {
+    state.pendingText = false;
+    state.summaryTarget = summaryTarget;
+    if (!fromText) {
+      element('bar-text').value = complete() ? core.formatBarText(state.bars, { group: true }) : '';
+      state.errors = [];
+    }
+    renderWorkspace();
+  }
+
+  function captureWorkspace(includeUndo = true) {
+    const text = element('bar-text');
+    return {
+      bars: state.bars.slice(), origins: state.origins.map(origin => origin && { ...origin }), selected: state.selected,
+      lastSample: state.lastSample, resultSource: state.resultSource, pendingText: state.pendingText, maskPreset: state.maskPreset,
+      summaryTarget: state.summaryTarget, errors: state.errors.slice(), raw: text.value,
+      textSelection: [text.selectionStart, text.selectionEnd, text.selectionDirection],
+      range: ['range-start', 'range-end'].map(id => element(id).value),
+      manualOpen: element('manual-input').open, resultOpen: element('result-details').open,
+      breakdownOpen: element('breakdown-details').open, ...(includeUndo ? { undo: state.undo } : {})
+    };
+  }
+
+  function emptyWorkspace() {
+    return {
+      bars: Array(67).fill(undefined), origins: Array(67).fill(null), selected: 0,
+      lastSample: null, resultSource: null, pendingText: false, maskPreset: 'none', summaryTarget: null, errors: [], raw: '',
+      textSelection: [0, 0, 'none'], range: ['1', '67'], manualOpen: false, resultOpen: false, breakdownOpen: false, undo: null
+    };
+  }
+
+  function restoreWorkspace(saved) {
+    Object.assign(state, {
+      bars: saved.bars.slice(), origins: saved.origins.map(origin => origin && { ...origin }), selected: saved.selected,
+      lastSample: saved.lastSample, resultSource: saved.resultSource, pendingText: saved.pendingText, maskPreset: saved.maskPreset,
+      summaryTarget: saved.summaryTarget, errors: saved.errors.slice(), undo: saved.undo || null, announcement: null
+    });
+    const text = element('bar-text');
+    text.value = saved.raw;
+    text.setSelectionRange(...saved.textSelection);
+    element('sample-select').value = saved.lastSample === null ? '' : String(saved.lastSample);
+    ['range-start', 'range-end'].forEach((id, index) => { element(id).value = saved.range[index]; });
+    element('manual-input').open = saved.manualOpen;
+    element('result-details').open = saved.resultOpen;
+    element('breakdown-details').open = saved.breakdownOpen;
+  }
+
+  function switchWorkspace(name) {
+    if (name !== state.workspace) {
+      workspaceSnapshots[state.workspace] = captureWorkspace();
+      state.workspace = name;
+      restoreWorkspace(workspaceSnapshots[name] || emptyWorkspace());
+    }
+    element(`${name}-result-dock`).append(element('decode-output'));
+    renderWorkspace();
   }
 
   function setBar(value, advance, focus) {
@@ -380,8 +421,7 @@
   }
 
   function remember() {
-    state.undo = { bars: state.bars.slice(), origins: state.origins.slice(), selected: state.selected,
-      lastSample: state.lastSample, resultSource: state.resultSource };
+    state.undo = captureWorkspace(false);
   }
 
   function rangeValues() {
@@ -394,23 +434,27 @@
 
   function renderControls() {
     element('undo').disabled = state.undo === null;
+    element('sample-undo').disabled = state.undo === null;
+    element('sample-edit-region').hidden = state.workspace !== 'sample';
     element('sample-reload').disabled = state.lastSample === null;
-    element('intro-inspection').disabled = state.result === null;
-    element('intro-mask').disabled = state.lastSample === null;
-    element('goto-result').hidden = state.result === null;
     document.querySelectorAll('[data-result-link]').forEach(button => { button.hidden = state.result === null; });
-    element('summary-next').hidden = state.lastSample === null;
     element('result-empty').hidden = state.result !== null;
+    const empty = element('result-empty').querySelector('p');
+    empty.dataset.i18n = state.workspace === 'sample' ? 'decode.sampleEmpty' : 'decode.empty';
+    empty.textContent = translate(empty.dataset.i18n);
+    element('result-details').hidden = state.result === null;
     element('result-overview').hidden = state.result === null;
-    document.querySelectorAll('[data-return-lab]').forEach(button => { button.hidden = state.resultSource !== 'lab'; });
-    document.querySelectorAll('[data-sample-return]').forEach(button => { button.hidden = state.lastSample === null; });
     element('fill-unknown').disabled = complete() || state.bars.every(value => value === undefined);
     element('manual-fill').hidden = element('fill-unknown').disabled;
     element('clear').disabled = state.bars.every(value => value === undefined) && element('bar-text').value === '';
     element('range-apply').disabled = rangeValues() === null;
     element('range-reason').textContent = rangeValues() === null ? translate('range.invalid') : '';
     element('mask-reason').hidden = state.lastSample !== null;
-    document.querySelectorAll('[data-preset]').forEach(button => { button.disabled = state.lastSample === null; });
+    element('sample-mask-status').textContent = translate('mask.current', { mask: record(`mask.${state.maskPreset}`) });
+    document.querySelectorAll('[data-preset]').forEach(button => {
+      button.disabled = state.lastSample === null;
+      button.setAttribute('aria-pressed', String(state.maskPreset === button.dataset.preset));
+    });
   }
 
   function judgment(result) {
@@ -519,15 +563,7 @@
     for (const id of ['mask-summary', 'range-summary']) {
       const container = element(id);
       container.replaceChildren();
-      container.hidden = state.summaryTarget !== id || state.result === null;
-      if (container.hidden) continue;
-      if (pending) appendMessage(container, record('text.pending'));
-      if (inspectable()) inspectionSummaries().forEach(item => appendMessage(container, item));
-      else appendMessage(container, record(`inspection.${state.result.checksum.status}`));
-      const button = node('button', translate('actions.inspection'));
-      button.type = 'button';
-      button.addEventListener('click', () => moveTo('inspection-title'));
-      container.append(button);
+      container.hidden = true;
     }
   }
 
@@ -734,6 +770,7 @@
     state.bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
     state.origins.fill(null);
     state.lastSample = index;
+    state.maskPreset = 'none';
     element('sample-select').value = String(index);
     state.selected = 0;
     state.announcement = record('sample.loaded', { sample: record(sample.labelKey) });
@@ -743,35 +780,25 @@
   element('sample-reload').addEventListener('click', () => {
     if (state.lastSample !== null) loadSample(state.lastSample);
   });
-  element('intro-sample').addEventListener('click', () => {
-    loadSample(0);
-    moveTo('summary-title');
+  element('sample-edit').addEventListener('click', () => {
+    const bars = state.bars.slice();
+    const origins = state.origins.map(origin => origin && { ...origin });
+    showTab('input');
+    remember();
+    Object.assign(state, { bars, origins, lastSample: null, selected: 0, maskPreset: 'none', resultSource: null });
+    element('sample-select').value = '';
+    changed();
+    moveTo('bar-text', 'text-label');
   });
-  element('entry-manual').addEventListener('click', () => moveTo('input-title'));
-  element('entry-text').addEventListener('click', () => moveTo('bar-text', 'text-label'));
-  element('entry-photo').addEventListener('click', () => {
-    showTab('photo');
-    moveTo('photo-file', 'photo-title');
-  });
-  document.querySelectorAll('[data-return-lab]').forEach(button => {
-    button.addEventListener('click', () => {
-      showTab('lab');
-      moveTo('lab-intro-title');
-    });
-  });
-  element('summary-details').addEventListener('click', () => moveTo('result-title'));
-  element('intro-mask').addEventListener('click', () => moveTo('mask-title'));
-  element('intro-inspection').addEventListener('click', () => {
-    if (state.result !== null) moveTo('inspection-title');
-  });
-  element('goto-result').addEventListener('click', () => moveTo('summary-title'));
-  function fillUnknown() {
+  function fillUnknown(event) {
     if (element('fill-unknown').disabled) return;
+    const source = document.activeElement.id;
+    const manual = source === 'manual-fill' || event.currentTarget.id === 'manual-fill';
     remember();
     replaceManualBars(state.bars.map(value => value === undefined ? null : value));
     state.announcement = record('actions.filledUnknown');
     changed();
-    moveTo('summary-title');
+    element(manual ? 'manual-result' : 'undo').focus({ preventScroll: true });
   }
   element('fill-unknown').addEventListener('click', fillUnknown);
   element('manual-fill').addEventListener('click', fillUnknown);
@@ -809,12 +836,14 @@
     changed();
     moveTo('undo', 'input-methods-title');
   });
-  element('undo').addEventListener('click', () => {
+  function undoWorkspace() {
     if (state.undo === null) return;
-    Object.assign(state, state.undo, { undo: null, announcement: record('actions.undone') });
-    element('sample-select').value = state.lastSample === null ? '' : String(state.lastSample);
-    changed();
-  });
+    restoreWorkspace(state.undo);
+    state.announcement = record('actions.undone');
+    renderWorkspace();
+  }
+  element('undo').addEventListener('click', undoWorkspace);
+  element('sample-undo').addEventListener('click', undoWorkspace);
   element('mask-presets').addEventListener('click', event => {
     const button = event.target.closest('[data-preset]');
     if (!button || button.disabled || state.lastSample === null) return;
@@ -822,6 +851,7 @@
     const sample = samples.barcodes[state.lastSample];
     const bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
     const preset = button.dataset.preset;
+    state.maskPreset = preset;
     if (preset === 'cd') bars.fill(null, 62, 65);
     if (preset === 'central') for (let index = 0; index < 21; index += 1) bars[3 + index * 3] = null;
     if (preset === 'latter') bars.fill(null, 44);
@@ -859,6 +889,7 @@
     button.addEventListener('click', () => {
       remember();
       replaceManualBars(core.maskChars(state.bars, [index]));
+      if (state.workspace === 'sample') state.maskPreset = 'custom';
       state.announcement = record('character.masked', { position: index + 1 });
       changed();
       moveTo('result-title');
@@ -1196,17 +1227,20 @@
 
   function transferImage(read) {
     if (!read) return;
+    const source = state.tab;
+    const bars = read.bars.slice();
+    const origins = read.bars.map((bar, index) => ({ kind: 'image', unknown: bar === null, confidence: read.confidence[index] }));
+    showTab('input');
     remember();
-    state.resultSource = state.tab;
-    state.bars = read.bars.slice();
-    state.origins = read.bars.map((bar, index) => ({ kind: 'image', unknown: bar === null, confidence: read.confidence[index] }));
+    state.resultSource = source;
+    state.bars = bars;
+    state.origins = origins;
     state.lastSample = null;
     element('sample-select').value = '';
     state.selected = 0;
     state.announcement = record('lab.transferred');
     changed();
-    showTab('decode');
-    moveTo('result-title');
+    moveTo('bar-text', 'input-methods-title');
   }
 
   function replaceManualBars(bars) {
@@ -1321,6 +1355,7 @@
     const decoded = element('lab-judgment');
     decoded.dataset.status = lab.decoded.status;
     decoded.textContent = message(judgment(lab.decoded));
+    renderReadable(lab.decoded, 'lab-');
     const summary = element('lab-summary');
     summary.replaceChildren();
     inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
@@ -1329,23 +1364,36 @@
   }
 
   function showTab(name, focus = false) {
+    if (name === 'decode' || name === 'input') switchWorkspace(name === 'decode' ? 'sample' : 'input');
     if (state.tab === 'lab' && name !== 'lab') {
       element('lab-canvas').width = 0;
       element('lab-canvas').height = 0;
     }
     if (state.tab === 'photo' && name !== 'photo') releasePhoto();
     state.tab = name;
+    const purpose = purposeFor(name);
+    purposeSelection[purpose] = name;
+    for (const group of Object.keys(purposeTabs)) {
+      const selected = group === purpose;
+      element(`group-tab-${group}`).setAttribute('aria-selected', String(selected));
+      element(`group-tab-${group}`).tabIndex = selected ? 0 : -1;
+      element(`group-${group}`).hidden = !selected;
+    }
     if (name === 'lab') {
       if (!lab.read) readLab();
       else paintLab();
     }
-    for (const tab of ['decode', 'lab', 'photo', 'learn', 'quiz']) {
-      const selected = tab === name;
+    for (const tab of Object.values(purposeTabs).flat()) {
+      const selected = purposeSelection[purposeFor(tab)] === tab;
       element(`tab-${tab}`).setAttribute('aria-selected', String(selected));
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
       element(`panel-${tab}`).hidden = !selected;
     }
-    if (focus) element(`tab-${name}`).focus();
+    updateWorkspaceSpace();
+    if (focus) {
+      element(`tab-${name}`).focus({ preventScroll: true });
+      alignPanelStart(name);
+    }
   }
 
   function renderLanguage() {
@@ -1585,33 +1633,55 @@
   });
   document.querySelectorAll('[data-learn-try]').forEach(button => {
     button.addEventListener('click', () => {
+      showTab('decode');
       remember();
       state.bars = lessonBars[0].bars.slice();
       state.origins.fill(null);
       if (button.dataset.learnTry === 'cd') state.bars.fill(null, 62, 65);
       else for (let index = 0; index < 21; index += 1) state.bars[3 + index * 3] = null;
       state.lastSample = 0;
+      state.maskPreset = button.dataset.learnTry;
       state.selected = 0;
       state.resultSource = null;
       element('sample-select').value = '0';
       state.announcement = record('mask.applied', { preset: record(`mask.${button.dataset.learnTry}`) });
       changed();
-      showTab('decode');
-      moveTo('result-title');
+      moveTo('mask-title');
     });
   });
 
-  const tabNames = ['decode', 'lab', 'photo', 'learn', 'quiz'];
+  const tabNames = Object.values(purposeTabs).flat();
   for (const name of tabNames) {
     const tab = element(`tab-${name}`);
-    tab.addEventListener('click', () => showTab(name));
+    tab.addEventListener('click', () => showTab(name, true));
     tab.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
+      const siblings = purposeTabs[purposeFor(name)];
       const offset = event.key === 'ArrowLeft' ? -1 : 1;
-      const next = event.key === 'Home' ? tabNames[0] : event.key === 'End' ? tabNames.at(-1)
-        : tabNames[(tabNames.indexOf(name) + offset + tabNames.length) % tabNames.length];
+      const next = event.key === 'Home' ? siblings[0] : event.key === 'End' ? siblings.at(-1)
+        : siblings[(siblings.indexOf(name) + offset + siblings.length) % siblings.length];
       showTab(next, true);
+    });
+  }
+  const purposes = Object.keys(purposeTabs);
+  function showPurpose(name, focus = false) {
+    showTab(purposeSelection[name]);
+    if (focus) {
+      element(`group-tab-${name}`).focus({ preventScroll: true });
+      alignPanelStart(purposeSelection[name]);
+    }
+  }
+  for (const [index, name] of purposes.entries()) {
+    const tab = element(`group-tab-${name}`);
+    tab.addEventListener('click', () => showPurpose(name, true));
+    tab.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const next = { ArrowLeft: (index + 2) % 3, ArrowRight: (index + 1) % 3, Home: 0, End: 2 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      showPurpose(purposes[next], true);
     });
   }
   let languageRender = 0;
@@ -1629,22 +1699,25 @@
       if (version === languageRender) live.forEach(item => { item.setAttribute('aria-live', 'polite'); });
     }));
   });
-  element('breakdown-details').open = matchMedia('(min-width: 48rem)').matches;
   buildInput();
   buildLab();
   buildPhoto();
   if (typeof ResizeObserver === 'function') {
     new ResizeObserver(updatePaletteSpace).observe(paletteDock);
-    new ResizeObserver(updateDecodeSpace).observe(decodeTabs);
+    const workspaceObserver = new ResizeObserver(updateWorkspaceSpace);
+    workspaceObserver.observe(document.querySelector('.purpose-tabs'));
+    document.querySelectorAll('.workspace-tabs').forEach(tabs => workspaceObserver.observe(tabs));
   }
   else {
     addEventListener('resize', updatePaletteSpace);
-    addEventListener('resize', updateDecodeSpace);
+    addEventListener('resize', updateWorkspaceSpace);
     element('lang-toggle').addEventListener('click', updatePaletteSpace);
   }
   updatePaletteSpace();
-  updateDecodeSpace();
-  changed();
+  updateWorkspaceSpace();
+  loadSample(0);
+  state.undo = null;
+  renderControls();
   showTab(state.tab);
   renderLanguage();
 })();
