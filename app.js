@@ -11,7 +11,7 @@
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     origins: Array(67).fill(null), lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
-    workspace: 'sample', resultSource: null, maskPreset: 'none',
+    workspace: 'sample', resultSource: null, maskPresets: [], customMask: [],
     language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
   const workspaceSnapshots = { sample: null, input: null };
@@ -196,7 +196,11 @@
     if (height > 0) document.documentElement.style.setProperty('--workspace-tabs-space', `${purposeHeight + height + 16}px`);
   }
 
-  function alignPanelStart(name) {
+  function alignPanelStart(name, previousScroll) {
+    if (Math.abs(scrollY - previousScroll) > 1) window.scrollTo({ top: previousScroll, behavior: 'auto' });
+    const panel = element(`panel-${name}`);
+    const navigationBottom = visibleWorkspaceTabs().getBoundingClientRect().bottom;
+    if (panel.getBoundingClientRect().top >= navigationBottom - 1) return;
     const navigationHeight = document.querySelector('.purpose-tabs').getBoundingClientRect().height
       + visibleWorkspaceTabs().getBoundingClientRect().height;
     const panelTop = element(`panel-${name}`).getBoundingClientRect().top + scrollY;
@@ -213,7 +217,7 @@
       moveTo(details.querySelector('summary'));
     });
   });
-  for (const id of ['manual-input', 'result-details', 'breakdown-details']) {
+  for (const id of ['text-input', 'manual-input', 'result-details', 'breakdown-details']) {
     const details = element(id);
     const summary = details.querySelector('summary');
     summary.addEventListener('click', event => {
@@ -308,6 +312,7 @@
     });
     const count = state.bars.filter(value => value !== undefined).length;
     element('input-progress').textContent = message(plural('input.progress', count));
+    element('bar-input-progress').value = count;
     element('palette-progress').textContent = message(plural('input.progress', count));
     renderSelection();
     renderOverview();
@@ -366,11 +371,13 @@
     const text = element('bar-text');
     return {
       bars: state.bars.slice(), origins: state.origins.map(origin => origin && { ...origin }), selected: state.selected,
-      lastSample: state.lastSample, resultSource: state.resultSource, pendingText: state.pendingText, maskPreset: state.maskPreset,
+      lastSample: state.lastSample, resultSource: state.resultSource, pendingText: state.pendingText,
+      maskPresets: state.maskPresets.slice(), customMask: state.customMask.slice(),
       summaryTarget: state.summaryTarget, errors: state.errors.slice(), raw: text.value,
       textSelection: [text.selectionStart, text.selectionEnd, text.selectionDirection],
       range: ['range-start', 'range-end'].map(id => element(id).value),
-      manualOpen: element('manual-input').open, resultOpen: element('result-details').open,
+      textOpen: element('text-input').open, manualOpen: element('manual-input').open,
+      resultOpen: element('result-details').open,
       breakdownOpen: element('breakdown-details').open, ...(includeUndo ? { undo: state.undo } : {})
     };
   }
@@ -378,15 +385,18 @@
   function emptyWorkspace() {
     return {
       bars: Array(67).fill(undefined), origins: Array(67).fill(null), selected: 0,
-      lastSample: null, resultSource: null, pendingText: false, maskPreset: 'none', summaryTarget: null, errors: [], raw: '',
-      textSelection: [0, 0, 'none'], range: ['1', '67'], manualOpen: false, resultOpen: false, breakdownOpen: false, undo: null
+      lastSample: null, resultSource: null, pendingText: false, maskPresets: [], customMask: [],
+      summaryTarget: null, errors: [], raw: '',
+      textSelection: [0, 0, 'none'], range: ['1', '67'], textOpen: false, manualOpen: false,
+      resultOpen: false, breakdownOpen: false, undo: null
     };
   }
 
   function restoreWorkspace(saved) {
     Object.assign(state, {
       bars: saved.bars.slice(), origins: saved.origins.map(origin => origin && { ...origin }), selected: saved.selected,
-      lastSample: saved.lastSample, resultSource: saved.resultSource, pendingText: saved.pendingText, maskPreset: saved.maskPreset,
+      lastSample: saved.lastSample, resultSource: saved.resultSource, pendingText: saved.pendingText,
+      maskPresets: saved.maskPresets.slice(), customMask: saved.customMask.slice(),
       summaryTarget: saved.summaryTarget, errors: saved.errors.slice(), undo: saved.undo || null, announcement: null
     });
     const text = element('bar-text');
@@ -394,6 +404,7 @@
     text.setSelectionRange(...saved.textSelection);
     element('sample-select').value = saved.lastSample === null ? '' : String(saved.lastSample);
     ['range-start', 'range-end'].forEach((id, index) => { element(id).value = saved.range[index]; });
+    element('text-input').open = saved.textOpen;
     element('manual-input').open = saved.manualOpen;
     element('result-details').open = saved.resultOpen;
     element('breakdown-details').open = saved.breakdownOpen;
@@ -438,7 +449,9 @@
     element('sample-edit-region').hidden = state.workspace !== 'sample';
     element('sample-reload').disabled = state.lastSample === null;
     document.querySelectorAll('[data-result-link]').forEach(button => { button.hidden = state.result === null; });
-    element('result-empty').hidden = state.result !== null;
+    const hasBars = state.bars.some(value => value !== undefined);
+    element('input-tools').hidden = !hasBars && element('bar-text').value === '' && state.undo === null;
+    element('result-empty').hidden = state.result !== null || (state.workspace === 'input' && !hasBars);
     const empty = element('result-empty').querySelector('p');
     empty.dataset.i18n = state.workspace === 'sample' ? 'decode.sampleEmpty' : 'decode.empty';
     empty.textContent = translate(empty.dataset.i18n);
@@ -450,10 +463,13 @@
     element('range-apply').disabled = rangeValues() === null;
     element('range-reason').textContent = rangeValues() === null ? translate('range.invalid') : '';
     element('mask-reason').hidden = state.lastSample !== null;
-    element('sample-mask-status').textContent = translate('mask.current', { mask: record(`mask.${state.maskPreset}`) });
+    const masks = ['cd', 'central', 'latter', 'all'].filter(preset => state.maskPresets.includes(preset));
+    if (state.customMask.length) masks.push('custom');
+    const mask = masks.length ? masks.map(preset => translate(`mask.${preset}`)).join(' + ') : translate('mask.none');
+    element('sample-mask-status').textContent = translate('mask.current', { mask });
     document.querySelectorAll('[data-preset]').forEach(button => {
       button.disabled = state.lastSample === null;
-      button.setAttribute('aria-pressed', String(state.maskPreset === button.dataset.preset));
+      button.setAttribute('aria-pressed', String(state.maskPresets.includes(button.dataset.preset)));
     });
   }
 
@@ -770,7 +786,8 @@
     state.bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
     state.origins.fill(null);
     state.lastSample = index;
-    state.maskPreset = 'none';
+    state.maskPresets = [];
+    state.customMask = [];
     element('sample-select').value = String(index);
     state.selected = 0;
     state.announcement = record('sample.loaded', { sample: record(sample.labelKey) });
@@ -785,7 +802,7 @@
     const origins = state.origins.map(origin => origin && { ...origin });
     showTab('input');
     remember();
-    Object.assign(state, { bars, origins, lastSample: null, selected: 0, maskPreset: 'none', resultSource: null });
+    Object.assign(state, { bars, origins, lastSample: null, selected: 0, maskPresets: [], customMask: [], resultSource: null });
     element('sample-select').value = '';
     changed();
     moveTo('bar-text', 'text-label');
@@ -838,27 +855,37 @@
   });
   function undoWorkspace() {
     if (state.undo === null) return;
+    const source = document.activeElement;
     restoreWorkspace(state.undo);
     state.announcement = record('actions.undone');
     renderWorkspace();
+    if (source.disabled || source.getClientRects().length === 0) {
+      const target = state.workspace === 'sample' ? element('sample-select') : element('text-input').querySelector('summary');
+      target.focus({ preventScroll: true });
+    }
   }
   element('undo').addEventListener('click', undoWorkspace);
   element('sample-undo').addEventListener('click', undoWorkspace);
+  function applySampleMasks() {
+    const sample = samples.barcodes[state.lastSample];
+    const bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
+    if (state.maskPresets.includes('cd')) bars.fill(null, 62, 65);
+    if (state.maskPresets.includes('central')) for (let index = 0; index < 21; index += 1) bars[3 + index * 3] = null;
+    if (state.maskPresets.includes('latter')) bars.fill(null, 44);
+    if (state.maskPresets.includes('all')) bars.fill(null);
+    state.customMask.forEach(index => { bars[index] = null; });
+    state.bars = bars;
+    state.origins = bars.map((_, index) => state.customMask.includes(index) ? { kind: 'manual' } : null);
+  }
   element('mask-presets').addEventListener('click', event => {
     const button = event.target.closest('[data-preset]');
     if (!button || button.disabled || state.lastSample === null) return;
     remember();
-    const sample = samples.barcodes[state.lastSample];
-    const bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
     const preset = button.dataset.preset;
-    state.maskPreset = preset;
-    if (preset === 'cd') bars.fill(null, 62, 65);
-    if (preset === 'central') for (let index = 0; index < 21; index += 1) bars[3 + index * 3] = null;
-    if (preset === 'latter') bars.fill(null, 44);
-    if (preset === 'all') bars.fill(null);
-    state.bars = bars;
-    state.origins.fill(null);
-    state.announcement = record('mask.applied', { preset: record(`mask.${preset}`) });
+    const removed = state.maskPresets.includes(preset);
+    state.maskPresets = removed ? state.maskPresets.filter(value => value !== preset) : [...state.maskPresets, preset];
+    applySampleMasks();
+    state.announcement = record(removed ? 'mask.removed' : 'mask.applied', { preset: record(`mask.${preset}`) });
     changed(false, 'mask-summary');
   });
   for (const id of ['range-start', 'range-end']) element(id).addEventListener('input', renderControls);
@@ -889,7 +916,9 @@
     button.addEventListener('click', () => {
       remember();
       replaceManualBars(core.maskChars(state.bars, [index]));
-      if (state.workspace === 'sample') state.maskPreset = 'custom';
+      if (state.workspace === 'sample') {
+        state.customMask = [...new Set([...state.customMask, 2 + index * 3, 3 + index * 3, 4 + index * 3])];
+      }
       state.announcement = record('character.masked', { position: index + 1 });
       changed();
       moveTo('result-title');
@@ -1364,6 +1393,7 @@
   }
 
   function showTab(name, focus = false) {
+    const previousScroll = scrollY;
     if (name === 'decode' || name === 'input') switchWorkspace(name === 'decode' ? 'sample' : 'input');
     if (state.tab === 'lab' && name !== 'lab') {
       element('lab-canvas').width = 0;
@@ -1392,7 +1422,7 @@
     updateWorkspaceSpace();
     if (focus) {
       element(`tab-${name}`).focus({ preventScroll: true });
-      alignPanelStart(name);
+      alignPanelStart(name, previousScroll);
     }
   }
 
@@ -1640,7 +1670,8 @@
       if (button.dataset.learnTry === 'cd') state.bars.fill(null, 62, 65);
       else for (let index = 0; index < 21; index += 1) state.bars[3 + index * 3] = null;
       state.lastSample = 0;
-      state.maskPreset = button.dataset.learnTry;
+      state.maskPresets = [button.dataset.learnTry];
+      state.customMask = [];
       state.selected = 0;
       state.resultSource = null;
       element('sample-select').value = '0';
@@ -1667,10 +1698,11 @@
   }
   const purposes = Object.keys(purposeTabs);
   function showPurpose(name, focus = false) {
+    const previousScroll = scrollY;
     showTab(purposeSelection[name]);
     if (focus) {
       element(`group-tab-${name}`).focus({ preventScroll: true });
-      alignPanelStart(purposeSelection[name]);
+      alignPanelStart(purposeSelection[name], previousScroll);
     }
   }
   for (const [index, name] of purposes.entries()) {
