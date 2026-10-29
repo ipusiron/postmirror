@@ -4,7 +4,8 @@
   "private": true,
   "description": "Dependency-free tests for PostMirror",
   "scripts": {
-    "test": "node --test"
+    "build": "node build.js",
+    "test": "node build.js --check && node --test"
   },
   "engines": {
     "node": ">=22"

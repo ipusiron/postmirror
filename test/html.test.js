@@ -8,17 +8,13 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 const app = read('app.js');
 
-test('HTML: six local deferred classic scripts in dependency order', () => {
+test('HTML: one local deferred classic script with no inline code', () => {
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
-  assert.equal(scripts.length, 6);
-  assert.deepStrictEqual(scripts.map(match => /src="([^"]+)"/.exec(match[1])?.[1]), [
-    'barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js'
-  ]);
-  for (const [, attributes, body] of scripts) {
-    assert.match(attributes, /\bdefer\b/);
-    assert.doesNotMatch(attributes, /\btype\s*=/);
-    assert.equal(body.trim(), '');
-  }
+  assert.equal(scripts.length, 1);
+  assert.equal(/src="([^"]+)"/.exec(scripts[0][1])?.[1], 'postmirror.bundle.js');
+  assert.match(scripts[0][1], /\bdefer\b/);
+  assert.doesNotMatch(scripts[0][1], /\btype\s*=/);
+  assert.equal(scripts[0][2].trim(), '');
 });
 
 test('HTML: no inline handlers, styles, or unsafe DOM insertion', () => {

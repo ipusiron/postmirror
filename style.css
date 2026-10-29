@@ -959,7 +959,7 @@ h2, h3, summary {
   scroll-margin-block-start: 1rem;
 }
 
-main :is(h2, h3, summary) {
+main :is(h2, h3, summary, [data-quiz]) {
   scroll-margin-block-start: var(--workspace-tabs-space, 1rem);
 }
 

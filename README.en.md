@@ -272,6 +272,8 @@ A. They are not recommended. Images treated with mosaic or blur retain values ca
 Run `npm test` with Node.js 22 or later. No dependency installation is required.
 Tests cover 21 official examples, 17 extraction examples, known bar sequences, round trips, boundaries, invalid input, masking, orientation, HTML, language consistency, formatting, and contrast. README examples and numbers are also recalculated with the core. GitHub Actions runs Test automatically on push and pull_request.
 
+Runtime source files are kept separate for editing. After changes, run `npm run build` to regenerate `postmirror.bundle.js`; `npm test` rejects a stale delivery file. The page loads this one local script, and builds lesson figures only when that language is first opened. No package installation is needed.
+
 ```sh
 npm test
 ```
@@ -302,7 +304,7 @@ postmirror/                         # Tool root
 ├── LICENSE                         # Full MIT License
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
-├── package.json                    # Dependency-free node --test command
+├── package.json                    # Bundle freshness check and dependency-free node --test
 ├── index.html                      # Three purpose areas with two methods each, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
@@ -311,6 +313,8 @@ postmirror/                         # Tool root
 ├── samples.js                      # Versioned public examples and extraction examples
 ├── messages.js                     # Japanese and English messages
 ├── app.js                          # UI, image loading, input, rendering, languages, and tabs
+├── build.js                        # Dependency-free generation of the delivery script
+├── postmirror.bundle.js            # Generated single script loaded by the page
 ├── assets/                         # Japanese README screenshots
 │   ├── screenshot.png              # Sample controls and results
 │   ├── screenshot2.png             # Bar shapes and character table
@@ -325,6 +329,7 @@ postmirror/                         # Tool root
 └── test/                           # node:test tests
     ├── official-vectors.json       # Independent expectations for 21 examples and nine complete bar sequences
     ├── core.test.js                # Tables, known answers, restoration, candidates, orientation, and properties
+    ├── build.test.js               # Delivery freshness, dependency order, and syntax
     ├── extract.test.js             # Extraction stages and 17 public examples
     ├── image.test.js               # Independent image-processing tests
     ├── readme.test.js              # README numbers, structure, images, and language
