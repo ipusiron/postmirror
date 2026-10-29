@@ -11,7 +11,7 @@ English · [日本語](README.md)
 **Day115 - Security Tools with Generative AI 200**
 
 PostMirror decodes the Japan Post customer barcode printed on mail in Japan. Enter its bars, and it shows the postal code and the address number (the block, lot and room digits) character by character, along with which characters stay readable when part of the barcode is hidden and which ones the check digit restores.
-The Learn tab explains how to read the bars, how the check digit is calculated, and how to hide the barcode.
+Learn & quiz explains how to read the bars, how the check digit is calculated, and how to hide the barcode.
 Start with mail addressed to you.
 
 The name: "post" means both mail and a social media post. PostMirror is a mirror for checking your own mail before you post.
@@ -34,9 +34,9 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## 📸 Screenshots
 
-![Sample steps and input options in Decode](assets/en/screenshot.png)
+![Sample controls and results on the same screen](assets/en/screenshot.png)
 
-> *The Decode starting screen, with subtabs for switching tasks, three sample steps, and shortcuts to image inspection, pasted text, and manual entry.*
+> *Hide bars in Try samples: choose a sample and a mask, then inspect the remaining information on the same screen.*
 
 ![Four bar shapes and character table](assets/en/screenshot2.png)
 
@@ -52,10 +52,10 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## ✨ Features
 
-- Five tabs: Decode, Image lab, Your image, Learn, and Quiz
-- Apply 14 covering methods to sample images in Image lab and check what can be read
+- Three purpose areas: Try samples, Read your barcode, and Learn & quiz
+- Apply 14 covering methods to sample images in Process an image and check what can be read
 - Open your own image on your device and read a region selected in two stages
-- Three subtabs within Decode, sample steps, and shortcuts to image inspection, pasted text, and manual entry
+- Results alongside the controls, with separate sample and personal bar inputs
 - Enter 67 bars using character cards and a shape palette showing the selected position and entered count
 - See the symbol for a completed three-bar card before entering all 67 bars
 - Type or paste sequences, load eight examples published by Japan Post, and reload the selected sample
@@ -64,26 +64,35 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 - Mark a range unknown, try four masking examples, or mark the remaining empty bars unknown
 - See readable, restored, and undetermined characters, candidate counts, and unapplied text edits
 - Undo the previous bulk operation once
-- Explore 12 learning sections with diagrams, tables, and step-by-step extraction, plus seven questions in a separate Quiz tab
+- Explore 12 learning sections with diagrams, tables, and step-by-step extraction, plus seven Quiz questions
 - Switch between Japanese and English, with dark colors following your device setting
 
 ## 📖 How to use
 
-Within Decode, the “Sample”, “Enter bars”, and “Results” subtabs separate sample experiments, input and editing, and results and inspection. The subtab row stays at the top while scrolling, and switching subtabs preserves the entered values. When a subtab has focus, use left/right arrows to move to its neighbor or Home/End for the first/last subtab.
+Choose your purpose, then the method you want to use.
 
-1. In Decode, open “Try decoding a sample” and press “Load and decode a sample”. This loads the Japan Post calculation example into the bar input and shows a result summary. Follow “Next: try masking the sample”, choose a mask, and use “Go to inspection” below its summary. Use “Back to masking examples” to try another mask. Choose other examples from “Sample to decode”.
-2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
-3. Press “Inspect or enter bars” to open the initially collapsed “Inspect or edit all 67 bars” section and move to its instructions. The current bar values are preserved. Select a bar and press 1–4 or “?” in the palette. The palette shows the selected position and entered count, and the next bar scrolls clear of it. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered. “Close the bar editor” in the palette or at the end of the editor returns to the collapsed heading.
-4. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1–4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving. After pressing a shape button in the palette, you can continue entering bars with the keyboard.
-5. After partial entry, “Mark remaining empty bars as unknown” is also available in the palette. It preserves entered and already unknown bars, changes only empty positions, and moves to the result. One Undo restores the empty positions. Clear preserves whether the bar editor is open or closed and moves focus to the adjacent Undo button.
-6. Press “Paste a bar string” to focus the text input. Use 1–4, the aliases F/A/D/T (either case), and `?` for unknown bars. Spaces, newlines, `,`, and `|` are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Only valid text containing exactly 67 bars is applied. Until then, the result and contextual summary identify the text as unapplied and the displayed result as belonging to the last applied bars.
-7. Use “Go to results” beside the progress count, in the palette, or at the end of the bar editor to reach the result subtab and its summary. It also shows an overview of the full bar pattern. From there, “View the checks” leads to the detailed result, and “View each character” opens the breakdown for comparison. The breakdown starts closed on narrow screens. “Back to the result summary” and “Back to input and editing” let you continue from the detailed result. Opening the result subtab before a result is available shows guidance back to input. Rereading an orientation moves focus to the result heading.
-8. Mark covered bars unknown. “Mark range unknown” accepts positions from 1 to 67. “Second half of the address number” means bars 45–67, including the check digit and stop. Each masking example starts from the last selected sample. Its contextual summary disappears when the bars change. Undo restores the previous bulk operation once; editing a single bar or the text discards that undo state.
-9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
-10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves the Decode input and inspection, and the Quiz answers.
+| Purpose | Method | What it does |
+|---|---|---|
+| Try samples | Hide bars | Mark bars in Japan Post public examples unknown and inspect the remaining information |
+| Try samples | Process an image | Cover or blur a sample image and inspect what can be read from it |
+| Read your barcode | Read an image | Choose an image of mail addressed to you and read a selected region |
+| Read your barcode | Enter bars | Paste a bar string or enter the shapes of all 67 bars |
+| Learn & quiz | Learn / Quiz | Explore 12 explanatory sections and seven questions |
 
-11. In Image lab, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. “Apply the read bars to Decode” replaces the current Decode input with the image reading result and opens “Results”. Inspect individual characters, then use “Back to image experiments” to continue the experiment. Undo restores the bars from before the transfer.
-12. Press “Inspect your image” to open the “Your image” tab, check the supported-shape example, and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
+The worked example and its result appear immediately, ready for trying masks. Controls and results sit side by side on wide screens and stack vertically on narrow screens. Sample bars and Enter bars keep separate values, and Enter bars starts empty. The purpose tabs and the method tabs below them stay at the top while scrolling. Switching tabs brings the beginning of the selected screen into view. When a tab has focus, use left/right arrows for adjacent tabs or Home/End for the first/last tab.
+
+1. Hide bars under Try samples already displays the Japan Post calculation example and its result. Choose other examples from "Sample to decode". Change the mask to compare readable characters and characters restored by calculation without leaving the screen. The selected button and the mask label show which mask is active.
+2. Each example, such as "Hide the check digit", starts from the selected sample. "Second half of the address number" means bars 45-67, including the check digit and stop. "Reload the selected sample" restores its original bars, and Undo restores the previous bulk operation once, including the active mask.
+3. In Process an image, choose a sample image and a covering method. Inspect the image reading result, the readable bar count, the postal code and address number, and the decoding judgment on the same screen. Compare this image-reading experiment with Hide bars, which treats selected bars as unknown.
+4. Under Read your barcode, open Read an image, check the supported-shape example, and choose an image. Follow steps 1/4-4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use "Go back one step" to correct a tap.
+5. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Read the postal code, address number, and inspection result on the same screen. Use "Select the region again" to choose the endpoints again and "Clear the image" to remove the image and its reading result. Leaving this screen, including switching to Enter bars, also clears the image and its reading result.
+6. To change individual bars in a sample, open its result details and choose "Edit this sample's bars". This copies the currently displayed bars into Enter bars and keeps the sample state intact. For an image experiment or your own image, use "Edit bars / view details" to copy the read bars. Both actions replace the current Enter bars input; Undo restores the previous input. For your own image, the bars are copied before the image is cleared.
+7. In the Enter bars text field, use 1-4, the aliases F/A/D/T (either case), and "?" for unknown bars. Spaces, newlines, commas, and vertical bars are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Only valid text containing exactly 67 bars is applied. Until then, the displayed result is identified as belonging to the last applied bars.
+8. Open "Inspect or edit all 67 bars" to enter bars while preserving the current values. Select a bar and press 1-4 or "?" in the palette. The palette shows the selected position and entered count, and the next bar scrolls clear of it. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered. "Close the bar editor" returns to the collapsed heading.
+9. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1-4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving. After pressing a shape button in the palette, you can continue entering bars with the keyboard.
+10. After partial entry, use "Mark remaining empty bars as unknown". It preserves entered and already unknown bars, changes only empty positions, and updates the result. One Undo restores the empty positions. Set the start and end positions from 1 to 67, then press "Mark this range as unknown". Clear preserves whether the bar editor is open or closed. Editing a single bar or the text discards the previous bulk-operation undo state.
+11. Compare the result summary with the overview of all 67 bars. Open the judgment reasons, checksum calculation, or character breakdown when needed. Distinguish "○ Readable", "△ Restored by calculation", and "■ Undetermined (N candidates)". Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
+12. In Learn & quiz, use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with "Return to Qn in Quiz". Switching screens or languages preserves the sample and direct-input values and results, and the Quiz answers.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
 
@@ -170,7 +179,7 @@ Address numbers shorter than 13 characters are padded with CC4. After expanding 
 The sum of all 21 check values must be divisible by 19, so one unreadable character is uniquely recoverable from the other 20.
 However, when a character is unreadable, mistakes in other characters may go undetected. A restored character assumes that the others were read correctly. Swapping two characters also leaves the sum unchanged and is not detected. The check digit is neither error correction nor confirmation that an address exists.
 
-The Image lab tab applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
+Process an image applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
 The image core estimates a grid of bar positions, corrects the endpoints, and classifies extensions above and below the central band. Confidence below 0.2 is treated as unknown. Neither reading nor endpoint selection uses the check digit. If no grid can be established, the result is unreadable.
 For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
 All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
@@ -188,7 +197,7 @@ The primary source is Japan Post's postal code and barcode manual (in Japanese).
 - [p23: bulk postal codes for business reply mail](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p23.html)
 - [p25: official verification examples](https://www.post.japanpost.jp/service/search/zipcode/zipmanual/p25.html)
 
-When Your image locates the bars, it displays the postal code and address number directly, including partial results. `?` marks undetermined content; Calculated marks characters restored using the check digit. Checksum and orientation notes remain visible. No values appear when bar positions cannot be located.
+When Read an image locates the bars, it displays the postal code and address number directly, including partial results. `?` marks undetermined content; Calculated marks characters restored using the check digit. Checksum and orientation notes remain visible. No values appear when bar positions cannot be located.
 
 ## 🔒 Security
 
@@ -226,7 +235,7 @@ A. No. It is an independent personal project and is not affiliated with Japan Po
 
 Q. Can it read an image?
 
-A. Open the “Your image” tab and check the supported format first. Equal-height, varying-width barcodes and QR codes are not supported. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this tab clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
+A. Open Read an image under Read your barcode and check the supported format first. Equal-height, varying-width barcodes and QR codes are not supported. Tap near both ends of the barcode, then tap the leftmost and rightmost bars in enlarged views to set the region. The image is opened only on your device; it is neither sent anywhere nor saved. Leaving this screen, including switching to Enter bars, clears the image and its reading result. Automatic detection within a whole photo is planned for a later version. Even if this tool cannot read an image, other methods may be able to read it.
 
 Q. Does it show place names?
 
@@ -292,7 +301,7 @@ postmirror/                         # Tool root
 ├── README.md                       # Japanese README with YAML metadata
 ├── README.en.md                    # English README
 ├── package.json                    # Dependency-free node --test command
-├── index.html                      # Decode, Image lab, Your image, Learn, and Quiz tabs, plus CSP
+├── index.html                      # Three purpose areas with two methods each, plus CSP
 ├── style.css                       # Responsive layout, light and dark colors
 ├── barcode-core.js                 # Character table, check digit, decoding, and encoding
 ├── extract-core.js                 # Address-number extraction rules
@@ -301,13 +310,13 @@ postmirror/                         # Tool root
 ├── messages.js                     # Japanese and English messages
 ├── app.js                          # UI, image loading, input, rendering, languages, and tabs
 ├── assets/                         # Japanese README screenshots
-│   ├── screenshot.png              # Decode starting screen
+│   ├── screenshot.png              # Sample controls and results
 │   ├── screenshot2.png             # Bar shapes and character table
 │   ├── screenshot3.png             # Masking inspection
 │   ├── screenshot4.png             # Decoded result in dark colors
 │   ├── screenshot5.png             # Experiment with translucent black over a sample
 │   └── en/                         # English README screenshots
-│       ├── screenshot.png          # Decode starting screen in English
+│       ├── screenshot.png          # Sample controls and results in English
 │       ├── screenshot2.png         # Bar shapes and table in English
 │       ├── screenshot3.png         # Masking inspection in English
 │       └── screenshot4.png         # Sample image experiment in English

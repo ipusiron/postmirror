@@ -27,112 +27,59 @@
     <p lang="en">Enable JavaScript to use PostMirror.</p>
   </noscript>
   <main>
-    <div class="tabs" role="tablist" data-i18n-label="tabs.label">
-      <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" data-i18n="tab.decode"></button>
-      <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
-      <button id="tab-photo" type="button" role="tab" aria-selected="false" aria-controls="panel-photo" tabindex="-1" data-i18n="tab.photo"></button>
-      <button id="tab-learn" type="button" role="tab" aria-selected="false" aria-controls="panel-learn" tabindex="-1" data-i18n="tab.learn"></button>
-      <button id="tab-quiz" type="button" role="tab" aria-selected="false" aria-controls="panel-quiz" tabindex="-1" data-i18n="tab.quiz"></button>
+    <div class="purpose-tabs" role="tablist" data-i18n-label="purpose.label">
+      <button id="group-tab-sample" type="button" role="tab" aria-selected="true" aria-controls="group-sample" tabindex="0" data-i18n="purpose.sample"></button>
+      <button id="group-tab-own" type="button" role="tab" aria-selected="false" aria-controls="group-own" tabindex="-1" data-i18n="purpose.own"></button>
+      <button id="group-tab-study" type="button" role="tab" aria-selected="false" aria-controls="group-study" tabindex="-1" data-i18n="purpose.study"></button>
     </div>
+    <div id="group-sample" role="tabpanel" aria-labelledby="group-tab-sample">
+      <div class="workspace-tabs" role="tablist" data-i18n-label="purpose.sample">
+        <button id="tab-decode" type="button" role="tab" aria-selected="true" aria-controls="panel-decode" tabindex="0" data-i18n="tab.decode"></button>
+        <button id="tab-lab" type="button" role="tab" aria-selected="false" aria-controls="panel-lab" tabindex="-1" data-i18n="tab.lab"></button>
+      </div>
     <div id="panel-decode" role="tabpanel" aria-labelledby="tab-decode">
-    <div class="decode-tabs" role="tablist" data-i18n-label="decode.tabs">
-      <button id="decode-sample" type="button" role="tab" aria-selected="true" aria-controls="decode-panel-sample" data-i18n="decode.sample"></button>
-      <button id="decode-input" type="button" role="tab" aria-selected="false" aria-controls="decode-panel-input" tabindex="-1" data-i18n="decode.input"></button>
-      <button id="decode-results" type="button" role="tab" aria-selected="false" aria-controls="decode-panel-results" tabindex="-1" data-i18n="decode.results"></button>
-    </div>
-    <div id="decode-panel-sample" role="tabpanel" aria-labelledby="decode-sample">
-    <section class="decode-intro" aria-labelledby="intro-title">
-      <h2 id="intro-title" tabindex="-1" data-i18n="decode.title"></h2>
-      <p data-i18n="intro.prompt"></p>
-      <ol class="decode-steps">
-        <li><button class="button-primary" id="intro-sample" type="button" data-i18n="intro.sample"></button></li>
-        <li><button id="intro-mask" type="button" disabled data-i18n="intro.mask"></button></li>
-        <li><button id="intro-inspection" type="button" data-i18n="actions.inspection" disabled></button></li>
-      </ol>
-    </section>
-    <nav class="input-shortcuts" data-i18n-label="entry.label">
-      <button id="entry-photo" type="button" data-i18n="entry.photo"></button>
-      <button id="entry-text" type="button" data-i18n="entry.text"></button>
-      <button id="entry-manual" type="button" data-i18n="entry.manual"></button>
-    </nav>
-    <p class="privacy" data-i18n="privacy"></p>
-    <section class="sample-workspace" aria-labelledby="sample-label">
-      <label id="sample-label" for="sample-select" data-i18n="sample.label"></label>
-      <div class="actions sample-actions">
-        <select id="sample-select"></select>
-        <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
-      </div>
-      <h2 id="mask-title" tabindex="-1" data-i18n="mask.title"></h2>
-      <p data-i18n="mask.help"></p>
-      <div id="mask-presets" class="actions">
-        <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
-        <button type="button" data-preset="central" data-i18n="mask.central" disabled></button>
-        <button type="button" data-preset="latter" data-i18n="mask.latter" disabled></button>
-        <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
-      </div>
-      <p class="muted" data-i18n="mask.latterRange"></p>
-      <div id="mask-summary" class="context-summary" hidden></div>
-      <p id="mask-reason" data-i18n="mask.needsSample"></p>
-    </section>
-    </div>
-    <div id="decode-panel-input" role="tabpanel" aria-labelledby="decode-input" hidden>
-    <section class="input-workspace" aria-labelledby="input-methods-title">
-      <h2 id="input-methods-title" tabindex="-1" data-i18n="entry.heading"></h2>
-      <div class="actions">
-        <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
-        <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
-        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
-      </div>
-      <div class="actions">
-        <p id="input-progress" aria-live="polite"></p>
-        <button id="goto-result" type="button" data-i18n="actions.result" hidden></button>
-      </div>
-    <section aria-labelledby="text-label">
-      <h2 id="text-label" tabindex="-1"><label for="bar-text" data-i18n="text.label"></label></h2>
-      <p id="text-help" data-i18n="text.help"></p>
-      <textarea id="bar-text" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="text-help text-errors"></textarea>
-      <div id="text-errors" aria-live="polite"></div>
-    </section>
-    <details id="manual-input" class="manual-input">
-      <summary data-i18n="entry.expand"></summary>
-    <section class="manual-editor" aria-labelledby="input-title">
-      <h2 id="input-title" tabindex="-1" data-i18n="input.title"></h2>
-      <p data-i18n="decode.inputHelp"></p>
-      <p id="input-help" data-i18n="input.help"></p>
-      <p class="muted" data-i18n="input.editing"></p>
-      <div id="bar-grid" role="group" aria-describedby="input-help"></div>
-      <div class="palette-dock">
-        <p id="selected-bar" class="palette-position"></p>
-        <p id="palette-progress" class="legend"></p>
-        <div id="bar-palette" role="group"></div>
-        <p class="legend" data-i18n="palette.legend"></p>
-        <div class="actions editor-navigation">
-          <button id="manual-close" type="button" data-close-details="manual-input" data-i18n="entry.close"></button>
-          <button id="manual-result" type="button" data-move-to="summary-title" data-result-link data-i18n="actions.result" hidden></button>
-          <button id="manual-fill" type="button" data-i18n="actions.fillUnknown" hidden></button>
+      <section class="sample-workspace" aria-labelledby="intro-title">
+        <h2 id="intro-title" tabindex="-1" data-i18n="decode.title"></h2>
+        <p data-i18n="intro.prompt"></p>
+      </section>
+      <div class="sample-layout">
+      <section class="sample-controls" aria-labelledby="sample-label">
+        <label id="sample-label" for="sample-select" data-i18n="sample.label"></label>
+        <div class="actions sample-actions">
+          <select id="sample-select"></select>
         </div>
-      </div>
-      <h3 data-i18n="range.title"></h3>
-      <div class="range-inputs">
-        <label><span data-i18n="range.start"></span><input id="range-start" type="text" inputmode="numeric" autocomplete="off" value="1"></label>
-        <label><span data-i18n="range.end"></span><input id="range-end" type="text" inputmode="numeric" autocomplete="off" value="67"></label>
-      </div>
-      <button id="range-apply" type="button" data-i18n="range.apply" aria-describedby="range-reason"></button>
-      <div id="range-summary" class="context-summary" hidden></div>
-      <p id="range-reason" aria-live="polite"></p>
-      <div class="actions return-navigation">
-        <button type="button" data-close-details="manual-input" data-i18n="entry.close"></button>
-        <button type="button" data-move-to="summary-title" data-result-link data-i18n="actions.result" hidden></button>
-      </div>
-    </section>
-    </details>
-    </section>
-    </div>
-    <div id="decode-panel-results" role="tabpanel" aria-labelledby="decode-results" hidden>
+        <h3 id="mask-title" tabindex="-1" data-i18n="mask.title"></h3>
+        <p data-i18n="mask.help"></p>
+        <div id="mask-presets" class="actions">
+          <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
+          <button type="button" data-preset="central" data-i18n="mask.central" disabled></button>
+          <button type="button" data-preset="latter" data-i18n="mask.latter" aria-describedby="mask-latter-help" disabled></button>
+          <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
+        </div>
+        <p id="sample-mask-status" class="mask-status" aria-live="polite"></p>
+        <details class="mask-help">
+          <summary data-i18n="mask.helpTitle"></summary>
+          <p id="mask-latter-help" class="muted" data-i18n="mask.latterRange"></p>
+        </details>
+        <div class="actions">
+          <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
+          <button id="sample-undo" type="button" data-i18n="actions.undo" disabled></button>
+        </div>
+        <p id="mask-reason" data-i18n="mask.needsSample"></p>
+        <div id="mask-summary" class="context-summary" hidden></div>
+      </section>
+      <div id="sample-result-dock">
+    <div id="decode-output">
     <section id="result-empty" aria-labelledby="result-empty-title">
       <h2 id="result-empty-title" tabindex="-1" data-i18n="decode.emptyTitle"></h2>
       <p data-i18n="decode.empty"></p>
-      <button type="button" data-move-to="input-methods-title" data-i18n="navigation.input"></button>
+    </section>
+    <section id="result-overview" aria-labelledby="overview-title" hidden>
+      <h2 id="overview-title" data-i18n="overview.title"></h2>
+      <div id="overview"></div>
+      <p class="legend" data-i18n="overview.legend"></p>
+      <p class="muted" data-i18n="overview.note"></p>
+      <p id="overview-summary" class="sr-only"></p>
     </section>
     <section id="decode-summary" class="decode-summary" aria-labelledby="summary-title" hidden>
       <h2 id="summary-title" tabindex="-1" data-i18n="summary.title"></h2>
@@ -144,27 +91,11 @@
       </dl>
       <div id="summary-postal-notes"></div>
       <p class="muted" data-i18n="photo.valueLegend"></p>
-      <button id="result-lab-return" type="button" data-return-lab data-i18n="navigation.lab" hidden></button>
-      <div class="actions">
-        <button id="summary-details" type="button" data-i18n="summary.details"></button>
-        <button id="summary-breakdown" type="button" data-move-to="breakdown-title" data-i18n="summary.breakdown"></button>
-      </div>
-      <button class="button-primary" id="summary-next" type="button" data-move-to="mask-title" data-i18n="summary.next"></button>
     </section>
-    <section id="result-overview" aria-labelledby="overview-title" hidden>
-      <h2 id="overview-title" data-i18n="overview.title"></h2>
-      <div id="overview"></div>
-      <p class="legend" data-i18n="overview.legend"></p>
-      <p class="muted" data-i18n="overview.note"></p>
-      <p id="overview-summary" class="sr-only"></p>
-    </section>
+    <details id="result-details" class="result-details" hidden>
+      <summary data-i18n="result.details"></summary>
     <section id="result" aria-labelledby="result-title" hidden>
       <h2 id="result-title" tabindex="-1" data-i18n="result.title"></h2>
-      <div class="actions return-navigation">
-        <button type="button" data-return-lab data-i18n="navigation.lab" hidden></button>
-        <button type="button" data-move-to="summary-title" data-i18n="navigation.summary"></button>
-        <button type="button" data-move-to="input-methods-title" data-i18n="navigation.input"></button>
-      </div>
       <p id="draft-note" class="privacy" data-i18n="text.pending" hidden></p>
       <p id="judgment" class="judgment" aria-live="polite"></p>
       <p id="judgment-draft-note" data-i18n="judgment.pending" hidden></p>
@@ -180,7 +111,6 @@
       <ul id="issues"></ul>
       <section aria-labelledby="inspection-title">
         <h3 id="inspection-title" tabindex="-1" data-i18n="inspection.title"></h3>
-        <button type="button" data-move-to="mask-title" data-sample-return data-i18n="navigation.mask"></button>
         <div id="inspection"></div>
       </section>
       <section aria-labelledby="checksum-title">
@@ -193,27 +123,21 @@
         <table id="breakdown"></table>
         <button id="breakdown-close" type="button" data-close-details="breakdown-details" data-i18n="breakdown.close"></button>
       </details>
-      <div class="actions return-navigation">
-        <button type="button" data-return-lab data-i18n="navigation.lab" hidden></button>
-        <button type="button" data-move-to="summary-title" data-i18n="navigation.summary"></button>
-        <button type="button" data-move-to="input-methods-title" data-i18n="navigation.input"></button>
-      </div>
     </section>
+      <div id="sample-edit-region">
+        <p id="sample-edit-help" class="muted" data-i18n="sample.editHelp"></p>
+        <button id="sample-edit" type="button" aria-describedby="sample-edit-help" data-i18n="sample.edit"></button>
+      </div>
+    </details>
     </div>
-    <p id="input-announcement" class="sr-only" aria-live="polite"></p>
+      </div>
+      </div>
+      <p class="privacy" data-i18n="privacy"></p>
     </div>
     <div id="panel-lab" role="tabpanel" aria-labelledby="tab-lab" hidden>
-      <section aria-labelledby="lab-intro-title">
-        <h2 id="lab-intro-title" tabindex="-1" data-i18n="intro.title"></h2>
-        <ol>
-          <li data-i18n="lab.step1"></li>
-          <li data-i18n="lab.step2"></li>
-          <li data-i18n="lab.step3"></li>
-        </ol>
-      </section>
-      <p class="privacy" data-i18n="lab.privacy"></p>
       <section aria-labelledby="lab-controls-title">
         <h2 id="lab-controls-title" data-i18n="lab.title"></h2>
+        <p data-i18n="lab.intro"></p>
         <div class="lab-controls">
           <label for="lab-sample" data-i18n="lab.sample"></label>
           <select id="lab-sample"></select>
@@ -234,11 +158,25 @@
           <p id="lab-known"></p>
           <h3 data-i18n="lab.judgment"></h3>
           <p id="lab-judgment"></p>
+          <dl class="readable">
+            <dt data-i18n="section.postal"></dt><dd id="lab-postal-result"></dd>
+            <dt data-i18n="section.address"></dt><dd id="lab-address-result"></dd>
+          </dl>
+          <div id="lab-postal-notes"></div>
+          <p class="muted" data-i18n="photo.valueLegend"></p>
           <div id="lab-summary"></div>
         </div>
-        <button class="button-primary" id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
+        <p id="lab-transfer-help" class="muted" data-i18n="image.editHelp"></p>
+        <button aria-describedby="lab-transfer-help" id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
       </section>
+      <p class="privacy" data-i18n="lab.privacy"></p>
     </div>
+    </div>
+    <div id="group-own" role="tabpanel" aria-labelledby="group-tab-own" hidden>
+      <div class="workspace-tabs" role="tablist" data-i18n-label="purpose.own">
+        <button id="tab-photo" type="button" role="tab" aria-selected="true" aria-controls="panel-photo" tabindex="0" data-i18n="tab.photo"></button>
+        <button id="tab-input" type="button" role="tab" aria-selected="false" aria-controls="panel-input" tabindex="-1" data-i18n="tab.input"></button>
+      </div>
     <div id="panel-photo" role="tabpanel" aria-labelledby="tab-photo" hidden>
       <section aria-labelledby="photo-title">
         <h2 id="photo-title" data-i18n="photo.title"></h2>
@@ -308,7 +246,8 @@
                 <div id="photo-summary"></div>
               </div>
             </div>
-            <button class="button-primary" id="photo-transfer" type="button" data-i18n="photo.transfer" disabled></button>
+            <p id="photo-transfer-help" class="muted" data-i18n="image.editHelp"></p>
+            <button aria-describedby="photo-transfer-help" id="photo-transfer" type="button" data-i18n="photo.transfer" disabled></button>
           </section>
           <div class="photo-actions">
             <button id="photo-back" type="button" data-i18n="photo.back" disabled></button>
@@ -318,6 +257,67 @@
         <button id="photo-clear" type="button" data-i18n="photo.clear" disabled></button>
       </section>
     </div>
+    <div id="panel-input" role="tabpanel" aria-labelledby="tab-input" hidden>
+    <section class="input-workspace" aria-labelledby="input-methods-title">
+      <h2 id="input-methods-title" tabindex="-1" data-i18n="entry.heading"></h2>
+      <p data-i18n="input.workspaceHelp"></p>
+      <div class="actions">
+        <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
+        <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
+        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
+      </div>
+      <div class="actions">
+        <p id="input-progress" aria-live="polite"></p>
+      </div>
+    <section aria-labelledby="text-label">
+      <h3 id="text-label" tabindex="-1"><label for="bar-text" data-i18n="text.label"></label></h3>
+      <p id="text-help" data-i18n="text.help"></p>
+      <textarea id="bar-text" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="text-help text-errors"></textarea>
+      <div id="text-errors" aria-live="polite"></div>
+    </section>
+    <details id="manual-input" class="manual-input">
+      <summary data-i18n="entry.expand"></summary>
+    <section class="manual-editor" aria-labelledby="input-title">
+      <h3 id="input-title" tabindex="-1" data-i18n="input.title"></h3>
+      <p data-i18n="decode.inputHelp"></p>
+      <p id="input-help" data-i18n="input.help"></p>
+      <p class="muted" data-i18n="input.editing"></p>
+      <div id="bar-grid" role="group" aria-describedby="input-help"></div>
+      <div class="palette-dock">
+        <p id="selected-bar" class="palette-position"></p>
+        <p id="palette-progress" class="legend"></p>
+        <div id="bar-palette" role="group"></div>
+        <p class="legend" data-i18n="palette.legend"></p>
+        <div class="actions editor-navigation">
+          <button id="manual-close" type="button" data-close-details="manual-input" data-i18n="entry.close"></button>
+          <button id="manual-result" type="button" data-move-to="summary-title" data-result-link data-i18n="actions.result" hidden></button>
+          <button id="manual-fill" type="button" data-i18n="actions.fillUnknown" hidden></button>
+        </div>
+      </div>
+      <h3 data-i18n="range.title"></h3>
+      <div class="range-inputs">
+        <label><span data-i18n="range.start"></span><input id="range-start" type="text" inputmode="numeric" autocomplete="off" value="1"></label>
+        <label><span data-i18n="range.end"></span><input id="range-end" type="text" inputmode="numeric" autocomplete="off" value="67"></label>
+      </div>
+      <button id="range-apply" type="button" data-i18n="range.apply" aria-describedby="range-reason"></button>
+      <div id="range-summary" class="context-summary" hidden></div>
+      <p id="range-reason" aria-live="polite"></p>
+      <div class="actions return-navigation">
+        <button type="button" data-close-details="manual-input" data-i18n="entry.close"></button>
+        <button type="button" data-move-to="summary-title" data-result-link data-i18n="actions.result" hidden></button>
+      </div>
+    </section>
+    </details>
+    </section>
+    <div id="input-result-dock"></div>
+    <p class="privacy" data-i18n="privacy"></p>
+    </div>
+    </div>
+    <div id="group-study" role="tabpanel" aria-labelledby="group-tab-study" hidden>
+      <div class="workspace-tabs" role="tablist" data-i18n-label="purpose.study">
+        <button id="tab-learn" type="button" role="tab" aria-selected="true" aria-controls="panel-learn" tabindex="0" data-i18n="tab.learn"></button>
+        <button id="tab-quiz" type="button" role="tab" aria-selected="false" aria-controls="panel-quiz" tabindex="-1" data-i18n="tab.quiz"></button>
+      </div>
     <div id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
       <p data-i18n="learn.intro"></p>
       <p class="muted" data-i18n="learn.name"></p>
@@ -1104,6 +1104,8 @@
         </fieldset>
       </div><!-- /quiz-en -->
     </div>
+    </div>
+    <p id="input-announcement" class="sr-only" aria-live="polite"></p>
     <p id="language-announcement" class="sr-only" aria-live="polite"></p>
   </main>
   <footer>

@@ -63,11 +63,17 @@ test('HTML: exact restrictive CSP, referrer, bilingual noscript and empty favico
 });
 
 test('HTML: accessible tabs and the breakdown within details', () => {
-  const names = ['decode', 'lab', 'photo', 'learn', 'quiz'];
+  const names = ['decode', 'lab', 'photo', 'input', 'learn', 'quiz'];
   for (const id of [...names.flatMap(name => [`tab-${name}`, `panel-${name}`]), 'lang-toggle']) {
     assert.equal([...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length, 1);
   }
   assert.match(html, /role="tablist"/);
+  for (const group of ['sample', 'own', 'study']) {
+    assert.match(html, new RegExp(`id="group-tab-${group}"[^>]+role="tab"[^>]+aria-controls="group-${group}"`));
+    assert.match(html, new RegExp(`id="group-${group}"[^>]+role="tabpanel"[^>]+aria-labelledby="group-tab-${group}"`));
+  }
+  assert.doesNotMatch(html, /id="(?:decode-results|decode-input|decode-sample|entry-photo|entry-text|entry-manual)"/);
+
   for (const name of names) {
     assert.match(html, new RegExp(`id="tab-${name}"[^>]+role="tab"[^>]+aria-controls="panel-${name}"`));
     assert.match(html, new RegExp(`id="panel-${name}"[^>]+role="tabpanel"[^>]+aria-labelledby="tab-${name}"`));
