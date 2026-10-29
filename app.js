@@ -11,6 +11,7 @@
   const state = {
     bars: Array(67).fill(undefined), selected: 0, result: null, pendingText: false, summaryTarget: null,
     origins: Array(67).fill(null), lastSample: null, errors: [], announcement: null, undo: null, checksum: null,
+    decodePane: 'sample', resultSource: null,
     language: initialLanguage(), tab: new URL(location.href).hash === '#learn' ? 'learn' : 'decode'
   };
   const element = id => document.getElementById(id);
@@ -110,7 +111,10 @@
         const button = node('button', undefined, 'bar-button');
         button.type = 'button';
         button.dataset.barIndex = index;
-        button.addEventListener('click', () => selectBar(index, false));
+        button.addEventListener('click', () => {
+          button.focus({ preventScroll: true });
+          selectBar(index, false);
+        });
         row.append(button);
         buttons.push(button);
       }
@@ -126,7 +130,10 @@
       button.dataset.value = value === null ? '?' : value;
       button.setAttribute('aria-label', translate(`shape.${shapeKey(value)}`));
       button.append(shapeSvg(value), node('span', value === null ? '?' : String(value)));
-      button.addEventListener('click', () => setBar(value, true, false));
+      button.addEventListener('click', () => {
+        button.focus({ preventScroll: true });
+        setBar(value, true, false);
+      });
       element('bar-palette').append(button);
     }
     const select = element('sample-select');
@@ -160,6 +167,73 @@
     if (focus) followSelectedBar();
   }
 
+  function moveTo(target, anchor = target) {
+    if (typeof target === 'string') target = element(target);
+    if (typeof anchor === 'string') anchor = element(anchor);
+    const pane = target.closest('[id^="decode-panel-"]');
+    if (pane) showDecodePane(pane.id.slice('decode-panel-'.length));
+    for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName === 'DETAILS' && !(target.tagName === 'SUMMARY' && target.parentElement === parent)) {
+        parent.open = true;
+      }
+    }
+    target.focus({ preventScroll: true });
+    anchor.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+
+  const decodePaneNames = ['sample', 'input', 'results'];
+  const decodeTabs = document.querySelector('.decode-tabs');
+  function updateDecodeSpace() {
+    const height = decodeTabs.getBoundingClientRect().height;
+    if (height > 0) document.documentElement.style.setProperty('--decode-tabs-space', `${height + 16}px`);
+  }
+  function showDecodePane(name, focus = false) {
+    state.decodePane = name;
+    for (const pane of decodePaneNames) {
+      const selected = pane === name;
+      element(`decode-${pane}`).setAttribute('aria-selected', String(selected));
+      element(`decode-${pane}`).tabIndex = selected ? 0 : -1;
+      element(`decode-panel-${pane}`).hidden = !selected;
+    }
+    updateDecodeSpace();
+    if (focus) {
+      element(`decode-${name}`).focus({ preventScroll: true });
+      const top = element(`decode-panel-${name}`).getBoundingClientRect().top + scrollY;
+      window.scrollTo({ top: Math.max(0, top - decodeTabs.getBoundingClientRect().height), behavior: 'auto' });
+    }
+  }
+  for (const [index, name] of decodePaneNames.entries()) {
+    const tab = element(`decode-${name}`);
+    tab.addEventListener('click', () => showDecodePane(name, true));
+    tab.addEventListener('keydown', event => {
+      const next = { ArrowLeft: (index + 2) % 3, ArrowRight: (index + 1) % 3, Home: 0, End: 2 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      showDecodePane(decodePaneNames[next], true);
+    });
+  }
+
+  document.querySelectorAll('[data-move-to]').forEach(button => {
+    button.addEventListener('click', () => moveTo(button.dataset.moveTo));
+  });
+  document.querySelectorAll('[data-close-details]').forEach(button => {
+    button.addEventListener('click', () => {
+      const details = element(button.dataset.closeDetails);
+      details.open = false;
+      moveTo(details.querySelector('summary'));
+    });
+  });
+  for (const id of ['manual-input', 'breakdown-details']) {
+    const details = element(id);
+    const summary = details.querySelector('summary');
+    summary.addEventListener('click', event => {
+      event.preventDefault();
+      details.open = !details.open;
+      // Keep the disclosure in view instead of anchoring to the newly expanded bottom.
+      moveTo(summary);
+    });
+  }
+
   const paletteDock = document.querySelector('.palette-dock');
 
   function updatePaletteSpace() {
@@ -177,7 +251,8 @@
     const limit = Math.min(innerHeight, paletteDock.getBoundingClientRect().top) - 10;
     if (bottom > limit) window.scrollBy({ top: Math.ceil(bottom - limit), behavior: 'auto' });
     const top = button.getBoundingClientRect().top;
-    if (top < 0) window.scrollBy({ top: Math.floor(top), behavior: 'auto' });
+    const topLimit = Math.max(0, decodeTabs.getBoundingClientRect().bottom) + 10;
+    if (top < topLimit) window.scrollBy({ top: Math.floor(top - topLimit), behavior: 'auto' });
   }
 
   function renderOverview() {
@@ -305,7 +380,8 @@
   }
 
   function remember() {
-    state.undo = { bars: state.bars.slice(), origins: state.origins.slice(), selected: state.selected, lastSample: state.lastSample };
+    state.undo = { bars: state.bars.slice(), origins: state.origins.slice(), selected: state.selected,
+      lastSample: state.lastSample, resultSource: state.resultSource };
   }
 
   function rangeValues() {
@@ -320,8 +396,16 @@
     element('undo').disabled = state.undo === null;
     element('sample-reload').disabled = state.lastSample === null;
     element('intro-inspection').disabled = state.result === null;
+    element('intro-mask').disabled = state.lastSample === null;
     element('goto-result').hidden = state.result === null;
+    document.querySelectorAll('[data-result-link]').forEach(button => { button.hidden = state.result === null; });
+    element('summary-next').hidden = state.lastSample === null;
+    element('result-empty').hidden = state.result !== null;
+    element('result-overview').hidden = state.result === null;
+    document.querySelectorAll('[data-return-lab]').forEach(button => { button.hidden = state.resultSource !== 'lab'; });
+    document.querySelectorAll('[data-sample-return]').forEach(button => { button.hidden = state.lastSample === null; });
     element('fill-unknown').disabled = complete() || state.bars.every(value => value === undefined);
+    element('manual-fill').hidden = element('fill-unknown').disabled;
     element('clear').disabled = state.bars.every(value => value === undefined) && element('bar-text').value === '';
     element('range-apply').disabled = rangeValues() === null;
     element('range-reason').textContent = rangeValues() === null ? translate('range.invalid') : '';
@@ -442,7 +526,7 @@
       else appendMessage(container, record(`inspection.${state.result.checksum.status}`));
       const button = node('button', translate('actions.inspection'));
       button.type = 'button';
-      button.addEventListener('click', () => element('inspection-title').focus());
+      button.addEventListener('click', () => moveTo('inspection-title'));
       container.append(button);
     }
   }
@@ -603,7 +687,7 @@
         if (alternative.transform !== 'flip') state.origins.reverse();
         state.announcement = record('transform.applied');
         changed();
-        element('result-title').focus();
+        moveTo('result-title');
       });
       element('alternatives').append(button);
     }
@@ -621,7 +705,7 @@
     renderBreakdown();
   }
 
-  element('bar-grid').addEventListener('keydown', event => {
+  function handleBarKey(event) {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     const group = groupFor(state.selected);
     const groupIndex = groups.indexOf(group);
@@ -639,11 +723,14 @@
       selectBar(state.selected - (event.key === 'Backspace' ? 1 : 0), true);
     } else return;
     event.preventDefault();
-  });
+  }
+  element('bar-grid').addEventListener('keydown', handleBarKey);
+  element('bar-palette').addEventListener('keydown', handleBarKey);
 
   function loadSample(index) {
     const sample = samples.barcodes[index];
     remember();
+    state.resultSource = null;
     state.bars = core.encodeAddress(sample.postalCode, sample.addressNumber).bars;
     state.origins.fill(null);
     state.lastSample = index;
@@ -658,29 +745,36 @@
   });
   element('intro-sample').addEventListener('click', () => {
     loadSample(0);
-    element('summary-title').focus();
-    element('summary-title').scrollIntoView({ block: 'start', behavior: 'auto' });
+    moveTo('summary-title');
   });
-  element('entry-manual').addEventListener('click', () => selectBar(state.selected, true));
-  element('entry-text').addEventListener('click', () => element('bar-text').focus());
+  element('entry-manual').addEventListener('click', () => moveTo('input-title'));
+  element('entry-text').addEventListener('click', () => moveTo('bar-text', 'text-label'));
   element('entry-photo').addEventListener('click', () => {
     showTab('photo');
-    element('photo-file').focus();
+    moveTo('photo-file', 'photo-title');
   });
-  element('summary-details').addEventListener('click', () => element('result-title').focus());
-  element('intro-mask').addEventListener('click', () => element('mask-title').focus());
+  document.querySelectorAll('[data-return-lab]').forEach(button => {
+    button.addEventListener('click', () => {
+      showTab('lab');
+      moveTo('lab-intro-title');
+    });
+  });
+  element('summary-details').addEventListener('click', () => moveTo('result-title'));
+  element('intro-mask').addEventListener('click', () => moveTo('mask-title'));
   element('intro-inspection').addEventListener('click', () => {
-    if (state.result !== null) element('inspection-title').focus();
+    if (state.result !== null) moveTo('inspection-title');
   });
-  element('goto-result').addEventListener('click', () => element('result-title').focus());
-  element('fill-unknown').addEventListener('click', () => {
+  element('goto-result').addEventListener('click', () => moveTo('summary-title'));
+  function fillUnknown() {
     if (element('fill-unknown').disabled) return;
     remember();
     replaceManualBars(state.bars.map(value => value === undefined ? null : value));
     state.announcement = record('actions.filledUnknown');
     changed();
-    element('result-title').focus();
-  });
+    moveTo('summary-title');
+  }
+  element('fill-unknown').addEventListener('click', fillUnknown);
+  element('manual-fill').addEventListener('click', fillUnknown);
 
   element('bar-text').addEventListener('input', event => {
     state.undo = null;
@@ -711,8 +805,9 @@
     state.origins.fill(null);
     state.selected = 0;
     state.announcement = record('actions.cleared');
+    state.resultSource = null;
     changed();
-    selectBar(0, true);
+    moveTo('undo', 'input-methods-title');
   });
   element('undo').addEventListener('click', () => {
     if (state.undo === null) return;
@@ -766,7 +861,7 @@
       replaceManualBars(core.maskChars(state.bars, [index]));
       state.announcement = record('character.masked', { position: index + 1 });
       changed();
-      element('result-title').focus();
+      moveTo('result-title');
     });
     return button;
   }
@@ -920,7 +1015,7 @@
     photo.step = 'result';
     renderPhoto();
     paintPhotoResult();
-    element('photo-result-title').focus();
+    moveTo('photo-result-title');
   }
 
   function finishPhotoRegion() {
@@ -1102,6 +1197,7 @@
   function transferImage(read) {
     if (!read) return;
     remember();
+    state.resultSource = state.tab;
     state.bars = read.bars.slice();
     state.origins = read.bars.map((bar, index) => ({ kind: 'image', unknown: bar === null, confidence: read.confidence[index] }));
     state.lastSample = null;
@@ -1110,7 +1206,7 @@
     state.announcement = record('lab.transferred');
     changed();
     showTab('decode');
-    element('result-title').focus();
+    moveTo('result-title');
   }
 
   function replaceManualBars(bars) {
@@ -1123,7 +1219,8 @@
     for (let index = group.start; index < group.start + group.length; index++) {
       const origin = state.origins[index];
       const key = origin?.kind === 'image' && origin.unknown ? 'unknown' : origin?.kind;
-      const mark = node('span', key ? translate(`origin.${key === 'unknown' ? 'image' : key}`) : '');
+      const shortKey = key === 'unknown' ? 'image' : key === 'manual' ? 'manualShort' : key;
+      const mark = node('span', key ? translate(`origin.${shortKey}`) : '');
       mark.dataset.originIndex = index;
       mark.dataset.origin = key || '';
       if (key) {
@@ -1457,12 +1554,12 @@
       lesson.returnQuestion = index;
       renderQuizReturn();
       showTab('learn');
-      element(`learn-${state.language}-heading-${quiz.section}`).focus();
+      moveTo(`learn-${state.language}-heading-${quiz.section}`);
     });
   });
   document.querySelectorAll('[data-learn-section]').forEach(button => {
     button.addEventListener('click', () => {
-      element(`learn-${state.language}-heading-${button.dataset.learnSection}`).focus();
+      moveTo(`learn-${state.language}-heading-${button.dataset.learnSection}`);
     });
   });
   for (const language of ['ja', 'en']) {
@@ -1473,7 +1570,7 @@
       button.hidden = true;
       button.addEventListener('click', () => {
         showTab('quiz');
-        element(`quiz-${state.language}-${lesson.returnQuestion + 1}`).focus();
+        moveTo(`quiz-${state.language}-${lesson.returnQuestion + 1}`);
       });
       element(`learn-${language}-heading-${section}`).after(button);
     }
@@ -1495,11 +1592,12 @@
       else for (let index = 0; index < 21; index += 1) state.bars[3 + index * 3] = null;
       state.lastSample = 0;
       state.selected = 0;
+      state.resultSource = null;
       element('sample-select').value = '0';
       state.announcement = record('mask.applied', { preset: record(`mask.${button.dataset.learnTry}`) });
       changed();
       showTab('decode');
-      element('result-title').focus();
+      moveTo('result-title');
     });
   });
 
@@ -1535,12 +1633,17 @@
   buildInput();
   buildLab();
   buildPhoto();
-  if (typeof ResizeObserver === 'function') new ResizeObserver(updatePaletteSpace).observe(paletteDock);
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(updatePaletteSpace).observe(paletteDock);
+    new ResizeObserver(updateDecodeSpace).observe(decodeTabs);
+  }
   else {
     addEventListener('resize', updatePaletteSpace);
+    addEventListener('resize', updateDecodeSpace);
     element('lang-toggle').addEventListener('click', updatePaletteSpace);
   }
   updatePaletteSpace();
+  updateDecodeSpace();
   changed();
   showTab(state.tab);
   renderLanguage();
