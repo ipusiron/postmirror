@@ -153,7 +153,10 @@
   function selectBar(index, focus) {
     state.selected = Math.max(0, Math.min(66, index));
     renderSelection();
-    if (focus) buttons[state.selected].focus({ preventScroll: true });
+    if (focus) {
+      element('manual-input').open = true;
+      buttons[state.selected].focus({ preventScroll: true });
+    }
     if (focus) followSelectedBar();
   }
 
@@ -161,7 +164,7 @@
 
   function updatePaletteSpace() {
     const height = paletteDock.getBoundingClientRect().height;
-    if (height > 0) document.documentElement.style.setProperty('--palette-space', `${height + 8}px`);
+    if (height > 0) document.documentElement.style.setProperty('--palette-space', `${height + 10}px`);
   }
 
   function followSelectedBar() {
@@ -170,7 +173,8 @@
     updatePaletteSpace();
     button.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     const bottom = button.getBoundingClientRect().bottom;
-    const limit = Math.min(innerHeight, paletteDock.getBoundingClientRect().top) - 8;
+    // Leave room for fractional scroll rounding while preserving an eight-pixel gap.
+    const limit = Math.min(innerHeight, paletteDock.getBoundingClientRect().top) - 10;
     if (bottom > limit) window.scrollBy({ top: Math.ceil(bottom - limit), behavior: 'auto' });
     const top = button.getBoundingClientRect().top;
     if (top < 0) window.scrollBy({ top: Math.floor(top), behavior: 'auto' });
@@ -239,6 +243,7 @@
     });
     const count = state.bars.filter(value => value !== undefined).length;
     element('input-progress').textContent = message(plural('input.progress', count));
+    element('palette-progress').textContent = message(plural('input.progress', count));
     renderSelection();
     renderOverview();
     element('input-announcement').textContent = state.announcement ? message(state.announcement) : '';
@@ -655,6 +660,12 @@
     loadSample(0);
     element('summary-title').focus();
     element('summary-title').scrollIntoView({ block: 'start', behavior: 'auto' });
+  });
+  element('entry-manual').addEventListener('click', () => selectBar(state.selected, true));
+  element('entry-text').addEventListener('click', () => element('bar-text').focus());
+  element('entry-photo').addEventListener('click', () => {
+    showTab('photo');
+    element('photo-file').focus();
   });
   element('summary-details').addEventListener('click', () => element('result-title').focus());
   element('intro-mask').addEventListener('click', () => element('mask-title').focus());
