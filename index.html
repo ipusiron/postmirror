@@ -59,6 +59,7 @@
         <p id="sample-mask-status" class="mask-status" aria-live="polite"></p>
         <details class="mask-help">
           <summary data-i18n="mask.helpTitle"></summary>
+          <p class="muted" data-i18n="mask.combineHelp"></p>
           <p id="mask-latter-help" class="muted" data-i18n="mask.latterRange"></p>
         </details>
         <div class="actions">
@@ -261,27 +262,11 @@
     <section class="input-workspace" aria-labelledby="input-methods-title">
       <h2 id="input-methods-title" tabindex="-1" data-i18n="entry.heading"></h2>
       <p data-i18n="input.workspaceHelp"></p>
-      <div class="actions">
-        <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
-        <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
-        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
-      </div>
-      <div class="actions">
-        <p id="input-progress" aria-live="polite"></p>
-      </div>
-    <section aria-labelledby="text-label">
-      <h3 id="text-label" tabindex="-1"><label for="bar-text" data-i18n="text.label"></label></h3>
-      <p id="text-help" data-i18n="text.help"></p>
-      <textarea id="bar-text" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="text-help text-errors"></textarea>
-      <div id="text-errors" aria-live="polite"></div>
-    </section>
-    <details id="manual-input" class="manual-input">
-      <summary data-i18n="entry.expand"></summary>
+    <details id="manual-input" class="input-method manual-input">
+      <summary><span data-i18n="entry.expand"></span><span class="method-description" data-i18n="input.methodHelp"></span></summary>
     <section class="manual-editor" aria-labelledby="input-title">
-      <h3 id="input-title" tabindex="-1" data-i18n="input.title"></h3>
-      <p data-i18n="decode.inputHelp"></p>
+      <h3 id="input-title" class="sr-only" tabindex="-1" data-i18n="input.title"></h3>
       <p id="input-help" data-i18n="input.help"></p>
-      <p class="muted" data-i18n="input.editing"></p>
       <div id="bar-grid" role="group" aria-describedby="input-help"></div>
       <div class="palette-dock">
         <p id="selected-bar" class="palette-position"></p>
@@ -308,6 +293,28 @@
       </div>
     </section>
     </details>
+    <details id="text-input" class="input-method text-entry">
+      <summary><span data-i18n="text.method"></span><span class="method-description" data-i18n="text.methodHelp"></span></summary>
+      <div class="method-body">
+    <section aria-labelledby="text-label">
+      <h3 id="text-label" tabindex="-1"><label for="bar-text" data-i18n="text.label"></label></h3>
+      <p id="text-help" data-i18n="text.help"></p>
+      <p id="text-code-key" class="legend" data-i18n="palette.legend"></p>
+      <textarea id="bar-text" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" aria-describedby="text-help text-code-key text-errors"></textarea>
+      <div id="text-errors" aria-live="polite"></div>
+    </section>
+      </div>
+    </details>
+    <section id="input-tools" class="input-tools" aria-labelledby="input-tools-title" hidden>
+      <h3 id="input-tools-title" data-i18n="input.toolsTitle"></h3>
+      <p id="input-progress" aria-live="polite"></p>
+      <progress id="bar-input-progress" max="67" value="0" aria-labelledby="input-progress"></progress>
+      <div class="actions">
+        <button id="clear" type="button" data-i18n="actions.clear" disabled></button>
+        <button id="undo" type="button" data-i18n="actions.undo" disabled></button>
+        <button id="fill-unknown" type="button" data-i18n="actions.fillUnknown" disabled></button>
+      </div>
+    </section>
     </section>
     <div id="input-result-dock"></div>
     <p class="privacy" data-i18n="privacy"></p>
