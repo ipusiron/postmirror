@@ -34,9 +34,9 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 ## 📸 Screenshots
 
-![Decoded public example](assets/en/screenshot.png)
+![Sample steps and input options in Decode](assets/en/screenshot.png)
 
-> *The calculation example (p17, p21): judgment, postal code and address number, notes, and masking summary.*
+> *The Decode starting screen: three sample steps and shortcuts to inspect an image, paste a bar string, or enter bars by hand.*
 
 ![Four bar shapes and character table](assets/en/screenshot2.png)
 
@@ -55,8 +55,8 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 - Five tabs: Decode, Image lab, Your image, Learn, and Quiz
 - Apply 14 covering methods to sample images in Image lab and check what can be read
 - Open your own image on your device and read a region selected in two stages
-- Three getting-started steps and buttons that jump to results or inspection
-- Enter 67 bars using character cards and a shape palette that keeps the selected bar in view
+- Three sample steps and shortcuts to image inspection, pasted text, and manual entry
+- Enter 67 bars using character cards and a shape palette showing the selected position and entered count
 - See the symbol for a completed three-bar card before entering all 67 bars
 - Type or paste sequences, load eight examples published by Japan Post, and reload the selected sample
 - Decode postal codes and address numbers, assemble letters, and inspect each character
@@ -71,17 +71,17 @@ For local HTTP, run `python -m http.server` at the repository root and visit `ht
 
 1. In Decode, open “Try decoding a sample” and press “Load and decode a sample”. This loads the Japan Post calculation example into the bar input and shows its decoded result. Choose other examples from “Sample to decode”. Use “Go to masking examples”, choose a mask, and follow “Go to inspection” below the summary.
 2. Press “Reload the selected sample” to restore the original sample. Undo returns to the bars before that reload.
-3. For manual entry, select a bar and press 1–4 or “?” in the palette. The next bar scrolls clear of the palette. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered.
+3. Press “Enter bars by hand” to open the initially collapsed “Inspect or edit all 67 bars” section and focus the selected bar. Select a bar and press 1–4 or “?” in the palette. The palette shows the selected position and entered count, and the next bar scrolls clear of it. Each completed three-bar card shows its symbol, but decoding and inspection start only when all 67 bars are entered.
 4. Use left/right arrows for adjacent bars, up/down for adjacent cards, and Home/End for the first/last bar. Enter 1–4, F/A/D/T, or ?. Backspace clears the current bar and moves back; Delete clears it without moving.
-5. After partial entry, “Mark remaining empty bars as unknown” preserves entered and already unknown bars, changes only empty positions, and moves to the result. One Undo restores the empty positions. Clear moves focus to the first bar.
-6. In the text input, use 1–4, the aliases F/A/D/T (either case), and `?` for unknown bars. Spaces, newlines, `,`, and `|` are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Only valid text containing exactly 67 bars is applied. Until then, the result and contextual summary identify the text as unapplied and the displayed result as belonging to the last applied bars.
+5. After partial entry, “Mark remaining empty bars as unknown” preserves entered and already unknown bars, changes only empty positions, and moves to the result. One Undo restores the empty positions. Clear opens the manual entry section and moves focus to the first bar.
+6. Press “Paste a bar string” to focus the text input. Use 1–4, the aliases F/A/D/T (either case), and `?` for unknown bars. Spaces, newlines, `,`, and `|` are ignored as separators. Full-width forms are normalized, but circled digits and similar characters are rejected. Only valid text containing exactly 67 bars is applied. Until then, the result and contextual summary identify the text as unapplied and the displayed result as belonging to the last applied bars.
 7. Use “Go to results” beside the progress count to read the postal code, address number, notes, and calculation. Open the character-by-character breakdown to compare each character. The breakdown starts closed on narrow screens. Rereading an orientation moves focus to the result heading.
 8. Mark covered bars unknown. “Mark range unknown” accepts positions from 1 to 67. “Second half of the address number” means bars 45–67, including the check digit and stop. Each masking example starts from the last selected sample. Its contextual summary disappears when the bars change. Undo restores the previous bulk operation once; editing a single bar or the text discards that undo state.
 9. Compare “○ Readable”, “△ Restored by calculation”, and “■ Undetermined (N candidates)”. Counts use position constraints and the check digit, without filtering address-sequence rules, so actual candidates may be fewer. Restored characters assume the other characters were read correctly.
 10. Use the takeaways and contents in Learn to explore its 12 sections. The tables in sections 3 and 5 start closed on narrow screens and share their open state across languages. Answer seven questions in Quiz, follow a related section, and return to the original question with “Return to Qn in Quiz”. Switching tabs or languages preserves the Decode input and inspection, and the Quiz answers.
 
 11. In Image lab, choose a sample image and a covering method. Compare the image reading result, the count of readable bars, and the decoding judgment. Press “See details in the Decode tab” to inspect individual characters.
-12. In the “Your image” tab, check the supported-shape example and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
+12. Press “Inspect your image” to open the “Your image” tab, check the supported-shape example, and choose an image. Follow steps 1/4–4/4: tap left and right in the overview, then left and right in the enlarged views. Tap along the central band where even the short bars pass. Use “Go back one step” to correct a tap. Filled circles mean read, hollow circles mean shape unclear, and crosses mean bar not visible. Use “Send to the Decode tab” to inspect the result, “Select the region again” to choose the endpoints again, and “Clear the image” to remove the image and its reading result.
 
 Cover the entire barcode, from start to stop, with an opaque solid fill. Export a separate file and reopen it yourself to check the result.
 
@@ -299,13 +299,13 @@ postmirror/                         # Tool root
 ├── messages.js                     # Japanese and English messages
 ├── app.js                          # UI, image loading, input, rendering, languages, and tabs
 ├── assets/                         # Japanese README screenshots
-│   ├── screenshot.png              # Decoded result
+│   ├── screenshot.png              # Decode starting screen
 │   ├── screenshot2.png             # Bar shapes and character table
 │   ├── screenshot3.png             # Masking inspection
 │   ├── screenshot4.png             # Decoded result in dark colors
 │   ├── screenshot5.png             # Experiment with translucent black over a sample
 │   └── en/                         # English README screenshots
-│       ├── screenshot.png          # Decoded result in English
+│       ├── screenshot.png          # Decode starting screen in English
 │       ├── screenshot2.png         # Bar shapes and table in English
 │       ├── screenshot3.png         # Masking inspection in English
 │       └── screenshot4.png         # Sample image experiment in English

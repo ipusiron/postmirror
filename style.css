@@ -31,9 +31,10 @@ body {
 }
 
 h1 {
-  text-align: center;
+  text-align: start;
   letter-spacing: 0.03em;
-  margin: 0.5rem 0;
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
 }
 
 h2 {
@@ -342,7 +343,7 @@ svg {
 
 .calculated-mark {
   display: block;
-  font: 0.75rem/1.4 system-ui, sans-serif;
+  font: 0.875rem/1.4 system-ui, sans-serif;
   text-align: center;
   color: var(--warn-fg);
   background: var(--warn-bg);
@@ -897,4 +898,167 @@ input[type="radio"] {
 .decode-summary h2 {
   margin-block-start: 0;
   scroll-margin-block-start: 1rem;
+}
+
+/* Keep the starting actions distinct from the detailed bar editor. */
+.page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-block: 0.5rem 1rem;
+}
+
+.page-header h1 {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.language-row {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.page-header > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+}
+
+.decode-intro {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.decode-intro h2 {
+  margin-block-start: 0;
+}
+
+.decode-steps {
+  display: grid;
+  gap: 0.75rem;
+  padding-inline-start: 1.5rem;
+  margin-block-end: 0;
+}
+
+.decode-steps li {
+  padding-inline-start: 0.25rem;
+  min-width: 0;
+}
+
+.decode-steps li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.decode-steps button {
+  width: 100%;
+  min-height: 48px;
+  text-align: start;
+}
+
+.button-primary:enabled {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.input-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.input-shortcuts button {
+  flex: 1 1 12rem;
+}
+
+.sample-workspace, .input-workspace {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 1rem;
+}
+
+.input-workspace > h2 {
+  margin-block-start: 0;
+}
+
+.sample-actions select {
+  flex: 1 1 20rem;
+}
+
+.sample-actions button {
+  flex: 1 1 12rem;
+}
+
+.manual-input {
+  margin-block: 1rem;
+}
+
+.manual-input > summary {
+  background: var(--surface);
+  border-radius: 0.25rem;
+  font-weight: 600;
+}
+
+.manual-editor {
+  margin-block-start: 1rem;
+}
+
+.palette-position {
+  font-weight: 700;
+}
+
+.palette-dock {
+  padding-block: 0.5rem;
+}
+
+.palette-dock .palette-position {
+  margin-block: 0 0.25rem;
+}
+
+.decode-summary {
+  border-inline-start: 4px solid var(--accent);
+  border-radius: 0.25rem;
+}
+
+.decode-summary .readable {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+.decode-summary .readable dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.decode-summary .readable dd {
+  min-width: 0;
+}
+
+@media (min-width: 48rem) {
+  .decode-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 2rem;
+  }
+
+  .decode-steps button {
+    height: 100%;
+  }
+}
+
+@media (hover: hover) {
+  button:enabled:hover {
+    border-color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  summary:hover {
+    color: var(--accent);
+  }
 }
