@@ -45,37 +45,20 @@
         </div>
         <h3 id="mask-title" tabindex="-1" data-i18n="mask.title"></h3>
         <p data-i18n="mask.help"></p>
-        <div id="mask-presets" class="actions">
+        <div id="mask-presets" class="actions mask-presets">
           <button type="button" data-preset="cd" data-i18n="mask.cd" disabled></button>
           <button type="button" data-preset="central" data-i18n="mask.central" disabled></button>
           <button type="button" data-preset="latter" data-i18n="mask.latter" aria-describedby="mask-latter-help" disabled></button>
           <button type="button" data-preset="all" data-i18n="mask.all" disabled></button>
         </div>
-        <p id="sample-mask-status" class="mask-status" aria-live="polite"></p>
-        <details class="mask-help">
-          <summary data-i18n="mask.helpTitle"></summary>
-          <p class="muted" data-i18n="mask.combineHelp"></p>
-          <p id="mask-latter-help" class="muted" data-i18n="mask.latterRange"></p>
-        </details>
-        <div class="actions">
-          <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
-          <button id="sample-undo" type="button" data-i18n="actions.undo" disabled></button>
-        </div>
         <p id="mask-reason" data-i18n="mask.needsSample"></p>
         <div id="mask-summary" class="context-summary" hidden></div>
       </section>
-      <div id="sample-result-dock">
+      <div id="sample-result-dock" class="sample-output">
     <div id="decode-output">
     <section id="result-empty" aria-labelledby="result-empty-title">
       <h2 id="result-empty-title" tabindex="-1" data-i18n="decode.emptyTitle"></h2>
       <p data-i18n="decode.empty"></p>
-    </section>
-    <section id="result-overview" aria-labelledby="overview-title" hidden>
-      <h2 id="overview-title" data-i18n="overview.title"></h2>
-      <div id="overview"></div>
-      <p class="legend" data-i18n="overview.legend"></p>
-      <p class="muted" data-i18n="overview.note"></p>
-      <p id="overview-summary" class="sr-only"></p>
     </section>
     <section id="decode-summary" class="decode-summary" aria-labelledby="summary-title" hidden>
       <h2 id="summary-title" tabindex="-1" data-i18n="summary.title"></h2>
@@ -87,6 +70,17 @@
       </dl>
       <div id="summary-postal-notes"></div>
       <p class="muted" data-i18n="photo.valueLegend"></p>
+    </section>
+    <section id="result-overview" class="sample-preview" aria-labelledby="overview-title" hidden>
+      <h2 id="overview-title" data-i18n="overview.title"></h2>
+        <p id="sample-mask-status" class="mask-status" aria-live="polite"></p>
+      <div id="overview"></div>
+      <details class="preview-notes">
+        <summary data-i18n="overview.notesTitle"></summary>
+        <p class="legend" data-i18n="overview.legend"></p>
+        <p class="muted" data-i18n="overview.note"></p>
+      </details>
+      <p id="overview-summary" class="sr-only"></p>
     </section>
     <details id="result-details" class="result-details" hidden>
       <summary data-i18n="result.details"></summary>
@@ -127,44 +121,68 @@
     </details>
     </div>
       </div>
+      <div class="sample-tools">
+        <div class="actions">
+          <button id="sample-reload" type="button" data-i18n="sample.reload" disabled></button>
+          <button id="sample-undo" type="button" data-i18n="actions.undo" disabled></button>
+        </div>
+        <details class="mask-help">
+          <summary data-i18n="mask.helpTitle"></summary>
+          <p class="muted" data-i18n="mask.combineHelp"></p>
+          <p id="mask-latter-help" class="muted" data-i18n="mask.latterRange"></p>
+        </details>
+      </div>
       </div>
       <p class="privacy" data-i18n="privacy"></p>
     </div>
     <div id="panel-lab" role="tabpanel" aria-labelledby="tab-lab" hidden>
-      <section aria-labelledby="lab-controls-title">
+      <section class="sample-workspace" aria-labelledby="lab-controls-title">
         <h2 id="lab-controls-title" data-i18n="lab.title"></h2>
         <p data-i18n="lab.intro"></p>
-        <div class="lab-controls">
-          <label for="lab-sample" data-i18n="lab.sample"></label>
-          <select id="lab-sample"></select>
-          <label for="lab-mask" data-i18n="lab.mask"></label>
-          <select id="lab-mask" aria-describedby="lab-mask-help"></select>
-          <p id="lab-mask-help" class="muted" data-i18n="lab.maskHelp"></p>
-          <div id="lab-character-field" hidden>
-            <label for="lab-character" data-i18n="lab.character"></label>
-            <select id="lab-character"></select>
+      </section>
+      <div class="sample-layout">
+        <section class="sample-controls" aria-labelledby="lab-sample-label">
+          <label id="lab-sample-label" for="lab-sample" data-i18n="sample.label"></label>
+          <div class="actions sample-actions">
+            <select id="lab-sample"></select>
           </div>
+          <h3><label for="lab-mask" data-i18n="lab.mask"></label></h3>
+          <p id="lab-choice-help" data-i18n="lab.choiceHelp"></p>
+          <div class="lab-controls">
+            <select id="lab-mask" aria-describedby="lab-choice-help"></select>
+            <div id="lab-character-field" hidden>
+              <label for="lab-character" data-i18n="lab.character"></label>
+              <select id="lab-character"></select>
+            </div>
+          </div>
+        </section>
+        <div id="lab-result-dock" class="sample-output">
+          <section class="decode-summary" aria-labelledby="lab-result-title">
+            <h2 id="lab-result-title" data-i18n="summary.title"></h2>
+            <div id="lab-output" aria-live="polite">
+              <p id="lab-judgment" class="judgment"></p>
+              <dl class="readable">
+                <dt data-i18n="section.postal"></dt><dd id="lab-postal-result"></dd>
+                <dt data-i18n="section.address"></dt><dd id="lab-address-result"></dd>
+              </dl>
+              <div id="lab-postal-notes"></div>
+              <p class="muted" data-i18n="photo.valueLegend"></p>
+            </div>
+          </section>
+          <section class="sample-preview" aria-labelledby="lab-preview-title">
+            <h2 id="lab-preview-title" data-i18n="lab.preview"></h2>
+            <canvas id="lab-canvas" class="lab-canvas" width="596" height="88" role="img"></canvas>
+            <p class="lab-reading-status" aria-live="polite"><span id="lab-status"></span><span id="lab-known"></span></p>
+          </section>
+          <details id="lab-result-details" class="result-details">
+            <summary data-i18n="lab.details"></summary>
+            <div id="lab-summary"></div>
+            <p id="lab-mask-help" class="muted" data-i18n="lab.maskHelp"></p>
+            <p id="lab-transfer-help" class="muted" data-i18n="image.editHelp"></p>
+            <button aria-describedby="lab-transfer-help" id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
+          </details>
         </div>
-        <canvas id="lab-canvas" class="lab-canvas" width="596" height="88" role="img"></canvas>
-      </section>
-      <section aria-labelledby="lab-result-title">
-        <h2 id="lab-result-title" data-i18n="lab.result"></h2>
-        <div id="lab-output" aria-live="polite">
-          <p id="lab-status"></p>
-          <p id="lab-known"></p>
-          <h3 data-i18n="lab.judgment"></h3>
-          <p id="lab-judgment"></p>
-          <dl class="readable">
-            <dt data-i18n="section.postal"></dt><dd id="lab-postal-result"></dd>
-            <dt data-i18n="section.address"></dt><dd id="lab-address-result"></dd>
-          </dl>
-          <div id="lab-postal-notes"></div>
-          <p class="muted" data-i18n="photo.valueLegend"></p>
-          <div id="lab-summary"></div>
-        </div>
-        <p id="lab-transfer-help" class="muted" data-i18n="image.editHelp"></p>
-        <button aria-describedby="lab-transfer-help" id="lab-transfer" type="button" data-i18n="lab.transfer"></button>
-      </section>
+      </div>
       <p class="privacy" data-i18n="lab.privacy"></p>
     </div>
     </div>

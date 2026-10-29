@@ -446,6 +446,7 @@
     element('undo').disabled = state.undo === null;
     element('sample-undo').disabled = state.undo === null;
     element('sample-edit-region').hidden = state.workspace !== 'sample';
+    element('sample-mask-status').hidden = state.workspace !== 'sample';
     element('sample-reload').disabled = state.lastSample === null;
     document.querySelectorAll('[data-result-link]').forEach(button => { button.hidden = state.result === null; });
     const hasBars = state.bars.some(value => value !== undefined);

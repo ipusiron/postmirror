@@ -1139,6 +1139,10 @@
   'use strict';
 
   const ja = {
+    'lab.choiceHelp': '1種類ずつ選んで比べます。「なし」で元の画像に戻ります。',
+    'lab.preview': '加工したバーコード',
+    'lab.details': '読み取りの詳細・バーの編集',
+    'overview.notesTitle': '図の見方',
     'input.methodHelp': 'バーコードを見ながら、形を選んで入力します。',
     'text.method': '文字列を入力・貼り付け',
     'text.methodHelp': '1〜4などで表されたバー列を使います。',
@@ -1157,9 +1161,9 @@
     'input.workspaceHelp': '入力方法を選んでください。67本がそろうと、下に読み取り結果を表示します。',
     'result.details': '判定の理由・文字ごとの内訳',
     'decode.sampleEmpty': '上でサンプルを選ぶと、バーの全体図と解読結果がここに表示されます。',
-    'lab.intro': 'サンプル画像を塗りつぶしたり、ぼかしたりして読み取り直します。画像と読み取り結果を同じ画面で比べられます。',
+    'lab.intro': '塗りつぶしやぼかしをかけた画像を読み取り、何が読めるかを確かめます。',
     'image.editHelp': '文字ごとの内訳やバーの修正は「バーを直接入力」で行えます。現在の直接入力を置き換えますが、「元に戻す」で戻せます。',
-    "summary.title": "解読結果の要約",
+    "summary.title": "読み取り結果",
     "summary.details": "判定の理由を見る",
     "summary.breakdown": "1文字ずつの内訳を見る",
     "summary.next": "次へ：隠し方の例を試す",
@@ -1219,9 +1223,9 @@
     "lab.step2": "隠し方を選ぶ",
     "lab.step3": "読めたかを見る",
     "lab.privacy": "画像は端末の中で開くだけで、外へ送らず、保存もしません。",
-    "lab.title": "サンプル画像で実験",
+    "lab.title": "画像を加工すると、何が読める？",
     "lab.sample": "サンプル画像",
-    "lab.mask": "隠し方",
+    "lab.mask": "加工方法",
     "lab.character": "塗る文字の番号",
     "lab.characterNumber": "{number}文字目",
     "lab.characterMask": "1文字を塗る（{number}文字目）",
@@ -1318,7 +1322,7 @@
     'entry.heading': 'バーを入力して読み取る',
     'entry.expand': '形を選んで1本ずつ入力',
     'entry.close': '手入力欄を閉じる',
-    'intro.prompt': '日本郵便の公開サンプルで試します。隠したバーを「不明」として、残る情報から読める内容を下に表示します。',
+    'intro.prompt': '選んだバーを「不明」として読み取ります。',
     'decode.otherInputs': '手入力するときは、下の「バーを入力する」または「文字列で入力・貼り付け」を使います。'
       + '自分の写真は「画像点検」タブで読み取れます。',
     'decode.inputHelp': '画像からコピーしたバーや、ここで入力したバーを確認・編集します。',
@@ -1333,14 +1337,14 @@
     'intro.mask': '隠し方の例へ移る',
     'actions.inspection': '点検へ移る',
     'actions.result': '結果へ移る',
-    'sample.reload': '選択中のサンプルを読み直す',
+    'sample.reload': '隠し方をリセット',
     'actions.fillUnknown': '残りの未入力を不明にする',
     'actions.filledUnknown': '未入力のバーを不明にしました。',
     'symbol.includesUnknown': '不明を含む',
     'symbol.notListed': '表にない並び',
     'text.pending': '編集中の文字列は未反映です。以下は直前に反映したバー列の結果です。',
     'judgment.pending': '直前に反映したバー列の判定です。',
-    'sample.label': '解読するサンプル（日本郵便の公開例）',
+    'sample.label': 'サンプル（日本郵便の公開例）',
     'sample.choose': 'サンプルを選んでください',
     'sample.calculation': '計算例（p17・p21）',
     'sample.letterA': '英字を含む例（p06）',
@@ -1405,7 +1409,7 @@
     'actions.cleared': '67本すべてを未入力にしました。',
     'actions.undone': '直前の操作を元に戻しました。',
     'mask.title': '隠し方の例',
-    'mask.help': '複数選べます。もう一度押すと解除します。',
+    'mask.help': '複数選択可。もう一度押すと解除。',
     'mask.cd': 'チェックデジットを隠す',
     'mask.central': '各文字の1本',
     'mask.latter': '住所表示番号の後半',
@@ -1528,6 +1532,10 @@
   };
 
   const en = {
+    'lab.choiceHelp': 'Compare one method at a time. Choose None to restore the original image.',
+    'lab.preview': 'Processed barcode',
+    'lab.details': 'Reading details and bar editing',
+    'overview.notesTitle': 'How to read this diagram',
     'input.methodHelp': 'Look at the barcode and enter its shapes one by one.',
     'text.method': 'Type or paste a bar string',
     'text.methodHelp': 'Use a sequence of 1-4 or other supported symbols.',
@@ -1546,9 +1554,9 @@
     'input.workspaceHelp': 'Choose an input method. Results appear below when all 67 bars are filled.',
     'result.details': 'Reasons and character details',
     'decode.sampleEmpty': 'Choose a sample above to see its bars and decoded result here.',
-    'lab.intro': 'Cover or blur a sample image and read it again. Compare the image and its reading result on this screen.',
+    'lab.intro': 'Cover or blur the sample image and read it again to see what it reveals.',
     'image.editHelp': 'Open Enter bars to inspect characters or edit bars. This replaces its current input; Undo restores the previous input.',
-    "summary.title": "Decoded result summary",
+    "summary.title": "Reading result",
     "summary.details": "View the checks",
     "summary.breakdown": "View each character",
     "summary.next": "Next: try masking the sample",
@@ -1613,9 +1621,9 @@
     "lab.step2": "Choose a covering method",
     "lab.step3": "See what can be read",
     "lab.privacy": "Images are opened only on this device. They are never sent anywhere or saved.",
-    "lab.title": "Experiment with a sample image",
+    "lab.title": "What can a processed image reveal?",
     "lab.sample": "Sample image",
-    "lab.mask": "Covering method",
+    "lab.mask": "Processing method",
     "lab.character": "Character to cover",
     "lab.characterNumber": "Character {number}",
     "lab.characterMask": "Cover one character (character {number})",
@@ -1714,7 +1722,7 @@
     'entry.heading': 'Enter bars to read the barcode',
     'entry.expand': 'Choose each bar shape',
     'entry.close': 'Close the bar editor',
-    'intro.prompt': 'Try a Japan Post sample. Hidden bars are treated as unknown; the result below shows what can still be read.',
+    'intro.prompt': 'Mark bars unknown to see what remains readable.',
     'decode.otherInputs': 'To enter bars yourself, use Enter the bars or Enter or paste a bar string below.'
       + ' To read your own photo, open the Your image tab.',
     'decode.inputHelp': 'Inspect and edit bars entered here or copied from an image.',
@@ -1730,14 +1738,14 @@
     'intro.mask': 'Go to masking examples',
     'actions.inspection': 'Go to inspection',
     'actions.result': 'Go to results',
-    'sample.reload': 'Reload the selected sample',
+    'sample.reload': 'Reset masks',
     'actions.fillUnknown': 'Mark remaining empty bars as unknown',
     'actions.filledUnknown': 'Empty bars have been marked as unknown.',
     'symbol.includesUnknown': 'Contains unknown bars',
     'symbol.notListed': 'Pattern not listed',
     'text.pending': 'The text you are editing has not been applied. The results below are for the last applied bars.',
     'judgment.pending': 'This judgment is for the last applied bars.',
-    'sample.label': 'Sample to decode (Japan Post published examples)',
+    'sample.label': 'Sample (Japan Post published examples)',
     'sample.choose': 'Choose a sample',
     'sample.calculation': 'Calculation example (p17, p21)',
     'sample.letterA': 'Example containing a letter (p06)',
@@ -2381,6 +2389,7 @@
     element('undo').disabled = state.undo === null;
     element('sample-undo').disabled = state.undo === null;
     element('sample-edit-region').hidden = state.workspace !== 'sample';
+    element('sample-mask-status').hidden = state.workspace !== 'sample';
     element('sample-reload').disabled = state.lastSample === null;
     document.querySelectorAll('[data-result-link]').forEach(button => { button.hidden = state.result === null; });
     const hasBars = state.bars.some(value => value !== undefined);
