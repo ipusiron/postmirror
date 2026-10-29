@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
-const sourceFiles = ['barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js', 'style.css'];
+const sourceFiles = ['build.js', 'barcode-core.js', 'extract-core.js', 'image-core.js', 'samples.js', 'messages.js', 'app.js', 'style.css'];
 const testFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.js')).map(file => `test/${file}`);
 
 for (const file of [...sourceFiles, ...testFiles]) {

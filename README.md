@@ -316,6 +316,8 @@ A. おすすめしません。モザイクやぼかしをかけた画像には�
 Node.js 22以上で`npm test`を実行します。依存パッケージのインストールは不要です。
 公式例21件、抜き出し17例、既知のバー列、往復・境界・不正入力・隠したバー・向き、HTML、日英の対応、整形、配色を検査します。READMEの例と数値もコアで再計算します。GitHub ActionsのTestがpushとpull_requestで自動実行します。
 
+編集用のJavaScriptは分けて保持します。変更後は`npm run build`で`postmirror.bundle.js`を再生成してください。`npm test`は配布ファイルが古い場合に失敗します。画面はこの1ファイルを読み込み、解説の図表はその言語を初めて開くときに作成します。依存パッケージのインストールは不要です。
+
 ```sh
 npm test
 ```
@@ -346,7 +348,7 @@ postmirror/                         # ツールのルート
 ├── LICENSE                         # MIT License全文
 ├── README.md                       # YAMLメタデータ付きの日本語版
 ├── README.en.md                    # 英語版
-├── package.json                    # 依存なし、scripts.testはnode --test
+├── package.json                    # 依存なし、配布の鮮度確認とnode --test
 ├── index.html                      # 目的別の3領域、各2つの方法とCSP
 ├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
@@ -355,6 +357,8 @@ postmirror/                         # ツールのルート
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
 ├── app.js                          # 画面、画像の読み込み、入力と描画、言語とタブの切り替え
+├── build.js                        # 依存なしの配布スクリプト生成
+├── postmirror.bundle.js            # 画面が読み込む生成済みの単一スクリプト
 ├── assets/                         # READMEの日本語画面例
 │   ├── screenshot.png              # サンプルの操作とその場の結果
 │   ├── screenshot2.png             # 解説のバー形状と対応表
@@ -369,6 +373,7 @@ postmirror/                         # ツールのルート
 └── test/                           # node:testのテスト
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
+    ├── build.test.js               # 配布ファイルの鮮度、依存順序、構文
     ├── extract.test.js             # 抜き出しの段階と公式17例
     ├── image.test.js               # 独立した画像処理のテスト
     ├── readme.test.js              # 日英READMEの数値、構成と表記

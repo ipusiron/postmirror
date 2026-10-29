@@ -18,7 +18,7 @@ postmirror/                         # ツールのルート
 ├── LICENSE                         # MIT License全文
 ├── README.md                       # YAMLメタデータ付きの日本語版
 ├── README.en.md                    # 英語版
-├── package.json                    # 依存なし、scripts.testはnode --test
+├── package.json                    # 依存なし、scripts.testは配布の鮮度確認とnode --test
 ├── index.html                      # 目的別の3領域、各2サブタブとCSP
 ├── style.css                       # モバイル優先の配色と配置、ダーク表示
 ├── barcode-core.js                 # 対応表、チェックデジット、解読と符号化
@@ -27,6 +27,8 @@ postmirror/                         # ツールのルート
 ├── samples.js                      # 版付きの公式例と抜き出しの例
 ├── messages.js                     # 日英の文言辞書
 ├── app.js                          # 画面、画像の読み込み、入力と描画、言語とタブの切り替え
+├── build.js                        # 依存なしの配布スクリプト生成
+├── postmirror.bundle.js            # 画面が読み込む生成済みの単一スクリプト
 ├── assets/                         # READMEの日本語画面例
 │   ├── screenshot.png              # サンプルの操作とその場の結果
 │   ├── screenshot2.png             # 解説のバー形状と対応表
@@ -41,6 +43,7 @@ postmirror/                         # ツールのルート
 └── test/                           # node:testのテスト
     ├── official-vectors.json       # 公式例21件と全バー列9件の独立した期待値
     ├── core.test.js                # 対応表、既知解答、復元、候補数、向きと性質
+    ├── build.test.js               # 配布ファイルの鮮度、依存順序、構文
     ├── extract.test.js             # 抜き出しの段階と公式17例
     ├── image.test.js               # 独立した画像処理のテスト
     ├── readme.test.js              # 日英READMEの数値、構成と表記
@@ -74,12 +77,14 @@ confidenceは67個の配列で、信頼度0.2未満と位置不明のバーをnu
 山が欠けた位置のcentersは格子から補い、barsとconfidenceはnullにします。格子が決まらなければunreadableです。
 画像コアは「バーコード全体を加工する」と「画像から読む」で使い、通常スクリプトではbarcode-core.jsの後に読み込みます。
 `extract-core.js`は`barcode-core.js`に依存しません。
-画面は`barcode-core.js`、`extract-core.js`、`image-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で`defer`付きの通常スクリプトとして読み込みます。
+`build.js`は`barcode-core.js`、`extract-core.js`、`image-core.js`、`samples.js`、`messages.js`、`app.js`をこの順で連結します。画面は生成済みの`postmirror.bundle.js`を`defer`付きの通常スクリプトとして読み込みます。
 
 ## コマンド
 
 Node.js 22以上で、リポジトリーのルートから実行します。
 依存パッケージのインストールは不要です。
+
+編集用のJavaScriptは分けて保持します。変更後は`npm run build`で`postmirror.bundle.js`を再生成してください。`npm test`は配布ファイルが古い場合に失敗します。画面はこの1ファイルを読み込み、解説の図表はその言語を初めて開くときに作成します。依存パッケージのインストールは不要です。
 
 ```sh
 npm test
@@ -167,7 +172,7 @@ python -m http.server
 - URLから読むのは`?lang=ja|en`と読み込み時の`#learn`だけ。入力の共有リンク、解読結果のコピーボタン、郵便番号検索への値の受け渡しを作らない
 - 動的な文言は`messages.js`に集め、座学の本文は日英のHTMLブロックに置く。コアはコードと数値を返す。`barcode-core.js`にはコメントを含めて日本語を置かない
 - 描画はtextContent、createElement、createElementNS、setAttributeを使う。innerHTML、インラインのイベントハンドラー、style属性を使わない
-- CSPでconnect-srcをnoneにする。依存パッケージ、CDN、外部フォント、バンドラー、TypeScript、フレームワークを足さない
+- CSPでconnect-srcをnoneにする。依存パッケージ、CDN、外部フォント、外部のバンドラー、TypeScript、フレームワークを足さない。配布用の単純連結はbuild.jsで行う
 - file://での動作を保ち、type="module"、fetch、Workerを使わない。package.jsonにtype: moduleを追加しない
 - 郵便番号データを同梱せず、地名を表示しない。CSPのimg-srcにblob:を追加しない
 - `test/`にブラウザー操作のスクリプトや補助のJavaScriptを置かない。node --testが自動実行するため、補助データはJSONで持つ

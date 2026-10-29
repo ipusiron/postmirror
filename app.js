@@ -411,11 +411,10 @@
   }
 
   function switchWorkspace(name) {
-    if (name !== state.workspace) {
-      workspaceSnapshots[state.workspace] = captureWorkspace();
-      state.workspace = name;
-      restoreWorkspace(workspaceSnapshots[name] || emptyWorkspace());
-    }
+    if (name === state.workspace) return;
+    workspaceSnapshots[state.workspace] = captureWorkspace();
+    state.workspace = name;
+    restoreWorkspace(workspaceSnapshots[name] || emptyWorkspace());
     element(`${name}-result-dock`).append(element('decode-output'));
     renderWorkspace();
   }
@@ -1393,7 +1392,7 @@
   }
 
   function showTab(name, focus = false) {
-    const previousScroll = scrollY;
+    const previousScroll = focus ? scrollY : 0;
     if (name === 'decode' || name === 'input') switchWorkspace(name === 'decode' ? 'sample' : 'input');
     if (state.tab === 'lab' && name !== 'lab') {
       element('lab-canvas').width = 0;
@@ -1419,6 +1418,8 @@
       element(`tab-${tab}`).tabIndex = selected ? 0 : -1;
       element(`panel-${tab}`).hidden = !selected;
     }
+    if (name === 'learn') renderLearn();
+    else if (name === 'quiz') renderQuizzes();
     updateWorkspaceSpace();
     if (focus) {
       element(`tab-${name}`).focus({ preventScroll: true });
@@ -1426,7 +1427,7 @@
     }
   }
 
-  function renderLanguage() {
+  function renderLanguage(refreshWorkspace = true) {
     document.documentElement.lang = state.language;
     document.title = translate('page.title');
     document.querySelectorAll('[data-i18n]').forEach(item => { item.textContent = translate(item.dataset.i18n); });
@@ -1458,17 +1459,23 @@
     for (const language of ['ja', 'en']) {
       for (const panel of ['learn', 'quiz']) element(`${panel}-${language}`).hidden = language !== state.language;
     }
-    renderInput();
-    renderErrors();
-    renderControls();
-    renderResult();
-    renderLearn();
+    if (refreshWorkspace) {
+      renderInput();
+      renderErrors();
+      renderControls();
+      renderResult();
+    }
+    if (state.tab === 'learn') renderLearn();
+    else if (state.tab === 'quiz') renderQuizzes();
     renderLab();
     renderPhoto();
   }
 
-  function renderLearn() {
-    document.querySelectorAll('[data-figure]').forEach(container => {
+  const renderedLessonLanguages = new Set();
+
+  function renderLearnFigures() {
+    if (renderedLessonLanguages.has(state.language)) return;
+    element(`learn-${state.language}`).querySelectorAll('[data-figure]').forEach(container => {
       const kind = container.dataset.figure;
       container.replaceChildren();
       if (kind === 'envelope' || kind === 'structure') {
@@ -1544,6 +1551,11 @@
         }
       }
     });
+    renderedLessonLanguages.add(state.language);
+  }
+
+  function renderLearn() {
+    renderLearnFigures();
     renderExtraction();
     renderQuizzes();
     renderQuizReturn();
@@ -1698,7 +1710,7 @@
   }
   const purposes = Object.keys(purposeTabs);
   function showPurpose(name, focus = false) {
-    const previousScroll = scrollY;
+    const previousScroll = focus ? scrollY : 0;
     showTab(purposeSelection[name]);
     if (focus) {
       element(`group-tab-${name}`).focus({ preventScroll: true });
@@ -1751,5 +1763,6 @@
   state.undo = null;
   renderControls();
   showTab(state.tab);
-  renderLanguage();
+  // The initial sample already rendered this workspace in the selected language.
+  renderLanguage(false);
 })();
