@@ -183,6 +183,11 @@ However, when a character is unreadable, mistakes in other characters may go und
 
 Process the whole barcode applies 14 covering methods to synthetic barcodes and reads 67 bars within the selected region.
 The image core estimates a grid of bar positions, corrects the endpoints, and classifies extensions above and below the central band. Confidence below 0.2 is treated as unknown. Neither reading nor endpoint selection uses the check digit. If no grid can be established, the result is unreadable.
+
+Failure of automatic recognition does not mean that the information has been erased or cannot be recovered. The current implementation finds 67 bar positions from the contrast between bars and white gaps near the center. A horizontal black line joins those gaps and can prevent position detection. A separate path that locates and classifies bars from their remaining upper and lower shapes has not been implemented. Those shapes remain in these line examples, leaving information that can be read visually or by another method when the positions and spacing are known. This does not guarantee recovery from arbitrary photos.
+
+When automatic recognition cannot complete in the image experiment, its result card reports that decoding was not performed and gives the reason. It does not calculate postal or address values or candidate counts from an artificial all-unknown sequence, or fill in the answer from the original sample. Copying to Enter bars transfers unrecognized bars as unknown.
+
 For your own image, region selection has two stages: choose near both ends in the overview, then select the leftmost and rightmost bars in enlarged views. Crop coordinates are integers clamped to the image bounds before being passed to `drawImage`.
 All cases within the specified synthetic-image range matched, but incorrect bars remain outside that range. Conditions and counts appear under Tests. An unreadable result does not mean that other methods cannot read the image.
 
@@ -279,6 +284,8 @@ npm test
 ```
 
 Image tests cover synthetic rendering, covering operations, grid-based reading, endpoint correction, and treating confidence below 0.2 as unknown. Browser checks cover two-stage selection, cropping with integer coordinates clamped to image bounds, and releasing image resources.
+
+A separate verification outside the application used eight synthetic examples at 8 px pitch with no rotation, each covered by a central line 8 px or 2 px thick: 16 cases in total. The current automatic reader failed in all cases. Sampling pixels 8 px above and below the center at each known bar position recovered all 67 original bars in every case. This method is not implemented in the application and was not a test of real photographs or human visual reading.
 
 The synthetic-image evaluation contains 23,693 cases. The normal range uses nine official and 20 fictional examples, pitches of 6, 7.5, 9, and 12 px, rotations of 0, ±5, and ±10 degrees, blur of 0 or 0.25 pitch, and noise standard deviation of 0 or 8. Each selected endpoint is offset by up to ±1 pitch along the line and ±1.5 pitches perpendicular to it.
 

@@ -161,12 +161,15 @@
             <h2 id="lab-result-title" data-i18n="summary.title"></h2>
             <div id="lab-output" aria-live="polite">
               <p id="lab-judgment" class="judgment"></p>
-              <dl class="readable">
-                <dt data-i18n="section.postal"></dt><dd id="lab-postal-result"></dd>
-                <dt data-i18n="section.address"></dt><dd id="lab-address-result"></dd>
-              </dl>
-              <div id="lab-postal-notes"></div>
-              <p class="muted" data-i18n="photo.valueLegend"></p>
+              <div id="lab-read-explanation" hidden></div>
+              <div id="lab-decoding">
+                <dl class="readable">
+                  <dt data-i18n="section.postal"></dt><dd id="lab-postal-result"></dd>
+                  <dt data-i18n="section.address"></dt><dd id="lab-address-result"></dd>
+                </dl>
+                <div id="lab-postal-notes"></div>
+                <p class="muted" data-i18n="photo.valueLegend"></p>
+              </div>
             </div>
           </section>
           <section class="sample-preview" aria-labelledby="lab-preview-title">
@@ -239,10 +242,9 @@
             <p id="photo-marks"></p>
             <div aria-live="polite">
               <p id="photo-status"></p>
+              <div id="photo-read-explanation" hidden></div>
               <div id="photo-failure" hidden>
-                <p data-i18n="photo.notDecoded"></p>
                 <p data-i18n="photo.failureHelp"></p>
-                <p data-i18n="image.otherMethods"></p>
               </div>
               <p id="photo-known"></p>
               <div id="photo-decoding">
