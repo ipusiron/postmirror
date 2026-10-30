@@ -1141,6 +1141,21 @@
     });
   }
 
+  function renderImageReadExplanation(container, read, mask = '') {
+    container.replaceChildren();
+    container.hidden = !read || read.status === 'read';
+    if (container.hidden) return;
+    if (read.status === 'unreadable') appendMessage(container, record('image.notDecoded'));
+    const title = node('p');
+    title.append(node('strong', translate('image.reasonTitle')));
+    container.append(title);
+    read.reasons.forEach(reason => appendMessage(container, record(`image.reason.${reason}`)));
+    if (read.status === 'unreadable' && mask.startsWith('line-')) {
+      appendMessage(container, record('image.lineReason'));
+      appendMessage(container, record('image.lineRemaining'));
+    } else appendMessage(container, record('image.otherMethods'));
+  }
+
   function renderPhoto() {
     const loaded = photo.bitmap !== null;
     const located = photo.read !== null && photo.read.status !== 'unreadable';
@@ -1162,6 +1177,7 @@
     element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
     element('photo-output').hidden = photo.step !== 'result';
     element('photo-transfer').disabled = !located;
+    element('photo-transfer-help').hidden = !located;
     element('photo-marks').hidden = !located;
     element('photo-known').hidden = !located;
     element('photo-decoding').hidden = !located;
@@ -1170,6 +1186,7 @@
     issues.replaceChildren();
     if (located) photo.decoded.issues.forEach(issue => appendMessage(issues, issueMessage(issue), 'li'));
     element('photo-failure').hidden = !photo.read || located;
+    renderImageReadExplanation(element('photo-read-explanation'), photo.read);
     element('photo-back').disabled = !loaded || (!photo.rough.length && !photo.precise.length);
     element('photo-reselect').disabled = !loaded;
     element('photo-clear').disabled = photo.step === 'empty';
@@ -1208,7 +1225,6 @@
     appendMessage(summary, record('inspection.cover'));
     if (photo.read.status !== 'read') {
       appendMessage(summary, record('photo.retry'));
-      appendMessage(summary, record('image.otherMethods'));
     }
   }
 
@@ -1360,7 +1376,7 @@
     const mask = labMask(rendered.region);
     lab.image = mask ? imaging.applyMask(rendered.image, mask) : rendered.image;
     lab.read = imaging.readBarsInRegion(lab.image, rendered.region);
-    lab.decoded = core.decodeBars(lab.read.bars);
+    lab.decoded = lab.read.status === 'unreadable' ? null : core.decodeBars(lab.read.bars);
     paintLab();
     renderLab();
   }
@@ -1381,15 +1397,20 @@
     const known = lab.read.bars.filter(value => value !== null).length;
     element('lab-known').textContent = message(plural('lab.known', known));
     element('lab-known').dataset.known = String(known);
+    const located = lab.read.status !== 'unreadable';
     const decoded = element('lab-judgment');
-    decoded.dataset.status = lab.decoded.status;
-    decoded.textContent = message(judgment(lab.decoded));
+    decoded.dataset.status = located ? lab.decoded.status : 'not-decoded';
+    decoded.textContent = located ? message(judgment(lab.decoded)) : translate('lab.status.unreadable');
+    element('lab-decoding').hidden = !located;
     renderReadable(lab.decoded, 'lab-');
+    renderImageReadExplanation(element('lab-read-explanation'), lab.read, lab.mask);
     const summary = element('lab-summary');
     summary.replaceChildren();
-    inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
-    appendMessage(summary, record('inspection.cover'));
-    if (lab.read.status === 'unreadable') appendMessage(summary, record('image.otherMethods'));
+    summary.hidden = !located;
+    if (located) {
+      inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
+      appendMessage(summary, record('inspection.cover'));
+    }
   }
 
   function showTab(name, focus = false) {

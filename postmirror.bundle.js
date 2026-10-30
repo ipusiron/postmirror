@@ -1162,7 +1162,7 @@
     'result.details': '判定の理由・文字ごとの内訳',
     'decode.sampleEmpty': '上でサンプルを選ぶと、バーの全体図と解読結果がここに表示されます。',
     'lab.intro': '塗りつぶしやぼかしをかけた画像を読み取り、何が読めるかを確かめます。',
-    'image.editHelp': '文字ごとの内訳やバーの修正は「バーを直接入力」で行えます。現在の直接入力を置き換えますが、「元に戻す」で戻せます。',
+    "image.editHelp": "読み取れなかったバーは「不明」としてコピーします。内訳の点検や修正は「バーを直接入力」で行えます。現在の直接入力を置き換えますが、「元に戻す」で戻せます。",
     "summary.title": "読み取り結果",
     "summary.details": "判定の理由を見る",
     "summary.breakdown": "1文字ずつの内訳を見る",
@@ -1176,7 +1176,7 @@
     "tab.lab": 'バーコード全体を加工する',
     "tab.photo": '画像から読む',
     "lab.maskHelp": "モザイクの目の大きさとぼかしの強さは、バーの間隔の0.5倍・1倍・2倍です。",
-    "image.otherMethods": "このツールで読めなくても、ほかの方法で読める場合があります。",
+    "image.otherMethods": "自動認識の失敗は、情報が消えたことを意味しません。目視や別の画像処理で読める場合があります。",
     "photo.title": "自分の画像で点検",
     "photo.entry": "自分宛てのカスタマバーコードの写真を選びます。画像は端末内だけで処理します。",
     "photo.own": "自分宛ての郵便物の写真で試してください。",
@@ -1199,10 +1199,21 @@
     "photo.roughHint": "バーの上下の中央付近を押します。白い余白や、下に印字された数字は押しません。",
     "photo.zoomHint": "短いバーも通る高さで押します。バーが見切れているときは「1つ前に戻る」で選び直せます。",
     "photo.back": "1つ前に戻る",
-    "photo.noGrid": "カスタマバーコードを確認できませんでした。対応する形式・選んだ範囲・画質を確認してください。",
-    "photo.notDecoded": "バーの位置を特定できていないため、郵便番号・住所表示番号の判定は行っていません。",
+    "photo.noGrid": "自動読み取りを完了できませんでした。下の結果で、処理が止まった理由を確認できます。",
+    "image.notDecoded": "バーの認識が完了していないため、郵便番号・住所表示番号はまだ解読していません。",
+    "image.reasonTitle": "自動読み取りが止まった理由",
+    "image.reason.no-bars": "中央付近の明暗からバーと隙間を見つけられず、67本の位置を確定できませんでした。",
+    "image.reason.bar-count": "中央付近で検出したバー候補の数が条件に合わず、67本の並びを確定できませんでした。",
+    "image.reason.irregular-pitch": "検出したバー候補を、等間隔の67本の並びとして整列できませんでした。",
+    "image.reason.start-stop": "両端で検出した形が開始・終了記号の条件に合わず、読み取りを確定しませんでした。",
+    "image.reason.low-resolution": "指定範囲から見積もったバー間隔が、現在の処理に必要な4画素未満です。",
+    "image.reason.region-too-small": "指定した両端の間隔がなく、バーの並びを計算できません。",
+    "image.reason.region-outside-image": "指定した両端の少なくとも一方が、画像内の読み取り可能な範囲から外れています。",
+    "image.reason.low-confidence": "位置は求められましたが、一部のバーは形や隙間を十分に確認できず、「不明」にしています。",
+    "image.lineReason": "この横線はバーの間の白い隙間も黒くつなぐため、現在の位置検出が働きません。上下に残った形から位置・種類を読み直す処理は実装していません。",
+    "image.lineRemaining": "この例では横線の上下に形の違いが残っています。自動認識の失敗は情報の消失ではなく、位置と間隔を見分けられれば目視や別の画像処理で復元できます。",
     "photo.failureHelp": "高さがそろい、太さが変わるバーコードは対象外です。対応する4形状の写真なら、両端の選択位置や、ぼけ・隠れを確認してください。",
-    "photo.unreadableImage": "選んだ範囲の全体。バーの位置を特定できていないため、読み取りの印は付けていません。",
+    "photo.unreadableImage": "選んだ範囲の全体。バーの位置や形の確認を完了できていないため、読み取りの印は付けていません。",
     "photo.retry": "範囲がずれていると、読めないバーが出ます。「範囲を指定し直す」を押して、左右の端のバーを中央の高さで選び直してください。",
     "photo.file": "画像を選ぶ（JPEG・PNG・WebP）",
     "photo.keyboard": 'キーボードだけで操作するときは、「バーを直接入力」で形を1本ずつ入力できます。',
@@ -1241,11 +1252,11 @@
     "decode.empty": "67本のバーがそろうと結果を表示します。途中まで入力した場合は、残りを「不明」にして点検できます。サンプルから試すこともできます。",
     "lab.transferred": '読み取ったバーを「バーを直接入力」にコピーしました。元に戻すと、コピー前の入力に戻ります。',
     "lab.canvas": "サンプル「{sample}」に「{mask}」をかけたカスタマバーコードの合成画像",
-    "lab.status.read": "読めた",
-    "lab.status.partial": "一部読めた",
-    "lab.status.unreadable": "読めなかった",
-    "lab.known.one": "読めたバーは{count}/67本です。",
-    "lab.known.other": "読めたバーは{count}/67本です。",
+    "lab.status.read": "自動で読み取れた",
+    "lab.status.partial": "自動で一部を読み取れた",
+    "lab.status.unreadable": "この自動読み取りでは認識できなかった",
+    "lab.known.one": "自動で読めたバーは{count}/67本です。",
+    "lab.known.other": "自動で読めたバーは{count}/67本です。",
     "lab.mask.none": "なし",
     "lab.mask.fill": "全体を塗る",
     "lab.mask.character": "1文字を塗る",
@@ -1555,7 +1566,8 @@
     'result.details': 'Reasons and character details',
     'decode.sampleEmpty': 'Choose a sample above to see its bars and decoded result here.',
     'lab.intro': 'Cover or blur the sample image and read it again to see what it reveals.',
-    'image.editHelp': 'Open Enter bars to inspect characters or edit bars. This replaces its current input; Undo restores the previous input.',
+    "image.editHelp": "Bars that were not recognized are copied as unknown. Open Enter bars to inspect or edit them. This replaces "
+      + "the current input; Undo restores it.",
     "summary.title": "Reading result",
     "summary.details": "View the checks",
     "summary.breakdown": "View each character",
@@ -1570,7 +1582,8 @@
     "tab.lab": 'Process the whole barcode',
     "tab.photo": 'Read an image',
     "lab.maskHelp": "Mosaic block sizes and blur strengths are 0.5, 1, and 2 times the spacing between bars.",
-    "image.otherMethods": "Even if this tool cannot read it, other methods may still be able to.",
+    "image.otherMethods": "Automatic recognition failure does not mean the information has been erased. Visual inspection or other "
+      + "image processing may still recover it.",
     "photo.title": "Check your own image",
     "photo.entry": "Choose a photo of a customer barcode on your own mail. Images are processed only on this device.",
     "photo.own": "Try a photo of mail addressed to you.",
@@ -1596,11 +1609,30 @@
     "photo.roughHint": "Tap near the vertical middle of the bars, not in the white margin or on digits printed below them.",
     "photo.zoomHint": "Tap at the height where even the short bars pass. If bars are cut off, use “Go back one step” to choose again.",
     "photo.back": "Go back one step",
-    "photo.noGrid": "Could not locate a Japan Post customer barcode. Check the format, selected region and image quality.",
-    "photo.notDecoded": "The bar positions could not be located, so the postal code and address number have not been evaluated.",
+    "photo.noGrid": "Automatic reading did not complete. The result below explains why processing stopped.",
+    "image.notDecoded": "Bar recognition did not complete, so the postal code and address number have not been decoded.",
+    "image.reasonTitle": "Why automatic reading stopped",
+    "image.reason.no-bars": "The reader could not find bars and gaps from light and dark changes near the center, so it could not "
+      + "establish the 67 bar positions.",
+    "image.reason.bar-count": "The number of bar candidates detected near the center did not meet the position-finding criteria, so a row "
+      + "of 67 bars could not be established.",
+    "image.reason.irregular-pitch": "The detected bar candidates could not be aligned as a row of 67 equally spaced bars.",
+    "image.reason.start-stop": "The detected shapes at the ends did not meet the start/stop-marker checks, so the reading was not accepted.",
+    "image.reason.low-resolution": "The estimated bar spacing in the selected region is below the 4 pixels required by the current reader.",
+    "image.reason.region-too-small": "The selected endpoints have no separation, so the bar layout cannot be calculated.",
+    "image.reason.region-outside-image": "At least one selected endpoint lies outside the readable area of the image.",
+    "image.reason.low-confidence": "The positions were found, but some bar shapes or gaps could not be verified with enough confidence and are "
+      + "left unknown.",
+    "image.lineReason": "This line connects the white gaps between bars with black, preventing the current position detector from "
+      + "working. A fallback that finds positions and types from the remaining upper and lower shapes is not "
+      + "implemented.",
+    "image.lineRemaining": "In this example, shape differences remain above and below the line. Automatic failure is not information "
+      + "loss: visual inspection or another image-processing method can recover the bars if their positions and "
+      + "spacing can be identified.",
     "photo.failureHelp": "Barcodes with equal-height bars of varying widths are not supported. For the supported four shapes, "
       + "check the selected endpoints, blur and any covered areas.",
-    "photo.unreadableImage": "The entire selected region. No reading marks are shown because the bar positions could not be located.",
+    "photo.unreadableImage": "The entire selected region. No reading marks are shown because checks of the bar positions or shapes did not "
+      + "complete.",
     "photo.retry": "Misaligned endpoints can leave bars unreadable. Press “Select the region again” and tap the end bars along the central band.",
     "photo.file": "Choose an image (JPEG, PNG, WebP)",
     "photo.keyboard": 'For keyboard-only operation, use Enter bars to enter each bar shape.',
@@ -1640,11 +1672,11 @@
       + " You can also start with a sample.",
     "lab.transferred": 'The read bars were copied to Enter bars. Undo restores the previous input.',
     "lab.canvas": "Synthetic Japan Post customer barcode for {sample}, with the covering method {mask}",
-    "lab.status.read": "Read",
-    "lab.status.partial": "Partially read",
-    "lab.status.unreadable": "Could not read",
-    "lab.known.one": "{count} of 67 bars could be read.",
-    "lab.known.other": "{count} of 67 bars could be read.",
+    "lab.status.read": "Read automatically",
+    "lab.status.partial": "Partially read automatically",
+    "lab.status.unreadable": "This automatic reader could not recognize the bars",
+    "lab.known.one": "Automatically read {count} of 67 bars.",
+    "lab.known.other": "Automatically read {count} of 67 bars.",
     "lab.mask.none": "None",
     "lab.mask.fill": "Cover the entire barcode",
     "lab.mask.character": "Cover one character",
@@ -3084,6 +3116,21 @@
     });
   }
 
+  function renderImageReadExplanation(container, read, mask = '') {
+    container.replaceChildren();
+    container.hidden = !read || read.status === 'read';
+    if (container.hidden) return;
+    if (read.status === 'unreadable') appendMessage(container, record('image.notDecoded'));
+    const title = node('p');
+    title.append(node('strong', translate('image.reasonTitle')));
+    container.append(title);
+    read.reasons.forEach(reason => appendMessage(container, record(`image.reason.${reason}`)));
+    if (read.status === 'unreadable' && mask.startsWith('line-')) {
+      appendMessage(container, record('image.lineReason'));
+      appendMessage(container, record('image.lineRemaining'));
+    } else appendMessage(container, record('image.otherMethods'));
+  }
+
   function renderPhoto() {
     const loaded = photo.bitmap !== null;
     const located = photo.read !== null && photo.read.status !== 'unreadable';
@@ -3105,6 +3152,7 @@
     element('photo-zoom').hidden = !['left', 'right'].includes(photo.step);
     element('photo-output').hidden = photo.step !== 'result';
     element('photo-transfer').disabled = !located;
+    element('photo-transfer-help').hidden = !located;
     element('photo-marks').hidden = !located;
     element('photo-known').hidden = !located;
     element('photo-decoding').hidden = !located;
@@ -3113,6 +3161,7 @@
     issues.replaceChildren();
     if (located) photo.decoded.issues.forEach(issue => appendMessage(issues, issueMessage(issue), 'li'));
     element('photo-failure').hidden = !photo.read || located;
+    renderImageReadExplanation(element('photo-read-explanation'), photo.read);
     element('photo-back').disabled = !loaded || (!photo.rough.length && !photo.precise.length);
     element('photo-reselect').disabled = !loaded;
     element('photo-clear').disabled = photo.step === 'empty';
@@ -3151,7 +3200,6 @@
     appendMessage(summary, record('inspection.cover'));
     if (photo.read.status !== 'read') {
       appendMessage(summary, record('photo.retry'));
-      appendMessage(summary, record('image.otherMethods'));
     }
   }
 
@@ -3303,7 +3351,7 @@
     const mask = labMask(rendered.region);
     lab.image = mask ? imaging.applyMask(rendered.image, mask) : rendered.image;
     lab.read = imaging.readBarsInRegion(lab.image, rendered.region);
-    lab.decoded = core.decodeBars(lab.read.bars);
+    lab.decoded = lab.read.status === 'unreadable' ? null : core.decodeBars(lab.read.bars);
     paintLab();
     renderLab();
   }
@@ -3324,15 +3372,20 @@
     const known = lab.read.bars.filter(value => value !== null).length;
     element('lab-known').textContent = message(plural('lab.known', known));
     element('lab-known').dataset.known = String(known);
+    const located = lab.read.status !== 'unreadable';
     const decoded = element('lab-judgment');
-    decoded.dataset.status = lab.decoded.status;
-    decoded.textContent = message(judgment(lab.decoded));
+    decoded.dataset.status = located ? lab.decoded.status : 'not-decoded';
+    decoded.textContent = located ? message(judgment(lab.decoded)) : translate('lab.status.unreadable');
+    element('lab-decoding').hidden = !located;
     renderReadable(lab.decoded, 'lab-');
+    renderImageReadExplanation(element('lab-read-explanation'), lab.read, lab.mask);
     const summary = element('lab-summary');
     summary.replaceChildren();
-    inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
-    appendMessage(summary, record('inspection.cover'));
-    if (lab.read.status === 'unreadable') appendMessage(summary, record('image.otherMethods'));
+    summary.hidden = !located;
+    if (located) {
+      inspectionSummaries(lab.decoded).forEach(item => appendMessage(summary, item));
+      appendMessage(summary, record('inspection.cover'));
+    }
   }
 
   function showTab(name, focus = false) {
