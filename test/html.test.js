@@ -151,3 +151,31 @@ test('HTML: image experiments use accessible canvases and one local file input',
   assert.doesNotMatch(app, /setAttribute\(\s*['"](?:capture|multiple)['"]/);
   assert.doesNotMatch(app, /createObjectURL|toDataURL|toBlob|getUserMedia/);
 });
+
+test('Live regions: helpers skip writes when the sentences are unchanged', () => {
+  const vm = require('node:vm');
+  const source = ['setTextIfChanged', 'replaceChildrenIfChanged']
+    .map(name => new RegExp(`  function ${name}\\([\\s\\S]*?\\n  }\\n`).exec(app)[0]).join('\n');
+  const { setTextIfChanged, replaceChildrenIfChanged } = vm.runInNewContext(
+    `${source}; ({ setTextIfChanged, replaceChildrenIfChanged })`);
+  const paragraph = text => ({ nodeName: 'P', textContent: text });
+  const target = {
+    childNodes: [], writes: 0, get childElementCount() { return this.childNodes.filter(item => item.nodeName !== '#text').length; },
+    get textContent() { return this.childNodes.map(item => item.textContent).join(''); },
+    set textContent(text) { this.writes += 1; this.childNodes = text ? [{ nodeName: '#text', textContent: text }] : []; },
+    replaceChildren(...children) { this.writes += 1; this.childNodes = children; }
+  };
+  assert.equal(setTextIfChanged(target, ''), false);
+  assert.equal(setTextIfChanged(target, '20本'), true);
+  assert.equal(setTextIfChanged(target, '20本'), false);
+  assert.equal(target.writes, 1);
+  target.childNodes = [paragraph('20本')];
+  assert.equal(setTextIfChanged(target, '20本'), true, 'Element children are replaced by plain text');
+  assert.equal(replaceChildrenIfChanged(target, [paragraph('a'), paragraph('b')]), true);
+  assert.equal(replaceChildrenIfChanged(target, [paragraph('a'), paragraph('b')]), false);
+  assert.equal(replaceChildrenIfChanged(target, [paragraph('ab')]), true);
+  assert.equal(replaceChildrenIfChanged(target, []), true);
+  assert.equal(replaceChildrenIfChanged(target, []), false);
+  assert.equal(target.writes, 5);
+  assert.match(app, /replaceChildrenIfChanged\(element\('text-errors'\), paragraphs\)/);
+});

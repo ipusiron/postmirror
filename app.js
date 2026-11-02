@@ -311,7 +311,7 @@
       }
     });
     const count = state.bars.filter(value => value !== undefined).length;
-    element('input-progress').textContent = message(plural('input.progress', count));
+    setTextIfChanged(element('input-progress'), message(plural('input.progress', count)));
     element('bar-input-progress').value = count;
     element('palette-progress').textContent = message(plural('input.progress', count));
     renderSelection();
@@ -332,9 +332,22 @@
       ? `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}` : char;
   }
 
+  // Live regions are written only when their sentences change, so repeated renders do not repeat announcements.
+  function setTextIfChanged(target, text) {
+    if (target.childElementCount === 0 && target.textContent === text) return false;
+    target.textContent = text;
+    return true;
+  }
+
+  function replaceChildrenIfChanged(target, children) {
+    const signature = nodes => Array.from(nodes, item => `${item.nodeName}\u0000${item.textContent}`).join('\u0001');
+    if (signature(target.childNodes) === signature(children)) return false;
+    target.replaceChildren(...children);
+    return true;
+  }
+
   function renderErrors() {
-    const container = element('text-errors');
-    container.replaceChildren();
+    const paragraphs = [];
     for (const error of state.errors) {
       const paragraph = node('p');
       if (error.key === 'text.invalid-char') {
@@ -343,8 +356,9 @@
           else paragraph.append(document.createTextNode(part.replace(/\{(\w+)\}/g, (_, key) => error.params[key])));
         }
       } else paragraph.textContent = message(error);
-      container.append(paragraph);
+      paragraphs.push(paragraph);
     }
+    replaceChildrenIfChanged(element('text-errors'), paragraphs);
     element('bar-text').setAttribute('aria-invalid', String(state.errors.some(item => item.key !== 'text.accepted')));
   }
 
@@ -466,7 +480,7 @@
     const masks = ['cd', 'central', 'latter', 'all'].filter(preset => state.maskPresets.includes(preset));
     if (state.customMask.length) masks.push('custom');
     const mask = masks.length ? masks.map(preset => translate(`mask.${preset}`)).join(' + ') : translate('mask.none');
-    element('sample-mask-status').textContent = translate('mask.current', { mask });
+    setTextIfChanged(element('sample-mask-status'), translate('mask.current', { mask }));
     document.querySelectorAll('[data-preset]').forEach(button => {
       button.disabled = state.lastSample === null;
       button.setAttribute('aria-pressed', String(state.maskPresets.includes(button.dataset.preset)));
@@ -716,18 +730,19 @@
 
   function renderResult() {
     renderDecodeSummary();
-    const ids = ['judgment', 'alternatives', 'postal-result', 'address-result', 'postal-notes', 'issues', 'inspection', 'checksum', 'breakdown'];
+    const ids = ['alternatives', 'postal-result', 'address-result', 'postal-notes', 'issues', 'inspection', 'checksum', 'breakdown'];
     ids.forEach(id => element(id).replaceChildren());
     element('result').hidden = state.result === null;
     renderPending();
     if (state.result === null) {
+      setTextIfChanged(element('judgment'), '');
       delete element('postal-result').dataset.value;
       delete element('address-result').dataset.value;
       delete element('judgment').dataset.messageKey;
       return;
     }
     const status = judgment(state.result);
-    element('judgment').textContent = message(status);
+    setTextIfChanged(element('judgment'), message(status));
     element('judgment').dataset.messageKey = status.key;
     for (const alternative of state.result.alternatives) {
       const button = node('button', translate(`transform.${alternative.transform}`));
